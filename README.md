@@ -1,5 +1,5 @@
 # YZTA-Bootcamp---Team-56
-# 🎬 Movie App — Takım 56 🚀
+# 🎬 Movie App —
 
 
 ---

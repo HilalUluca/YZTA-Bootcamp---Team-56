@@ -1,5 +1,5 @@
 # YZTA-Bootcamp---Team-56
-# 🎬 Movie App —
+# FocusForge App —
 
 
 ---
@@ -8,13 +8,13 @@
 
 ### 👥 Takım Elemanları
 *   **Hilal Uluca:** Scrum Master
-*   **Doğukan Kaya:** Product Owner
-*   **Furkan Türker:** Team Member/Developer
+*   **Furkan Türker:** Product Owner
+*   **Doğukan Kaya:** Team Member/Developer
 *   **Asya Aynur Gers:** Team Member/Developer
 *   **Mete Ülken:** Team Member/Developer
 
 ### 🏷️ Ürün İsmi
-`--Movie App--`
+`--ForceForge App--`
 
 ### 📝 Ürün Açıklaması
 Movie App uygulamamız ile insanların izlemek istediği filmlere ve dizilere daha kolay karar vermesini sağlayacağız. İçerisinde binlerce filmi barındıran uygulamamız aynı zamanda Netflix, Prime vb. platformlarda yayınlanıp yayınlanmadığını ve IMDB puanlarını da gösterecek.

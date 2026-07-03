@@ -42,9 +42,8 @@
 </table>
 
 
-## 📋 Ürün İle İlgili Bilgiler
+## Ürün İle İlgili Bilgiler
 <br>
-
 <details>
 <summary><b>📝 Ürün Açıklaması & Yol Haritası</b></summary>
 <br>
@@ -85,7 +84,7 @@
 > 📊 **Stratejik Karar:** Takım kararı doğrultusunda, profesyonel yazılım süreçleri, hız (velocity) takibi ve jüri değerlendirme standartları gereği ürün backlog yönetimi Notion platformundan endüstri standardı olan **JIRA altyapısına taşınmıştır.**
 
 ---
-## 🏃‍♂️ Sprint Süreçleri ve Yönetimi
+## Sprint Süreçleri ve Yönetimi
 
 <details>
 <summary><b> Sprint 1 </b></summary>

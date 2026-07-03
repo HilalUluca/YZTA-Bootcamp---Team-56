@@ -1,0 +1,25 @@
+# FastAPI & Server
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Database (SQLite için ek paket gerekmez, PostgreSQL geçince psycopg2 eklenecek)
+sqlalchemy
+alembic
+aiosqlite
+
+# Authentication
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
+
+# Validation & Settings
+pydantic
+pydantic-settings
+
+# AI
+google-generativeai
+
+# Utilities
+python-dotenv
+email-validator

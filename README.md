@@ -19,7 +19,7 @@
 ### 📝 Ürün Açıklaması
 FocusForge; uzaktan çalışan bağımsız profesyoneller, yazılımcılar ve veri bilimciler için geliştirilmiş, yapay zeka destekli otonom bir kişisel verimlilik ve performans yönetimi platformudur. Geleneksel ve pasif to-do uygulamalarının aksine; kullanıcının dijital ayak iziyle anlık duygu durumunu semantik olarak birleştiren, erteleme davranışlarının altındaki kök sebepleri otonom olarak çözen ve kullanıcıya proaktif, sorgulayan, harekete geçiren reçeteler sunan bir multi-agent mimarisidir.
 
-Girişimimizin küresel pazara açılma ve sürdürülebilirlik stratejisi, iki ana faz üzerine kurgulanmıştır:  
+Girişimimizin pazara açılma ve sürdürülebilirlik stratejisi, üç ana faz üzerine kurgulanmıştır:  
 
 Faz 1 (Mevcut B2C MVP): Single-page arayüzü, "Unutmayan AI" hafıza motoru ve Sorumluluk Skoru barındıran; temel görev yönetimi ve yapay zeka koç sohbetini içeren bireysel performans asistanı.. 
 
@@ -33,7 +33,7 @@ Faz 3 (B2B Enterprise): Şirketlerin yazılım/mühendis ekiplerinde "Sessiz İs
 *   Güvenli Kullanıcı Yönetimi: Projenin iskeletini oluşturacak kullanıcı kayıt ve giriş (Auth) sisteminin FastAPI altyapısında kurulması.
 
 ### 🎯 Hedef Kitle
-*   Yüksek Odak Gerektiren Kitle: Akademik veya profesyonel düzeyde sınav/proje hazırlığında olan öğrenciler, erteleme problemi yaşayan, hayatını sağlıklı rutinlere oturtmak, kişisel disiplin sağlamak isteyen insanlar.
+*   Odak Problemi Yaşayan Kitle: Akademik veya profesyonel düzeyde sınav/proje hazırlığında olan öğrenciler, erteleme problemi yaşayan, hayatını sağlıklı rutinlere oturtmak, kişisel disiplin sağlamak isteyen insanlar.
 *   Uzaktan Çalışan Bağımsız Profesyoneller: Zaman yönetimi ve odak bölünmesi yaşayan uzaktan çalışan yazılımcılar, veri bilimciler ve freelancerlar.
 *   Kurumsal Takımlar (Faz 2 Hedefi): Mühendis verimliliğini artırmayı amaçlayan startup'lar, ajanslar ve IK departmanları.
 *   

@@ -7,7 +7,6 @@
 ---
 
 ## Takım Üyeleri (Takım 56)
-<br>
 
 <table>
   <tr>
@@ -42,7 +41,9 @@
   </tr>
 </table>
 
+
 ## 📋 Ürün İle İlgili Bilgiler
+<br>
 
 <details>
 <summary><b>📝 Ürün Açıklaması & Yol Haritası</b></summary>

@@ -17,35 +17,39 @@
 `--ForceForge App--`
 
 ### 📝 Ürün Açıklaması
-Movie App uygulamamız ile insanların izlemek istediği filmlere ve dizilere daha kolay karar vermesini sağlayacağız. İçerisinde binlerce filmi barındıran uygulamamız aynı zamanda Netflix, Prime vb. platformlarda yayınlanıp yayınlanmadığını ve IMDB puanlarını da gösterecek.
+FocusForge; uzaktan çalışan bağımsız profesyoneller, yazılımcılar ve veri bilimciler için geliştirilmiş, yapay zeka destekli otonom bir kişisel verimlilik ve performans yönetimi platformudur. Geleneksel ve pasif to-do uygulamalarının aksine; kullanıcının dijital ayak iziyle anlık duygu durumunu semantik olarak birleştiren, erteleme davranışlarının altındaki kök sebepleri otonom olarak çözen ve kullanıcıya proaktif, sorgulayan, harekete geçiren reçeteler sunan bir multi-agent mimarisidir.
+
+Girişimimizin küresel pazara açılma ve sürdürülebilirlik stratejisi, iki ana faz üzerine kurgulanmıştır:  
+
+Faz 1 (Mevcut B2C MVP): Single-page arayüzü, "Unutmayan AI" hafıza motoru ve Sorumluluk Skoru barındıran; temel görev yönetimi ve yapay zeka koç sohbetini içeren bireysel performans asistanı.. 
+
+Faz 2 (Gelecek B2C Genişleme & Proaktif Müdahale): Mobil işletim sistemi izinleri doğrultusunda ekran süresi kritik sınırı aştığında otonom olarak devreye giren proaktif uyarı mekanizmaları, akıllı saat (Wearable UI) entegrasyonları, stres anlarında tetiklenen otonom nefes egzersizi, öneri modülleri ve haftalık/aylık semantik verimlilik raporlarının otomatik olarak PDF/Döküman formatında dışa aktarılması altyapısı.
+
+Faz 3 (B2B Enterprise): Şirketlerin yazılım/mühendis ekiplerinde "Sessiz İstifa" (Quiet Quitting) dalgalarını önleyen; Jira/Slack API entegrasyonlarına sahip kurumsal SaaS modeli ve anonimleştirilmiş "İK Tükenmişlik Erken Uyarı Dashboard'u".
 
 ### ✨ Ürün Özellikleri
-*   Filmleri türüne göre ayırma
-*   Filmlerin yönetmen, aktör, aktris vb. bilgilerini posteriyle birlikte gösterme
-*   IMDB ve Rotten Tomatoes puanlarını gösterme
-*   Netflix'te ve Prime'da bulunurluğunu gösterme
+*   Akıllı Görev Yönetimi (Temel CRUD): Kullanıcıların günlük hedeflerini ekleme, silme, düzenleme ve tamamlama süreçlerinin yürütülmesi.
+*   Yapay Zeka Koçu Temel Entegrasyonu: Google Gemini API bağlantısının tamamlanarak, kullanıcının motivasyon durumuna göre stratejik ve net geri bildirimler üreten ilk istem (prompt) şablonlarının koordine edilmesi.
+*   Güvenli Kullanıcı Yönetimi: Projenin iskeletini oluşturacak kullanıcı kayıt ve giriş (Auth) sisteminin FastAPI altyapısında kurulması.
 
 ### 🎯 Hedef Kitle
-*   Netflix kullanıcıları
-*   Prime kullanıcıları
-*   Sinema severler
-*   Dizi severler
-*   15 - 65 yaş arası kullanıcılar
+*   Yüksek Odak Gerektiren Kitle: Akademik veya profesyonel düzeyde sınav/proje hazırlığında olan öğrenciler, erteleme problemi yaşayan, hayatını sağlıklı rutinlere oturtmak, kişisel disiplin sağlamak isteyen insanlar.
+*   Uzaktan Çalışan Bağımsız Profesyoneller: Zaman yönetimi ve odak bölünmesi yaşayan uzaktan çalışan yazılımcılar, veri bilimciler ve freelancerlar.
+*   Kurumsal Takımlar (Faz 2 Hedefi): Mühendis verimliliğini artırmayı amaçlayan startup'lar, ajanslar ve IK departmanları.
+*   
 
 ### 🔗 Product Backlog URL
-[Miro Backlog Board](https://miro.com/)
+(Takım kararı doğrultusunda, profesyonel yazılım süreçleri ve takibi için ürün backlog yönetimi Notion'dan JIRA altyapısına taşınmıştır.)
 
 ---
 
 ## 🏃‍♂️ Sprint 1
 
 ### 📑 Backlog Düzeni ve Story Seçimleri
-Backlog'umuz ilk yapılacak story'lere göre düzenlenmiştir. Sprint başına tahmin edilen puan sayısını geçmeyecek şekilde sıradan seçimler yapılmaktadır. Story başına çıkan tahmin puanı, toplam puanın yarısından az tutulmuştur.
-
-Story'ler yapılacak işlere (task'lere) bölünmüştür. Miro Board'da gözüken kırmızı item'lar yapılacak işleri (task) gösterirken, mavi item'lar story'leri temsil etmektedir.
+Backlog'umuz projenin öncelikli çalışan iskeletini (MVP) ayağa kaldıracak kullanıcı hikayelerine (User Story) göre dizilmiştir. Ancak ilk sprint planlama aşamasında ekibin çapraz fonksiyonel esneklik ihtiyacı ve teknik analiz süreçlerinin öngörülenden uzun sürmesi sebebiyle, planlanan kullanıcı hikayeleri (story'ler) bu sprint içerisinde kodlama aşamasına geçirilememiştir. Tamamlanamayan PBI'lar, JIRA üzerinde kapasite ve hız planlaması yeniden yapılandırılarak Sprint 2'ye aktarılmıştır.
 
 ### 💬 Daily Scrum
-Daily Scrum toplantılarının zamansal sebeplerden ötürü Slack üzerinden yapılmasına karar verilmiştir. Daily Scrum toplantısı örneği jpeg veya word olarak Readme'de tarafımızdan paylaşılmaktadır: **Sprint 1 Daily Scrum Chats**
+Takım üyelerinin farklı şehirlerdeki eğitim, iş ve kişisel takvim yoğunlukları nedeniyle zamanı doğru yönetmek adına Daily Scrum toplantılarımızın Slack üzerinden yazılı olarak ve Meet üzerinden sesli olmak üzere iki şekilde yürütülmesine karar verilmiştir. Günlük senkronizasyon, planlama ve süreç aksaklıklarının tespiti bu kanal üzerinden takip edilmiştir. Günlük konuşma kanıtlarımız README dökümanımızda yer almaktadır:
 
 ### 📊 Sprint Board Update & Ürün Durumu
 <table>
@@ -60,13 +64,13 @@ Daily Scrum toplantılarının zamansal sebeplerden ötürü Slack üzerinden ya
 </table>
 
 ### 🔎 Sprint Review
-*   **Alınan Kararlar:** Veritabanı oluşturması email ile toplanacak veriler için gerekli görülmüştür. Fakat bir yandan da veritabanı form sayfası için gerekli olmamıştır. O sebeple PBI bir sonraki sprint'e aktarılmıştır. Çıkan ürünün çalışmasında ve testlerinde bir problem görülmemiştir. Ekstra koyulması gereken özellikler belirlenmiştir.
-*   **Sprint Review Katılımcıları:** John Doe, Jane Doe, Atıl Samancıoğlu.
-
+*   **Alınan Kararlar:** Sprint 1 hedefi dahilinde planlanan altyapı ve kod geliştirme süreçlerine, mimari dökümantasyon ve analiz aşamasının uzaması sebebiyle resmen başlanamamıştır. Ekibin geliştirme hızını agresif bir şekilde artırmak amacıyla takım içi roller yeniden organize edilmiştir. Projenin hızlıca ayağa kalkabilmesi için (biri Product Owner biri Geliştirici olmak üzere) 2 kişi Backend altyapısına, (biri Scrum Master biri Geliştirici olmak üzere) 2 kişi AI (Yapay Zeka) mimarisine ve 1 Geliştirici Frontend arayüzüne odaklanacak şekilde net bir iş bölümü yapılmıştır. Kod bloklarında tıkanma yaşanmaması adına görev dağılımlarının esnek tutulmasına ve ekip üyelerinin birbirine anlık destek vermesine karar verilmiştir.
+*   **Sprint Review Katılımcıları:** Hilal Uluca, Furkan Türker, Doğukan Kaya, Asya Aynur Gers, Mete Ülken
 ### 🔄 Sprint Retrospective
-*   Takım içindeki görev dağılımıyla ilgili düzenleme yapılması kararı alınmıştır.
-*   Tahmin puanları gözden geçirilmeli ve sprint planlama toplantılarında gerekli geri bildirimlerin developer'lar tarafından verildiğine emin olunmalı.
-*   Unit test'ler için ayrılan efor/saat arttırılmalı.
+*   Takım içindeki görev dağılımıyla ilgili esnek olunabileceği kararı alınmıştır.
+*   Gelecek sprintte devreye girecek LangChain ve Redis hafıza yönetimi süreçleri daha karmaşık olacağından, sprint planlama toplantılarında developer tahmin puanlarının daha esnek ve detaylı geri bildirimlerle belirlenmesi gerektiği fark edilmiştir.
+*   İlk sprintte kod üretimine geçilememesi ekibin gerçek performans hızını görmemizi sağlamıştır. Sprint 2 itibariyle 2 Backend ve 2 AI yapılanması sayesinde altyapı blokajları hızlıca aşılacaktır.
+*   Jüri kriterlerinde yer alan "Temiz Kod Prensipleri" ve API Optimizasyonu metriklerinden tam puan almak adına, entegrasyon testlerine ve kod inceleme (Code Review) süreçlerine ayrılacak efor/saat oranının artırılması kararı alınmıştır.
 
 ---
 
@@ -79,5 +83,5 @@ Daily Scrum toplantılarının zamansal sebeplerden ötürü Slack üzerinden ya
 *Ürün teslim ve nihai entegrasyon adımları bu alanda güncellenecektir.*
 
 ---
-`Takım X @2026 — Focus & Deliver.`
+`Takım 56 @2026 — Focus & Deliver.`
 

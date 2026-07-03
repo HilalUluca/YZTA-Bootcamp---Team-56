@@ -6,10 +6,7 @@
 
 ---
 
-## 📋 Ürün İle İlgili Bilgiler
-
-
-<b> Takım Üyeleri (Takım 56)</b>
+## Takım Üyeleri (Takım 56)
 <br>
 
 <table>
@@ -45,6 +42,7 @@
   </tr>
 </table>
 
+## 📋 Ürün İle İlgili Bilgiler
 
 <details>
 <summary><b>📝 Ürün Açıklaması & Yol Haritası</b></summary>

@@ -9,7 +9,7 @@
 ## 📋 Ürün İle İlgili Bilgiler
 
 
-<b>👥 Takım Üyeleri (Takım 56)</b>
+<b> Takım Üyeleri (Takım 56)</b>
 <br>
 
 <table>

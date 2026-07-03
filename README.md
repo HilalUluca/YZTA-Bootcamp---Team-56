@@ -8,8 +8,8 @@
 
 ## 📋 Ürün İle İlgili Bilgiler
 
-<details>
-<summary><b>👥 Takım Üyeleri (Takım 56)</b></summary>
+
+<b>👥 Takım Üyeleri (Takım 56)</b>
 <br>
 
 <table>
@@ -45,7 +45,6 @@
   </tr>
 </table>
 
-</details>
 
 <details>
 <summary><b>📝 Ürün Açıklaması & Yol Haritası</b></summary>
@@ -90,7 +89,7 @@
 ## 🏃‍♂️ Sprint Süreçleri ve Yönetimi
 
 <details>
-<summary><b> Sprint 1 (Aktif / Tamamlanan Altyapı)</b></summary>
+<summary><b> Sprint 1 </b></summary>
 <br>
 
 ### 📑 Backlog Düzeni ve Story Seçimleri 

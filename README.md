@@ -9,9 +9,9 @@
 ### 👥 Takım Elemanları
 *   **Hilal Uluca:** Scrum Master
 *   **Furkan Türker:** Product Owner
-*   **Doğukan Kaya:** Team Member/Developer
-*   **Asya Aynur Gers:** Team Member/Developer
-*   **Mete Ülken:** Team Member/Developer
+*   **Doğukan Kaya:** Developer
+*   **Asya Aynur Gers:** Developer
+*   **Mete Ülken:** Developer
 
 ### 🏷️ Ürün İsmi
 `--ForceForge App--`

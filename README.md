@@ -144,5 +144,5 @@ Sprint 1 boyunca gerçekleştirdiğimiz günlük durum değerlendirmeleri, planl
 
 ---
 <p align="center">
-  <b>Takım 56 @2026 — Focus & Deliver.</b>
+  <b>Team 56 @2026 — FocusForge.</b>
 </p>

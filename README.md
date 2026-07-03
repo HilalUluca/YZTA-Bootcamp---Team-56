@@ -49,7 +49,8 @@ Faz 3 (B2B Enterprise): Şirketlerin yazılım/mühendis ekiplerinde "Sessiz İs
 Backlog'umuz projenin öncelikli çalışan iskeletini (MVP) ayağa kaldıracak kullanıcı hikayelerine (User Story) göre dizilmiştir. Ancak ilk sprint planlama aşamasında ekibin çapraz fonksiyonel esneklik ihtiyacı ve teknik analiz süreçlerinin öngörülenden uzun sürmesi sebebiyle, planlanan kullanıcı hikayeleri (story'ler) bu sprint içerisinde kodlama aşamasına geçirilememiştir. Tamamlanamayan PBI'lar, JIRA üzerinde kapasite ve hız planlaması yeniden yapılandırılarak Sprint 2'ye aktarılmıştır.
 
 ### 💬 Daily Scrum
-Takım üyelerinin farklı şehirlerdeki eğitim, iş ve kişisel takvim yoğunlukları nedeniyle zamanı doğru yönetmek adına Daily Scrum toplantılarımızın Slack üzerinden yazılı olarak ve Meet üzerinden sesli olmak üzere iki şekilde yürütülmesine karar verilmiştir. Günlük senkronizasyon, planlama ve süreç aksaklıklarının tespiti bu kanal üzerinden takip edilmiştir. Günlük konuşma kanıtlarımız README dökümanımızda yer almaktadır:
+Takım üyelerinin farklı şehirlerdeki eğitim, iş ve kişisel takvim yoğunlukları nedeniyle zamanı doğru yönetmek adına Daily Scrum toplantılarımızın Slack üzerinden yazılı olarak ve Meet üzerinden sesli olmak üzere iki şekilde yürütülmesine karar verilmiştir. Günlük senkronizasyon, planlama ve süreç aksaklıklarının tespiti bu kanal üzerinden takip edilmiştir. Günlük konuşma kanıtlarımız README dökümanımızda yer almaktadır: 
+👉 **[Sprint 1 Daily Scrum Chats](Project%20Management/Daily%20Scrum)**
 
 ### 📊 Sprint Board Update & Ürün Durumu
 <table>

@@ -1,7 +1,7 @@
 # 🚀 FocusForge App
 
 <p align="center">
-  <img src="https://capsule-render.vercel.app/view?type=waving&color=00f2fe&height=180&section=header&text=FocusForge%20App&fontSize=50&animation=fadeIn&fontColor=ffffff" alt="FocusForge Header" />
+  <img src="Project%20Management/Daily%20Scrum/header.png" alt="FocusForge Corporate Header" width="100%" />
 </p>
 
 ---

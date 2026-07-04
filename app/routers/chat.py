@@ -70,7 +70,9 @@ async def chat_with_ai(
         import google.generativeai as genai
 
         genai.configure(api_key=settings.gemini_api_key)
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        
+        # Model tanımını güvenli bir şekilde burada yapıyoruz
+        model = genai.GenerativeModel("models/gemini-2.5-flash")
 
         # Kullanıcı bağlamını ekle
         user_context = ""
@@ -87,6 +89,7 @@ async def chat_with_ai(
 
         full_prompt = f"{FORGE_SYSTEM_PROMPT}\n{user_context}\n\nKullanıcı mesajı: {message.message}"
 
+        # Yukarıda tanımlanan model burada tetikleniyor
         response = model.generate_content(full_prompt)
 
         return ChatResponse(

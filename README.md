@@ -105,7 +105,7 @@ Ekibimizin güncel Product Backlog'una, görev atamalarına ve 1. Sprint Burndow
 Backlog'umuz projenin öncelikli çalışan iskeletini (MVP) ayağa kaldıracak kullanıcı hikayelerine (**User Story**) göre dizilmiştir. Sprint başına tahmin edilen toplam hikaye puanı, ekip üyelerinin takvim yoğunlukları dengelenerek sınırları aşmayacak şekilde belirlenmiştir. Story başına çıkan tahmin puanı, toplam puanın yarısından az tutularak risk minimize edilmiştir. Story'ler yapılacak alt teknik işlere (task'lere) bölünerek JIRA panosuna işlenmiştir.
 
 ### 💬 Daily Scrum 
-Takım üyelerinin farklı şehirlerdeki yoğun takvimleri nedeniyle zamanı doğru yönetmek adına Daily Scrum toplantılarının **Slack üzerinden yazılı** ve **Meet üzerinden sesli** olmak üzere hibrit yürütülmesine karar verilmiştir. 
+Takım üyelerinin farklı şehirlerdeki yoğun takvimleri nedeniyle zamanı doğru yönetmek adına Daily Scrum toplantılarının **Slack veya WhatsApp üzerinden yazılı** ve **Meet üzerinden sesli** olmak üzere hibrit yürütülmesine karar verilmiştir. 
 
 Sprint 1 boyunca gerçekleştirdiğimiz günlük durum değerlendirmeleri, planlama diyalogları ve akran öğrenimi süreçlerinin tüm ekran görüntüsü kanıtlarına aşağıdaki bağlantıdan tek bir klasör altında şeffafça ulaşabilirsiniz:
 👉 **[Sprint 1 Daily Scrum Klasörü ve Kanıt Dosyaları](Project%20Management/Daily%20Scrum)**
@@ -114,15 +114,18 @@ Sprint 1 boyunca gerçekleştirdiğimiz günlük durum değerlendirmeleri, planl
 <table>
   <tr>
     <th width="50%">🔄 JIRA Sprint Board </th>
-    <th width="50%">📱 Çalışan Ürün Çekirdeği: FastAPI Swagger UI</th>
+    <th width="50%">📱 Product Screenshot </th>
   </tr>
   <tr>
-    <td><img src="Project%20Management/Daily%20Scrum/Sprint 1.png" alt="Jira Board" width="100%">
+    <td>
+      <a href="./Project%20Management/Daily%20Scrum/Jira%20Board%201.png">
+        <img src="Project%20Management/Daily%20Scrum/Jira%20Board%201.png" alt="Jira Board" width="100%">
     </td>
-    <td><img width="1709" height="887" src="https://github.com/user-attachments/assets/35431334-7f76-47cc-b62e-e1975c415d84" alt="FastAPI Swagger API UI" />
-      <img width="1919" height="1076" alt="FastAPI Swagger API UI AI CHAT1" src="https://github.com/user-attachments/assets/6b3cd112-3d21-4956-96ea-f895f60ddece" />
-      <img width="1814" height="376" alt="FastAPI Swagger API UI AI CHAT2" src="https://github.com/user-attachments/assets/cab7b5f7-3aa5-4844-9e17-637bd1841c2f" />
+    <td> <a href="./UI%20Gallery/Sprint%201/FASTAPI%20Swagger%20UI%201.png">
+        <img src="UI%20Gallery/Sprint%201/FASTAPI%20Swagger%20UI%201.png" alt="Product Screenshot" width="100%" />
+      </a>
     </td>
+   
   </tr>
 </table>
 
@@ -145,8 +148,7 @@ Sprint 1 boyunca gerçekleştirdiğimiz günlük durum değerlendirmeleri, planl
 <summary><b> Sprint 2 (Planlama Aşamasında)</b></summary>
 <br>
 
-*   LangChain entegrasyonu ve Ajan tabanlı Persona mimarisinin kurulması.
-*   React/Vite Frontend arayüzünün tamamlanarak FastAPI backend servislerine bağlanması.
+* 
 
 </details>
 

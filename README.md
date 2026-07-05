@@ -108,24 +108,11 @@ Backlog'umuz projenin öncelikli çalışan iskeletini (MVP) ayağa kaldıracak 
 Takım üyelerinin farklı şehirlerdeki yoğun takvimleri nedeniyle zamanı doğru yönetmek adına Daily Scrum toplantılarının **Slack veya WhatsApp üzerinden yazılı** ve **Meet üzerinden sesli** olmak üzere hibrit yürütülmesine karar verilmiştir. 
 
 Sprint 1 boyunca gerçekleştirdiğimiz günlük durum değerlendirmeleri, planlama diyalogları ve akran öğrenimi süreçlerinin tüm ekran görüntüsü kanıtlarına aşağıdaki bağlantıdan tek bir klasör altında şeffafça ulaşabilirsiniz:
-👉 **[Sprint 1 Daily Scrum Klasörü ve Kanıt Dosyaları](Project%20Management/Daily%20Scrum)**
-
 ### 📊 Sprint Board Update & Ürün Durumu
 
-<table>
-  <tr>
-    <th width="50%">🔄 JIRA Sprint Board</th>
-    <th width="50%">📱 Product Screenshot</th>
-  </tr>
-  <tr>
-    <td>
-      <a href="./Project%20Management/Daily%20Scrum/Jira%20Board%201.png">🔗 JIRA Sprint Board Görünümü</a>
-    </td>
-    <td>
-      <a href="./UI%20Gallery/Sprint%201/FASTAPI%20Swagger%20UI%201.png">🔗 FastAPI Swagger UI Ürün </a>
-    </td>
-  </tr>
-</table>
+| 🔄 JIRA Sprint Board | 📱 Product Screenshot |
+| :--- | :--- |
+| [🔗 JIRA Sprint Board Görünümü](./Project%20Management/Daily%20Scrum/Jira%20Board%201.png) | [🔗 FastAPI Swagger UI Ürün Görünümü](./UI%20Gallery/Sprint%201/FASTAPI%20Swagger%20UI%201.png) |
 
 
 

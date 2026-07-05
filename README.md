@@ -118,11 +118,9 @@ Sprint 1 boyunca gerçekleştirdiğimiz günlük durum değerlendirmeleri, planl
   </tr>
   <tr>
     <td>
-      <a href="./Project%20Management/Daily%20Scrum/Jira%20Board%201.png">
-        <img src="Project%20Management/Daily%20Scrum/Jira%20Board%201.png" alt="Jira Board" width="100%">
+      **[JIRA Sprint Board Görünümü](./Project%20Management/Daily%20Scrum/Jira%20Board%201.png)**
     </td>
-    <td> <a href="./UI%20Gallery/Sprint%201/FASTAPI%20Swagger%20UI%201.png">
-        <img src="UI%20Gallery/Sprint%201/FASTAPI%20Swagger%20UI%201.png" alt="Product Screenshot" width="100%" />
+    <td> **[FastAPI Swagger UI Ürün](./UI%20Gallery/Sprint%201/FASTAPI%20Swagger%20UI%201.png)**
       </a>
     </td>
    

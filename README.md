@@ -111,19 +111,19 @@ Sprint 1 boyunca gerçekleştirdiğimiz günlük durum değerlendirmeleri, planl
 👉 **[Sprint 1 Daily Scrum Klasörü ve Kanıt Dosyaları](Project%20Management/Daily%20Scrum)**
 
 ### 📊 Sprint Board Update & Ürün Durumu
+
 <table>
   <tr>
-    <th width="50%">🔄 JIRA Sprint Board </th>
-    <th width="50%">📱 Product Screenshot </th>
+    <th width="50%">🔄 JIRA Sprint Board</th>
+    <th width="50%">📱 Product Screenshot</th>
   </tr>
   <tr>
     <td>
-      **[JIRA Sprint Board Görünümü](./Project%20Management/Daily%20Scrum/Jira%20Board%201.png)**
+      <a href="./Project%20Management/Daily%20Scrum/Jira%20Board%201.png">🔗 JIRA Sprint Board Görünümü</a>
     </td>
-    <td> **[FastAPI Swagger UI Ürün](./UI%20Gallery/Sprint%201/FASTAPI%20Swagger%20UI%201.png)**
-      </a>
+    <td>
+      <a href="./UI%20Gallery/Sprint%201/FASTAPI%20Swagger%20UI%201.png">🔗 FastAPI Swagger UI Ürün </a>
     </td>
-   
   </tr>
 </table>
 

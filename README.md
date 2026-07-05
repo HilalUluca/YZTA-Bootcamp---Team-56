@@ -102,11 +102,11 @@ Sprint 1 boyunca gerçekleştirdiğimiz günlük durum değerlendirmeleri, planl
 ### 📊 Sprint Board Update & Ürün Durumu
 <table>
   <tr>
-    <th width="50%">🔄 JIRA Sprint Board & Burndown Chart</th>
+    <th width="50%">🔄 JIRA Sprint Board </th>
     <th width="50%">📱 Çalışan Ürün Çekirdeği: FastAPI Swagger UI</th>
   </tr>
   <tr>
-    <td><img src="Project%20Management/Daily%20Scrum/jira.png" alt="Jira Board" width="100%"></td>
+    <td><img src="Project%20Management/Daily%20Scrum/Sprint 1.png" alt="Jira Board" width="100%"></td>
     <td><img src="Project%20Management/Daily%20Scrum/swagger.png" alt="FastAPI Swagger API UI" width="100%"></td>
   </tr>
 </table>

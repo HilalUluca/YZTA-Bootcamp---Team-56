@@ -1,0 +1,49 @@
+# ==========================================
+# FocusForge Project GitIgnore
+# ==========================================
+
+# --- Python & FastAPI ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+/app/__pycache__/
+/app/models/__pycache__/
+/app/routers/__pycache__/
+/app/schemas/__pycache__/
+/app/services/__pycache__/
+/app/agents/__pycache__/
+
+# --- Environment Configuration ---
+.env
+.env.local
+.env.*.local
+
+# --- Databases ---
+*.db
+*.db-journal
+*.sqlite3
+
+# --- Node & Frontend (Ionic) ---
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/www/
+frontend/.nx/
+frontend/.eslintcache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Editors & OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp

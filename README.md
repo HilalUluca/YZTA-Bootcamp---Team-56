@@ -80,8 +80,19 @@
 ---
 
 ## 🔗 Product Backlog URL
+FocusForge takımının Çevik (Agile) yönetim süreçleri, maliyet/efor analizleri ve kapasite ölçümleri şeffaf bir şekilde yönetilmektedir. Takım kapasitesi, Fibonacci sayıları kullanılarak hesaplanmış ve görevler "Story" ile "Task" olarak rasyonel bir hiyerarşiye oturtulmuştur.
 
-> 📊 **Stratejik Karar:** Takım kararı doğrultusunda, profesyonel yazılım süreçleri, hız (velocity) takibi ve jüri değerlendirme standartları gereği ürün backlog yönetimi Notion platformundan endüstri standardı olan **JIRA altyapısına taşınmıştır.**
+### 📌 Sprint 1 Kapasite Raporu
+* **Toplam İş Yükü (Total Story Points):** 82 Puan
+* **1. Hafta Tamamlanan (Completed):** 43 Puan
+* **2. Hafta İçin Kalan (Remaining):** 39 Puan
+
+### 🔗 Canlı Yönetim Panosu
+Ekibimizin güncel Product Backlog'una, görev atamalarına ve 1. Sprint Burndown (Erime) grafiğine aşağıdaki bağlantıdan ulaşabilirsiniz:
+
+👉 **[FocusForge Miro Sprint Board & Burndown Chart](https://miro.com/welcomeonboard/U3BtZmFtcDgzYm1GdmlXUlUrZDNDU08vSFhwYmpZd01VcnlXeCtrRmhkQVZQSG5xbkxKeHZJaEkrd2d6WHNKVms5b01PVzVlR1JFRlN0a3VHYnNFOEtyd0wwMlhKTU0rSjhuUjRlUjhSVUlVQW9PckRwemF4M0dtK1hhZFFQaWlNakdSWkpBejJWRjJhRnhhb1UwcS9BPT0hdjE=?share_link_id=809806536559)**
+
+> **Operasyonel Not:** Sistem mimarisi ve görev eforlandırması Jira üzerinde kurgulanmış olup, takımın erime hızı (velocity) ve vitrin operasyonları Miro üzerinden canlı olarak raporlanmaktadır.
 
 ---
 ## Sprint Süreçleri ve Yönetimi

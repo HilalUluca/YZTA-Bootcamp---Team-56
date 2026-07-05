@@ -115,8 +115,6 @@ Sprint 1 boyunca gerçekleştirdiğimiz günlük durum değerlendirmeleri, planl
 | [🔗 JIRA Sprint Board Görünümü](./Project%20Management/Daily%20Scrum/Jira%20Board%201.png) | [🔗 FastAPI Swagger UI Ürün Görünümü](./UI%20Gallery/Sprint%201/FASTAPI%20Swagger%20UI%201.png) |
 
 
-
-
 ### 🔎 Sprint Review 
 *    Sprint 1 hedefi doğrultusunda projenin temel iskeletini oluşturacak backend mimarisi başarıyla kurulmuş; **Kullanıcı Kayıt/Giriş (Auth), Görev Yönetimi (Task CRUD) ve Yapay Zeka Sohbet (AI Chat) endpoint'leri** FastAPI altyapısında başarıyla kodlanarak entegre edilmiştir.
 *    Ekibin geliştirme hızını agresif bir şekilde artırmak amacıyla takım içi roller çapraz fonksiyonel (cross-functional) esneklikle yeniden organize edilmiştir. Projenin hızlıca canlıya çıkabilmesi için 2 kişi Backend altyapısına, 2 kişi AI mimarisine ve 1 kişi Frontend arayüzüne odaklanacak şekilde net bir iş bölümü yapılmıştır. Kod bloklarında tıkanma yaşanmaması adına görev dağılımları esnek tutulmaktadır.

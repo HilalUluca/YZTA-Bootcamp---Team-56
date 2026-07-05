@@ -117,10 +117,17 @@ Sprint 1 boyunca gerçekleştirdiğimiz günlük durum değerlendirmeleri, planl
     <th width="50%">📱 Çalışan Ürün Çekirdeği: FastAPI Swagger UI</th>
   </tr>
   <tr>
-    <td><img src="Project%20Management/Daily%20Scrum/Sprint 1.png" alt="Jira Board" width="100%"></td>
-    <td><img src="Project%20Management/Daily%20Scrum/swagger.png" alt="FastAPI Swagger API UI" width="100%"></td>
+    <td><img src="Project%20Management/Daily%20Scrum/Sprint 1.png" alt="Jira Board" width="100%">
+    </td>
+    <td><img width="1709" height="887" src="https://github.com/user-attachments/assets/35431334-7f76-47cc-b62e-e1975c415d84" alt="FastAPI Swagger API UI" />
+      <img width="1919" height="1076" alt="FastAPI Swagger API UI AI CHAT1" src="https://github.com/user-attachments/assets/6b3cd112-3d21-4956-96ea-f895f60ddece" />
+      <img width="1814" height="376" alt="FastAPI Swagger API UI AI CHAT2" src="https://github.com/user-attachments/assets/cab7b5f7-3aa5-4844-9e17-637bd1841c2f" />
+    </td>
   </tr>
 </table>
+
+
+
 
 ### 🔎 Sprint Review 
 *    Sprint 1 hedefi doğrultusunda projenin temel iskeletini oluşturacak backend mimarisi başarıyla kurulmuş; **Kullanıcı Kayıt/Giriş (Auth), Görev Yönetimi (Task CRUD) ve Yapay Zeka Sohbet (AI Chat) endpoint'leri** FastAPI altyapısında başarıyla kodlanarak entegre edilmiştir.

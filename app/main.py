@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.database import engine, Base
-from app.routers import auth_router, tasks_router, chat_router
+from app.routers import auth_router, tasks_router, chat_router, focus_router, reflections_router
 
 settings = get_settings()
 
@@ -72,6 +72,8 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(tasks_router)
 app.include_router(chat_router)
+app.include_router(focus_router)
+app.include_router(reflections_router)
 
 
 @app.get("/", tags=["Genel"])
@@ -93,3 +95,26 @@ def health_check():
         "database": "connected",
         "ai": "configured" if settings.gemini_api_key else "not_configured",
     }
+
+
+# Sorumluluk Skoru Endpoint'i
+from fastapi import Depends
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.models.user import User
+from app.services.auth import get_current_user
+from app.services.gamification import calculate_responsibility_score
+
+
+@app.get("/api/score", tags=["Gamification"])
+def get_responsibility_score(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Kullanicinin sorumluluk skorunu hesaplar.
+
+    Son 7 gundeki performansa gore 0-100 arasi skor.
+    AI kocun tonu bu skora gore belirlenir.
+    """
+    return calculate_responsibility_score(current_user, db)

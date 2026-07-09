@@ -80,8 +80,19 @@
 ---
 
 ## 🔗 Product Backlog URL
+FocusForge takımının Çevik (Agile) yönetim süreçleri, maliyet/efor analizleri ve kapasite ölçümleri şeffaf bir şekilde yönetilmektedir. Takım kapasitesi, Fibonacci sayıları kullanılarak hesaplanmış ve görevler "Story" ile "Task" olarak rasyonel bir hiyerarşiye oturtulmuştur.
 
-> 📊 **Stratejik Karar:** Takım kararı doğrultusunda, profesyonel yazılım süreçleri, hız (velocity) takibi ve jüri değerlendirme standartları gereği ürün backlog yönetimi Notion platformundan endüstri standardı olan **JIRA altyapısına taşınmıştır.**
+### 📌 Sprint 1 Kapasite Raporu
+* **Toplam İş Yükü (Total Story Points):** 82 Puan
+* **1. Hafta Tamamlanan (Completed):** 43 Puan
+* **2. Hafta İçin Kalan (Remaining):** 39 Puan
+
+### 🔗 Canlı Yönetim Panosu
+Ekibimizin güncel Product Backlog'una, görev atamalarına ve 1. Sprint Burndown (Erime) grafiğine aşağıdaki bağlantıdan ulaşabilirsiniz:
+
+👉 **[FocusForge Miro Sprint Board & Burndown Chart](https://miro.com/welcomeonboard/U3BtZmFtcDgzYm1GdmlXUlUrZDNDU08vSFhwYmpZd01VcnlXeCtrRmhkQVZQSG5xbkxKeHZJaEkrd2d6WHNKVms5b01PVzVlR1JFRlN0a3VHYnNFOEtyd0wwMlhKTU0rSjhuUjRlUjhSVUlVQW9PckRwemF4M0dtK1hhZFFQaWlNakdSWkpBejJWRjJhRnhhb1UwcS9BPT0hdjE=?share_link_id=809806536559)**
+
+> **Operasyonel Not:** Sistem mimarisi ve görev eforlandırması Jira üzerinde kurgulanmış olup, takımın erime hızı (velocity) ve vitrin operasyonları Miro üzerinden canlı olarak raporlanmaktadır.
 
 ---
 ## Sprint Süreçleri ve Yönetimi
@@ -94,22 +105,15 @@
 Backlog'umuz projenin öncelikli çalışan iskeletini (MVP) ayağa kaldıracak kullanıcı hikayelerine (**User Story**) göre dizilmiştir. Sprint başına tahmin edilen toplam hikaye puanı, ekip üyelerinin takvim yoğunlukları dengelenerek sınırları aşmayacak şekilde belirlenmiştir. Story başına çıkan tahmin puanı, toplam puanın yarısından az tutularak risk minimize edilmiştir. Story'ler yapılacak alt teknik işlere (task'lere) bölünerek JIRA panosuna işlenmiştir.
 
 ### 💬 Daily Scrum 
-Takım üyelerinin farklı şehirlerdeki yoğun takvimleri nedeniyle zamanı doğru yönetmek adına Daily Scrum toplantılarının **Slack üzerinden yazılı** ve **Meet üzerinden sesli** olmak üzere hibrit yürütülmesine karar verilmiştir. 
+Takım üyelerinin farklı şehirlerdeki yoğun takvimleri nedeniyle zamanı doğru yönetmek adına Daily Scrum toplantılarının **Slack veya WhatsApp üzerinden yazılı** ve **Meet üzerinden sesli** olmak üzere hibrit yürütülmesine karar verilmiştir. 
 
-Sprint 1 boyunca gerçekleştirdiğimiz günlük durum değerlendirmeleri, planlama diyalogları ve akran öğrenimi süreçlerinin tüm ekran görüntüsü kanıtlarına aşağıdaki bağlantıdan tek bir klasör altında şeffafça ulaşabilirsiniz:
-👉 **[Sprint 1 Daily Scrum Klasörü ve Kanıt Dosyaları](Project%20Management/Daily%20Scrum)**
-
+Sprint 1 boyunca gerçekleştirdiğimiz günlük durum değerlendirmeleri, planlama diyalogları ve akran öğrenimi süreçlerinin tüm ekran görüntüsü kanıtlarına aşağıdaki bağlantıdan tek bir klasör altında şeffafça ulaşabilirsiniz:![Daily Scrum](Project%20Management/Daily%20Scrum)
 ### 📊 Sprint Board Update & Ürün Durumu
-<table>
-  <tr>
-    <th width="50%">🔄 JIRA Sprint Board & Burndown Chart</th>
-    <th width="50%">📱 Çalışan Ürün Çekirdeği: FastAPI Swagger UI</th>
-  </tr>
-  <tr>
-    <td><img src="Project%20Management/Daily%20Scrum/jira.png" alt="Jira Board" width="100%"></td>
-    <td><img src="Project%20Management/Daily%20Scrum/swagger.png" alt="FastAPI Swagger API UI" width="100%"></td>
-  </tr>
-</table>
+
+| 🔄 JIRA Sprint Board | 📱 Product Screenshot |
+| :--- | :--- |
+| [🔗 JIRA Sprint Board Görünümü](./Project%20Management/Daily%20Scrum/Jira%20Board%201.png) | [🔗 FastAPI Swagger UI Ürün Görünümü](./UI%20Gallery/Sprint%201/FASTAPI%20Swagger%20UI%201.png) |
+
 
 ### 🔎 Sprint Review 
 *    Sprint 1 hedefi doğrultusunda projenin temel iskeletini oluşturacak backend mimarisi başarıyla kurulmuş; **Kullanıcı Kayıt/Giriş (Auth), Görev Yönetimi (Task CRUD) ve Yapay Zeka Sohbet (AI Chat) endpoint'leri** FastAPI altyapısında başarıyla kodlanarak entegre edilmiştir.
@@ -127,8 +131,7 @@ Sprint 1 boyunca gerçekleştirdiğimiz günlük durum değerlendirmeleri, planl
 <summary><b> Sprint 2 (Planlama Aşamasında)</b></summary>
 <br>
 
-*   LangChain entegrasyonu ve Ajan tabanlı Persona mimarisinin kurulması.
-*   React/Vite Frontend arayüzünün tamamlanarak FastAPI backend servislerine bağlanması.
+* 
 
 </details>
 

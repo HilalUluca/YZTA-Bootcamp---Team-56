@@ -19,6 +19,8 @@ pydantic-settings
 
 # AI
 google-generativeai
+langchain==0.1.11
+langchain-google-genai
 
 # Utilities
 python-dotenv

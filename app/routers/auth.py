@@ -34,26 +34,19 @@ router = APIRouter(prefix="/api/auth", tags=["Kimlik Doğrulama"])
 def register(user_data: UserRegister, db: Session = Depends(get_db)):
     """
     Yeni kullanıcı kaydı.
-
-    - Email ve kullanıcı adı benzersiz olmalı
-    - Şifre en az 6 karakter
-    - Başarılı kayıtta kullanıcı bilgileri döner (şifre hariç)
     """
-    # Email kontrolü
     if db.query(User).filter(User.email == user_data.email).first():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Bu email adresi zaten kayıtlı",
         )
 
-    # Kullanıcı adı kontrolü
     if db.query(User).filter(User.username == user_data.username).first():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Bu kullanıcı adı zaten alınmış",
         )
 
-    # Yeni kullanıcı oluştur
     new_user = User(
         email=user_data.email,
         username=user_data.username,
@@ -74,9 +67,6 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
 def login(user_data: UserLogin, db: Session = Depends(get_db)):
     """
     Kullanici girisi.
-
-    username ve password ile giris yap, JWT token al.
-    Aldigi tokeni Authorize butonuna yapistir.
     """
     user = db.query(User).filter(User.username == user_data.username).first()
 
@@ -93,7 +83,6 @@ def login(user_data: UserLogin, db: Session = Depends(get_db)):
             detail="Hesap devre dışı",
         )
 
-    # Token oluştur
     access_token = create_access_token(
         data={"sub": str(user.id), "username": user.username}
     )
@@ -105,7 +94,6 @@ def login(user_data: UserLogin, db: Session = Depends(get_db)):
 def get_me(current_user: User = Depends(get_current_user)):
     """
     Giriş yapmış kullanıcının bilgilerini döndürür.
-    Token gerektirir.
     """
     return current_user
 
@@ -118,18 +106,29 @@ def complete_onboarding(
 ):
     """
     İlk kayıt sonrası kullanıcı profilini oluşturur (cold-start çözümü).
-
-    AI'ın 1. günden anlamlı önerilerde bulunabilmesi için
-    kullanıcıdan hedefler, çalışma saatleri ve tercihler alınır.
+    Director ajanı için gereken tüm biyolojik ve psikolojik verileri haritalar.
     """
     current_user.ai_profile = {
-        "goals": data.goals,
+        # Biyolojik ve Demografik Veriler (Director için Kritik)
+        "age": getattr(data, "age", None),
+        "profession": getattr(data, "profession", "Belirtilmemiş"),
+        "sleep_pattern": getattr(data, "sleep_pattern", "Belirtilmemiş"),
+        "average_screen_time": getattr(data, "average_screen_time", "Belirtilmemiş"),
+        
+        # Hedef ve Psikolojik Veriler
+        "primary_goals": getattr(data, "primary_goals", getattr(data, "goals", [])),
+        "weaknesses": getattr(data, "weaknesses", []),
+        "hobbies": getattr(data, "hobbies", []),
+        "biggest_challenge": getattr(data, "biggest_challenge", "Belirtilmemiş"),
+        
+        # Zaman ve Teknik Veriler
+        "routine_hours_per_day": getattr(data, "routine_hours_per_day", "Belirtilmemiş"),
         "work_hours": {
-            "start": data.work_hours_start,
-            "end": data.work_hours_end,
+            "start": getattr(data, "work_hours_start", None),
+            "end": getattr(data, "work_hours_end", None),
         },
-        "biggest_challenge": data.biggest_challenge,
-        "preferred_technique": data.preferred_technique,
+        "preferred_technique": getattr(data, "preferred_technique", None),
+        
         "onboarding_completed": True,
     }
 

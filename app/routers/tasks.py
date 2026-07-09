@@ -198,3 +198,115 @@ def complete_task(
     db.refresh(task)
 
     return task
+
+
+# ============================================================================
+# AI DESTEKLI GOREV YONETIMI (YZTA-70, YZTA-71)
+# ============================================================================
+
+from pydantic import BaseModel, Field
+from typing import List
+
+
+class PrioritizeRequest(BaseModel):
+    """Gorev onceliklendirme istegi. Bos birakilirsa kullanicinin tum gorevleri onceliklendirilir."""
+    user_context: Optional[str] = Field(
+        None,
+        description="Opsiyonel: Kullanicinin duygu durumu veya ek bilgi. Ornek: 'Bugun enerjim dusuk'"
+    )
+
+
+class BreakDownRequest(BaseModel):
+    """Gorev parcalama istegi."""
+    task_name: str = Field(..., description="Parcalanacak ana gorevin adi")
+    task_description: Optional[str] = Field(None, description="Gorevin detayli aciklamasi")
+    estimated_time: Optional[int] = Field(None, description="Tahmini toplam sure (dakika)")
+
+
+@router.post("/prioritize")
+async def prioritize_user_tasks(
+    request: PrioritizeRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Kullanicinin mevcut gorevlerini AI ile Eisenhower matrisine gore onceliklendirir.
+
+    - Tum acik gorevleri veritabanindan ceker
+    - Gemini API ile analiz eder
+    - Her goreve oncelik skoru ve kategori atar
+    """
+    from app.services.ai_planner_agent import prioritize_tasks
+
+    # Kullanicinin acik gorevlerini al
+    tasks = (
+        db.query(Task)
+        .filter(Task.user_id == current_user.id, Task.status != TaskStatus.DONE)
+        .all()
+    )
+
+    if not tasks:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Onceliklendirilecek gorev bulunamadi. Once gorev ekleyin.",
+        )
+
+    # Task'leri AI servisinin bekledigi dict formatina cevir
+    tasks_for_ai = [
+        {
+            "title": task.title,
+            "description": task.description or "Aciklama yok",
+            "deadline": task.due_date.isoformat() if task.due_date else "Belirlenmemis",
+            "estimated_duration": task.estimated_minutes or 30,
+        }
+        for task in tasks
+    ]
+
+    try:
+        result = await prioritize_tasks(
+            tasks=tasks_for_ai,
+            user_context=request.user_context,
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"AI servisi yapilandirma hatasi: {str(e)}",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Gorev onceliklendirme hatasi: {str(e)}",
+        )
+
+
+@router.post("/break-down")
+async def break_down_user_task(
+    request: BreakDownRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Buyuk ve karmasik bir gorevi mantiksal alt gorevlere boler.
+
+    Ornek: "Web sitesi gelistir" -> 5-8 alt gorev
+    Her alt gorev icin tahmini sure ve aciklama doner.
+    """
+    from app.services.ai_planner_agent import break_down_task
+
+    try:
+        result = await break_down_task(
+            task_name=request.task_name,
+            task_description=request.task_description,
+            estimated_time=request.estimated_time,
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"AI servisi yapilandirma hatasi: {str(e)}",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Gorev parcalama hatasi: {str(e)}",
+        )

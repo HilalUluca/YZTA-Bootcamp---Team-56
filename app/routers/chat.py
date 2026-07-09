@@ -2,7 +2,7 @@
 AI Sohbet (Chat) API endpoint'i.
 
 Sprint 1: Basit chatbot (Tamamlandı)
-Sprint 2: LangChain multi-agent orkestrasyon ve Hafıza Yönetimi (Aktif)
+Sprint 2: LangChain multi-agent orkestrasyon ve Hafıza Yönetimi (Director Agent Entegrasyonu)
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -14,6 +14,9 @@ from app.services.auth import get_current_user
 from app.schemas.chat import ChatMessage, ChatResponse
 from app.config import get_settings
 
+# YENİ EKLENEN: Director prompt motorumuzu içe aktarıyoruz
+from app.agents.director import build_director_system_prompt
+
 # LangChain Kütüphaneleri
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -23,20 +26,7 @@ from langchain_core.chat_history import InMemoryChatMessageHistory
 router = APIRouter(prefix="/api/chat", tags=["AI Sohbet"])
 settings = get_settings()
 
-# Forge koçunun system prompt'u
-FORGE_SYSTEM_PROMPT = """Sen FocusForge uygulamasının AI koçu "Forge"sun. 
-
-Görevin:
-- Kullanıcıya verimlilik ve odaklanma konusunda stratejik koçluk yapmak
-- Motivasyon düştüğünde desteklemek, görevleri önceliklendirmek
-- Pomodoro, Eisenhower matrisi gibi teknikleri duruma göre önermek
-
-Kişiliğin:
-- Hedef odaklı, net ve analitik (Stratejist bir partner gibi)
-- Kısa ve öz konuş, destan yazma
-- Kullanıcıyı "sen" diye hitap et
-- Gerektiğinde gerçekleri yüzüne vur ama profesyonelliği koru
-"""
+# Eski sabit "FORGE" promptunu tamamen kaldırdık. Sistem artık dinamik çalışıyor.
 
 # Bellek yönetimi için in-memory sözlük (Kullanıcı başına ayrı hafıza tutar)
 user_histories: dict[str, InMemoryChatMessageHistory] = {}
@@ -56,8 +46,8 @@ async def chat_with_ai(
     db: Session = Depends(get_db),
 ):
     """
-    AI koç Forge ile LangChain altyapısı üzerinden sohbet et.
-    Hafıza sistemi entegre edilmiştir.
+    AI Director ile LangChain altyapısı üzerinden sohbet et.
+    Sorumluluk skoru ve cold start verileriyle dinamik prompt beslemesi yapar.
     """
 
     if not settings.gemini_api_key:
@@ -74,21 +64,11 @@ async def chat_with_ai(
             temperature=0.7 # Yaratıcılık ve netlik dengesi
         )
 
-        # 2. Kullanıcı Bağlamını Dinamik Olarak Oluştur
-        user_context = ""
-        if current_user.ai_profile:
-            goals = current_user.ai_profile.get("goals", [])
-            challenge = current_user.ai_profile.get("biggest_challenge", "")
-            if goals:
-                user_context += f"\nKullanıcının hedefleri: {', '.join(goals)}"
-            if challenge:
-                user_context += f"\nEn büyük zorluğu: {challenge}"
-
-        user_context += f"\nKullanıcının seviyesi: {current_user.level}, XP: {current_user.total_xp}"
+        # 2. DİNAMİK BEYNİ ÇAĞIR (Cold Start & Tone Adaptation)
+        # Mevcut kullanıcıyı parametre olarak verip o anki duruma ve skora özel promptu üretiyoruz
+        full_system_prompt = build_director_system_prompt(current_user)
 
         # 3. Prompt Şablonunu Hazırla
-        full_system_prompt = f"{FORGE_SYSTEM_PROMPT}\n{user_context}"
-
         prompt = ChatPromptTemplate.from_messages([
             ("system", full_system_prompt),
             MessagesPlaceholder(variable_name="history"),
@@ -110,9 +90,10 @@ async def chat_with_ai(
         )
         response_text = ai_message.content
 
+        # Ajan adını ve geri dönüş objesini güncelledik
         return ChatResponse(
             response=response_text,
-            agent_name="Forge",
+            agent_name="Director",
             suggestions=[],
         )
 

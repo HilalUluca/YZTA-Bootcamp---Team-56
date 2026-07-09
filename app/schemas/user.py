@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field
-
+from typing import List, Optional
 
 # --- Kayıt ---
 
@@ -70,19 +70,43 @@ class UserUpdate(BaseModel):
 
 class OnboardingData(BaseModel):
     """
-    İlk kayıtta kullanıcıdan alınan bilgiler.
-    AI'ın 1. günden anlamlı önerilerde bulunabilmesi için.
+    Sistemin Director ajanı için stratejik veri seti.
+    'Work hours' yerine 'Biyolojik ve Stratejik Kapasite' verileri.
     """
-    goals: list[str] = Field(
-        default_factory=list,
-        description="Kullanıcının 2026 hedefleri (max 5)"
+    
+    # Kişisel ve Mesleki
+    age: Optional[int] = Field(None, description="Yaş (Bilişsel kapasite analizi için)")
+    profession: Optional[str] = Field(None, description="Odak alanı / Meslek")
+    
+    # Stratejik Hedefler ve Dirençler
+    primary_goals: List[str] = Field(
+        default_factory=list, 
+        description="2026 odak hedefleri (max 5)"
     )
-    work_hours_start: Optional[str] = Field(
-        default=None, description="Çalışmaya başladığı saat, ör: '09:00'"
+    weaknesses: List[str] = Field(
+        default_factory=list, 
+        description="Gelişim ve direnç alanları"
     )
-    work_hours_end: Optional[str] = Field(
-        default=None, description="Çalışmayı bıraktığı saat, ör: '18:00'"
+    
+    # Biyolojik ve Operasyonel
+    hobbies: List[str] = Field(
+        default_factory=list, 
+        description="Stres anında dopamin reset araçları"
     )
+    sleep_pattern: Optional[str] = Field(
+        None, description="Uyku kalitesi ve süresi: '6 saat düzensiz', '8 saat düzenli' vb."
+    )
+    
+    # Zaman Bütçesi (Bahane kabul etmeyen veriler)
+    average_screen_time: Optional[str] = Field(
+        None, description="Günlük ortalama dijital tüketim (ekran süresi)"
+    )
+    routine_hours_per_day: Optional[str] = Field(
+        None, description="Hedeflerin için ayırdığın net saat"
+    )
+
+    model_config = {"extra": "allow"} # Esneklik için
+
     biggest_challenge: Optional[str] = Field(
         default=None,
         description="En büyük verimlilik sorunu: 'procrastination', 'focus', 'prioritization', 'motivation'"

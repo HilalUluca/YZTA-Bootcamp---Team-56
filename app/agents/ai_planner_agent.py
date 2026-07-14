@@ -15,9 +15,9 @@ from typing import List, Optional
 from datetime import datetime
 
 from pydantic import BaseModel, Field
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.output_parsers import PydanticOutputParser
+from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.exceptions import OutputParserException
 
 from app.config import Settings

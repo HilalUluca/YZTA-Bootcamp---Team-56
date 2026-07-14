@@ -26,8 +26,6 @@ import {
   IonLoading,
   IonCard,
   IonCardContent,
-  IonCardHeader,
-  IonCardTitle,
   IonGrid,
   IonRow,
   IonCol,
@@ -180,7 +178,7 @@ const Tab1: React.FC = () => {
       case 'urgent':
         return <IonBadge color="secondary">Acil</IonBadge>;
       default:
-        return <IonBadge color="medium">Düşük</IonBadge>;
+        return <IonBadge color="medium">Düşük Öncelik</IonBadge>;
     }
   };
 
@@ -195,7 +193,7 @@ const Tab1: React.FC = () => {
       <IonHeader>
         <IonToolbar color="primary">
           <IonTitle>
-            {dashboard ? `Merhaba, ${dashboard.user.full_name || dashboard.user.username}` : 'FocusForge'}
+            {dashboard ? `Merhaba, ${dashboard.user.full_name || dashboard.user.username}` : 'Görevlerim'}
           </IonTitle>
         </IonToolbar>
       </IonHeader>
@@ -277,7 +275,7 @@ const Tab1: React.FC = () => {
           <div style={{ textAlign: 'center', marginTop: '40px', color: 'var(--ion-color-medium)' }}>
             <IonIcon icon={alertCircleOutline} style={{ fontSize: '64px' }} />
             <h3>Henüz bir görevin yok!</h3>
-            <p>"+" butonuna basarak ilk görevini ekle.</p>
+            <p>Aşağıdaki "+" butonuna basarak ilk görevini ekleyebilirsin.</p>
           </div>
         ) : (
           <IonList>
@@ -294,6 +292,7 @@ const Tab1: React.FC = () => {
                   <h2 style={{ textDecoration: task.status === 'done' ? 'line-through' : 'none', fontWeight: 'bold' }}>
                     {task.title}
                   </h2>
+                  <p>{task.description || 'Açıklama yok'}</p>
                   <div style={{ marginTop: '8px', display: 'flex', gap: '8px', alignItems: 'center' }}>
                     {getPriorityBadge(task.priority)}
                     {task.estimated_minutes && (
@@ -309,7 +308,7 @@ const Tab1: React.FC = () => {
           </IonList>
         )}
 
-        {/* Görev Ekleme FAB */}
+        {/* Görev Ekleme Floating Butonu */}
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
           <IonFabButton onClick={() => setShowModal(true)}>
             <IonIcon icon={add} />
@@ -351,10 +350,10 @@ const Tab1: React.FC = () => {
               <IonItem style={{ marginBottom: '16px' }}>
                 <IonLabel position="stacked">Öncelik</IonLabel>
                 <IonSelect value={priority} onIonChange={(e) => setPriority(e.detail.value)}>
-                  <IonSelectOption value="urgent_important">Acil & Önemli</IonSelectOption>
-                  <IonSelectOption value="important">Önemli</IonSelectOption>
-                  <IonSelectOption value="urgent">Acil</IonSelectOption>
-                  <IonSelectOption value="low">Düşük Öncelik</IonSelectOption>
+                  <IonSelectOption value="urgent_important">Acil & Önemli (Hemen Yap)</IonSelectOption>
+                  <IonSelectOption value="important">Önemli (Planla)</IonSelectOption>
+                  <IonSelectOption value="urgent">Acil (Delege Et)</IonSelectOption>
+                  <IonSelectOption value="low">Düşük Öncelik (Ertele)</IonSelectOption>
                 </IonSelect>
               </IonItem>
 

@@ -11,10 +11,11 @@ import {
   setupIonicReact
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { checkboxOutline, chatbubblesOutline, personOutline } from 'ionicons/icons';
+import { checkboxOutline, chatbubblesOutline, personOutline, timerOutline } from 'ionicons/icons';
 import Tab1 from './pages/Tab1';
 import Tab2 from './pages/Tab2';
 import Tab3 from './pages/Tab3';
+import Focus from './pages/Focus';
 import Login from './pages/Login';
 
 /* Core CSS required for Ionic components to work properly */
@@ -83,6 +84,9 @@ const App: React.FC = () => {
             <Route exact path="/tab1">
               <Tab1 />
             </Route>
+            <Route exact path="/focus">
+              <Focus />
+            </Route>
             <Route exact path="/tab2">
               <Tab2 />
             </Route>
@@ -97,6 +101,10 @@ const App: React.FC = () => {
             <IonTabButton tab="tab1" href="/tab1">
               <IonIcon aria-hidden="true" icon={checkboxOutline} />
               <IonLabel>Görevler</IonLabel>
+            </IonTabButton>
+            <IonTabButton tab="focus" href="/focus">
+              <IonIcon aria-hidden="true" icon={timerOutline} />
+              <IonLabel>Odaklan</IonLabel>
             </IonTabButton>
             <IonTabButton tab="tab2" href="/tab2">
               <IonIcon aria-hidden="true" icon={chatbubblesOutline} />

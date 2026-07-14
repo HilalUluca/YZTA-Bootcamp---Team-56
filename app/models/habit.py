@@ -14,6 +14,12 @@ class HabitFrequency(str, enum.Enum):
     WEEKLY = "weekly"
 
 
+class HabitCategory(str, enum.Enum):
+    """Alışkanlık kategorisi."""
+    MUST_DO = "must_do"  # Yapılması zorunlu olanlar (öz disiplin)
+    GROWTH = "growth"    # Kişisel gelişim hedefleri
+
+
 class Habit(Base):
     """Alışkanlık tanımlarının tutulduğu tablo."""
 
@@ -30,6 +36,11 @@ class Habit(Base):
     frequency: Mapped[HabitFrequency] = mapped_column(
         Enum(HabitFrequency), default=HabitFrequency.DAILY
     )
+    category: Mapped[HabitCategory] = mapped_column(
+        Enum(HabitCategory), default=HabitCategory.GROWTH
+    )
+    target_value: Mapped[int] = mapped_column(Integer, default=1)  # Örn: 30 sayfa için 30, 1 kez spor için 1
+    unit: Mapped[str] = mapped_column(String(100), default="kez")  # Örn: "sayfa", "saat", "dakika", "kez"
 
     # İlerleme ve Oyunlaştırma Verileri
     streak_count: Mapped[int] = mapped_column(Integer, default=0)

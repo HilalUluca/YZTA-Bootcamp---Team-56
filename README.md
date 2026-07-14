@@ -103,6 +103,7 @@
 - `POST /api/reflections/` : Günlük yansıma (mod ve enerji) kaydı
 - `GET /api/stats/dashboard` : Dashboard özet verileri (XP, Level, Streak, Görevler)
 - `GET /api/score` : Sorumluluk skoru
+- `POST /api/achievements/check` : Rozet ve başarım kontrolü (otomatik XP/Rozet ataması)
 
 **Yapay Zeka Sohbet**
 - `POST /api/chat/` : LangChain & Director Agent ile akıllı sohbet

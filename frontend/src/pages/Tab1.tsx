@@ -133,15 +133,21 @@ const Tab1: React.FC = () => {
     event.detail.complete();
   };
 
-  // Görevi tamamla: PATCH /tasks/{id}/complete
+  // Görevi tamamla / geri al (kutucuğa her tıklamada durum değişir)
   const handleToggleComplete = async (taskId: string, currentStatus: string) => {
-    if (currentStatus === 'done') return;
     try {
-      await api.patch(`/tasks/${taskId}/complete`);
-      notify('Görev tamamlandı! 🎉');
+      if (currentStatus === 'done') {
+        // Geri al: PUT /tasks/{id} ile durumu "todo"ya çevir
+        await api.put(`/tasks/${taskId}`, { status: 'todo' });
+        notify('Görev geri alındı ↩️');
+      } else {
+        // Tamamla: PATCH /tasks/{id}/complete
+        await api.patch(`/tasks/${taskId}/complete`);
+        notify('Görev tamamlandı! 🎉');
+      }
       await Promise.all([loadTasks(), loadDashboard()]);
     } catch (err) {
-      notify('Görev tamamlanamadı. Lütfen tekrar dene.');
+      notify('İşlem başarısız. Lütfen tekrar dene.');
     }
   };
 
@@ -306,7 +312,6 @@ const Tab1: React.FC = () => {
                   <IonCheckbox
                     slot="start"
                     checked={task.status === 'done'}
-                    disabled={task.status === 'done'}
                     onIonChange={() => handleToggleComplete(task.id, task.status)}
                     style={{ marginRight: '16px' }}
                   />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   IonContent,
   IonHeader,
@@ -21,6 +21,7 @@ import {
   IonLoading,
 } from '@ionic/react';
 import { logOutOutline, personCircleOutline, shieldCheckmarkOutline, trophyOutline } from 'ionicons/icons';
+import api from '../services/api';
 import './Tab3.css';
 
 interface UserProfile {
@@ -37,17 +38,27 @@ interface Tab3Props {
 }
 
 const Tab3: React.FC<Tab3Props> = ({ onLogout }) => {
-  const [profile] = useState<UserProfile | null>({
-    username: 'test_user',
-    email: 'test@example.com',
-    full_name: 'Test User',
-    level: 3,
-    total_xp: 2450,
-    responsibility_score: 85,
-  });
-  const [isLoading] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
+
+  // Giriş yapan kullanıcının gerçek bilgilerini backend'den çek: GET /api/auth/me
+  useEffect(() => {
+    const loadProfile = async () => {
+      setIsLoading(true);
+      try {
+        const res = await api.get('/auth/me');
+        setProfile(res.data);
+      } catch (err) {
+        setToastMessage('Profil bilgileri yüklenemedi. Lütfen tekrar dene.');
+        setShowToast(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadProfile();
+  }, []);
 
   // XP çubuğu için ilerleme oranı (örneğin her seviye için 1000 XP gerektiğini varsayalım)
   const xpNeeded = 1000;

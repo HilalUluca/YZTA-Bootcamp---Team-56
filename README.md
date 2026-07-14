@@ -76,12 +76,36 @@
 </details>
 
 <details>
-<summary><b>✨ Mevcut Ürün Özellikleri </b></summary>
+<summary><b>✨ Mevcut Ürün Özellikleri ve API Endpoint'leri </b></summary>
 <br>
 
 *   **Akıllı Görev Yönetimi (Temel CRUD API):** Kullanıcıların günlük hedeflerini ekleme, silme, düzenleme ve tamamlama süreçlerinin backend entegrasyonu.
 *   **Yapay Zeka Koçu Entegrasyonu:** Google Gemini API bağlantısı koordine edilerek, kullanıcının motivasyon durumuna göre stratejik, net ve proaktif geri bildirimler üreten ilk istem (prompt) şablonlarının altyapısının kurulması.
 *   **Güvenli Kullanıcı Yönetimi (Auth):** Projenin iskeletini oluşturan şifreli kullanıcı kayıt ve giriş sisteminin FastAPI mimarisinde ayağa kaldırılması.
+
+### 🔌 API Endpoint'leri
+**Auth & Kullanıcı**
+- `POST /api/auth/register` : Yeni kullanıcı kaydı
+- `POST /api/auth/login` : Kullanıcı girişi (JWT Token)
+- `GET /api/auth/me` : Mevcut kullanıcı bilgilerini getir
+- `PATCH /api/auth/profile` : Kullanıcı AI profilini güncelle (Onboarding)
+
+**Görev Yönetimi & Planlama**
+- `GET /api/tasks/` : Görevleri listele
+- `POST /api/tasks/` : Yeni görev ekle
+- `PUT /api/tasks/{task_id}` : Görev güncelle
+- `DELETE /api/tasks/{task_id}` : Görev sil
+- `POST /api/planner/daily-plan` : AI ile günlük plan oluştur
+- `POST /api/planner/bulk-create` : Toplu görev oluşturma (parçalama sonrası)
+
+**Odaklanma & Yansıma & İstatistik**
+- `POST /api/focus/start` & `end` : Odaklanma seansları
+- `POST /api/reflections/` : Günlük yansıma (mod ve enerji) kaydı
+- `GET /api/stats/dashboard` : Dashboard özet verileri (XP, Level, Streak, Görevler)
+- `GET /api/score` : Sorumluluk skoru
+
+**Yapay Zeka Sohbet**
+- `POST /api/chat/` : LangChain & Director Agent ile akıllı sohbet
 
 </details>
 

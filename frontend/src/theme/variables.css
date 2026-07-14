@@ -1,2 +1,66 @@
-/* For information on how to create your own theme, please refer to:
-http://ionicframework.com/docs/theming/ */
+/* FocusForge teması
+   Renk dili: sıcak turuncu/kırmızı (ana) + mavi ve yeşil aksanlar + krem zemin.
+   Renkleri burada tek yerden tanımlıyoruz; uygulamadaki
+   color="primary" / "secondary" / "tertiary" yazan her yer bunları kullanır.
+   Ionic dokümanı: http://ionicframework.com/docs/theming/ */
+
+:root {
+  /* Ana renk: sıcak turuncu/kırmızı */
+  --ion-color-primary: #ff6b35;
+  --ion-color-primary-rgb: 255, 107, 53;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #e05e2f;
+  --ion-color-primary-tint: #ff7a49;
+
+  /* Aksan 1: mavi */
+  --ion-color-secondary: #2e86de;
+  --ion-color-secondary-rgb: 46, 134, 222;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #2876c3;
+  --ion-color-secondary-tint: #4392e1;
+
+  /* Aksan 2: yeşil */
+  --ion-color-tertiary: #26a65b;
+  --ion-color-tertiary-rgb: 38, 166, 91;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #219250;
+  --ion-color-tertiary-tint: #3caf6b;
+
+  /* Açık modda krem/ferah zemin */
+  --ion-background-color: #fff8f2;
+  --ion-background-color-rgb: 255, 248, 242;
+}
+
+/* KOYU MOD:
+   Ionic normalde koyu modda ana rengi maviye çevirir. Biz renk dilini
+   turuncu tutmak için aksanları burada tekrar tanımlıyoruz. Zemin/metin
+   renklerine dokunmuyoruz; onları Ionic'in koyu paleti hallediyor.
+   Bu dosya dark.system.css'ten SONRA yüklendiği için bizim değerlerimiz kazanır. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Koyu zeminde biraz daha parlak turuncu daha okunur olur */
+    --ion-color-primary: #ff7f4d;
+    --ion-color-primary-rgb: 255, 127, 77;
+    --ion-color-primary-contrast: #000000;
+    --ion-color-primary-contrast-rgb: 0, 0, 0;
+    --ion-color-primary-shade: #e07043;
+    --ion-color-primary-tint: #ff8c5e;
+
+    --ion-color-secondary: #4aa3ff;
+    --ion-color-secondary-rgb: 74, 163, 255;
+    --ion-color-secondary-contrast: #000000;
+    --ion-color-secondary-contrast-rgb: 0, 0, 0;
+    --ion-color-secondary-shade: #418fe0;
+    --ion-color-secondary-tint: #5cacff;
+
+    --ion-color-tertiary: #37c46f;
+    --ion-color-tertiary-rgb: 55, 196, 111;
+    --ion-color-tertiary-contrast: #000000;
+    --ion-color-tertiary-contrast-rgb: 0, 0, 0;
+    --ion-color-tertiary-shade: #30ac62;
+    --ion-color-tertiary-tint: #4bca7d;
+  }
+}

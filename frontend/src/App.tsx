@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Redirect, Route } from 'react-router-dom';
 import {
   IonApp,
@@ -47,6 +47,34 @@ import './theme/variables.css';
 setupIonicReact();
 
 const App: React.FC = () => {
+  // "Kullanıcı giriş yapmış mı?" hafızası.
+  // Başlangıçta localStorage'da token varsa true kabul ediyoruz
+  // (böylece sayfa yenilenince tekrar giriş istemiyor).
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(
+    () => !!localStorage.getItem('token')
+  );
+
+  // Login başarılı olunca Login.tsx bu fonksiyonu çağırır.
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+  };
+
+  // Tab3'teki "Çıkış Yap" butonu bu fonksiyonu çağırır.
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // geçiş kartını sil
+    setIsLoggedIn(false); // tekrar Login ekranına dön
+  };
+
+  // Giriş yapılmamışsa: sadece Login ekranını göster.
+  if (!isLoggedIn) {
+    return (
+      <IonApp>
+        <Login onLoginSuccess={handleLoginSuccess} />
+      </IonApp>
+    );
+  }
+
+  // Giriş yapılmışsa: sekmeli uygulamayı göster.
   return (
     <IonApp>
       <IonReactRouter>
@@ -59,7 +87,7 @@ const App: React.FC = () => {
               <Tab2 />
             </Route>
             <Route path="/tab3">
-              <Tab3 onLogout={() => console.log('Mock logout')} />
+              <Tab3 onLogout={handleLogout} />
             </Route>
             <Route exact path="/">
               <Redirect to="/tab1" />

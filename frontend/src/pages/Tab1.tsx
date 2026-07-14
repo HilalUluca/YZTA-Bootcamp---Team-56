@@ -7,6 +7,9 @@ import {
   IonToolbar,
   IonList,
   IonItem,
+  IonItemSliding,
+  IonItemOptions,
+  IonItemOption,
   IonLabel,
   IonCheckbox,
   IonFab,
@@ -31,7 +34,7 @@ import {
   IonCol,
   IonChip,
 } from '@ionic/react';
-import { add, alertCircleOutline, hourglassOutline, flameOutline, trophyOutline, flashOutline, statsChartOutline } from 'ionicons/icons';
+import { add, alertCircleOutline, hourglassOutline, flameOutline, trophyOutline, flashOutline, statsChartOutline, trashOutline } from 'ionicons/icons';
 import api from '../services/api';
 import './Tab1.css';
 
@@ -77,6 +80,7 @@ const Tab1: React.FC = () => {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
@@ -87,64 +91,64 @@ const Tab1: React.FC = () => {
   const [priority, setPriority] = useState('low');
   const [estMinutes, setEstMinutes] = useState<number | undefined>(undefined);
 
-  // Dashboard verilerini backend'den çek
+  // Kısa bildirim (toast) göstermek için yardımcı
+  const notify = (msg: string) => {
+    setToastMessage(msg);
+    setShowToast(true);
+  };
+
+  // Görev listesini backend'den çek (ana kaynak): GET /tasks/
+  const loadTasks = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await api.get('/tasks/');
+      setTasks(res.data.tasks || []);
+    } catch (err) {
+      // Sahte veri göstermiyoruz; kullanıcıya net hata veriyoruz.
+      setError('Görevler yüklenemedi. Sunucu bağlantını kontrol edip tekrar dene.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Üstteki istatistik kartları için opsiyonel dashboard verisi
   const loadDashboard = async () => {
     try {
       const res = await api.get('/stats/dashboard');
       setDashboard(res.data);
-      setTasks(res.data.tasks.todays_list || []);
-    } catch (err: any) {
-      console.log('Dashboard yüklenemedi, mock data kullanılıyor:', err.message);
-      // Backend bağlantısı yoksa mock data
-      setTasks([
-        { id: 'mock-1', title: 'Backend bağlantısı kurulamadı', priority: 'low', status: 'todo' },
-      ]);
-    }
-  };
-
-  // Görev listesini backend'den çek
-  const loadTasks = async () => {
-    try {
-      const res = await api.get('/tasks/', { params: { limit: 20 } });
-      if (res.data.tasks) {
-        setTasks(res.data.tasks);
-      }
     } catch (err) {
-      console.log('Görevler yüklenemedi');
+      // Dashboard gelmezse kartları gizle; uydurma veri gösterme.
+      setDashboard(null);
     }
   };
 
   useEffect(() => {
+    loadTasks();
     loadDashboard();
   }, []);
 
   const handleRefresh = async (event: CustomEvent) => {
-    setIsLoading(true);
-    await loadDashboard();
-    setIsLoading(false);
+    await Promise.all([loadTasks(), loadDashboard()]);
     event.detail.complete();
   };
 
+  // Görevi tamamla: PATCH /tasks/{id}/complete
   const handleToggleComplete = async (taskId: string, currentStatus: string) => {
     if (currentStatus === 'done') return;
-
     try {
-      await api.put(`/tasks/${taskId}`, { status: 'done' });
-      setToastMessage('Görev tamamlandı! 🎉');
-      setShowToast(true);
-      loadDashboard(); // Verileri yenile
+      await api.patch(`/tasks/${taskId}/complete`);
+      notify('Görev tamamlandı! 🎉');
+      await Promise.all([loadTasks(), loadDashboard()]);
     } catch (err) {
-      // Fallback: sadece UI'da güncelle
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'done' } : t));
-      setToastMessage('Görev tamamlandı! 🎉');
-      setShowToast(true);
+      notify('Görev tamamlanamadı. Lütfen tekrar dene.');
     }
   };
 
+  // Yeni görev ekle: POST /tasks/
   const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-
     try {
       await api.post('/tasks/', {
         title,
@@ -152,21 +156,29 @@ const Tab1: React.FC = () => {
         priority,
         estimated_minutes: estMinutes || undefined,
       });
-      setToastMessage('Görev eklendi ✅');
-      setShowToast(true);
-      loadDashboard(); // Yenile
+      notify('Görev eklendi ✅');
+      // Formu temizle ve kapat
+      setTitle('');
+      setDescription('');
+      setPriority('low');
+      setEstMinutes(undefined);
+      setShowModal(false);
+      await Promise.all([loadTasks(), loadDashboard()]);
     } catch (err) {
-      // Fallback mock
-      setTasks(prev => [{ id: Math.random().toString(), title, priority, status: 'todo', description, estimated_minutes: estMinutes }, ...prev]);
-      setToastMessage('Görev eklendi (offline)');
-      setShowToast(true);
+      // Sahte ekleme yok; modal açık kalır ki kullanıcı tekrar deneyebilsin.
+      notify('Görev eklenemedi. Lütfen tekrar dene.');
     }
+  };
 
-    setTitle('');
-    setDescription('');
-    setPriority('low');
-    setEstMinutes(undefined);
-    setShowModal(false);
+  // Görevi sil: DELETE /tasks/{id}
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      await api.delete(`/tasks/${taskId}`);
+      notify('Görev silindi 🗑️');
+      await Promise.all([loadTasks(), loadDashboard()]);
+    } catch (err) {
+      notify('Görev silinemedi. Lütfen tekrar dene.');
+    }
   };
 
   const getPriorityBadge = (prio: string) => {
@@ -271,7 +283,16 @@ const Tab1: React.FC = () => {
         {/* Görev Listesi */}
         <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Görevlerim</h3>
 
-        {tasks.length === 0 && !isLoading ? (
+        {error ? (
+          <div style={{ textAlign: 'center', marginTop: '40px', color: 'var(--ion-color-danger)' }}>
+            <IonIcon icon={alertCircleOutline} style={{ fontSize: '64px' }} />
+            <h3>Bir sorun oluştu</h3>
+            <p style={{ color: 'var(--ion-color-medium)' }}>{error}</p>
+            <IonButton onClick={loadTasks} fill="outline" color="danger" style={{ marginTop: '8px' }}>
+              Tekrar Dene
+            </IonButton>
+          </div>
+        ) : tasks.length === 0 && !isLoading ? (
           <div style={{ textAlign: 'center', marginTop: '40px', color: 'var(--ion-color-medium)' }}>
             <IonIcon icon={alertCircleOutline} style={{ fontSize: '64px' }} />
             <h3>Henüz bir görevin yok!</h3>
@@ -280,30 +301,37 @@ const Tab1: React.FC = () => {
         ) : (
           <IonList>
             {tasks.map((task) => (
-              <IonItem key={task.id} style={{ '--padding-start': '0px', marginBottom: '8px', borderRadius: '8px' }}>
-                <IonCheckbox
-                  slot="start"
-                  checked={task.status === 'done'}
-                  disabled={task.status === 'done'}
-                  onIonChange={() => handleToggleComplete(task.id, task.status)}
-                  style={{ marginRight: '16px' }}
-                />
-                <IonLabel style={{ opacity: task.status === 'done' ? 0.6 : 1 }}>
-                  <h2 style={{ textDecoration: task.status === 'done' ? 'line-through' : 'none', fontWeight: 'bold' }}>
-                    {task.title}
-                  </h2>
-                  <p>{task.description || 'Açıklama yok'}</p>
-                  <div style={{ marginTop: '8px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    {getPriorityBadge(task.priority)}
-                    {task.estimated_minutes && (
-                      <IonBadge color="light" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <IonIcon icon={hourglassOutline} />
-                        {task.estimated_minutes} dk
-                      </IonBadge>
-                    )}
-                  </div>
-                </IonLabel>
-              </IonItem>
+              <IonItemSliding key={task.id}>
+                <IonItem style={{ '--padding-start': '0px', marginBottom: '8px', borderRadius: '8px' }}>
+                  <IonCheckbox
+                    slot="start"
+                    checked={task.status === 'done'}
+                    disabled={task.status === 'done'}
+                    onIonChange={() => handleToggleComplete(task.id, task.status)}
+                    style={{ marginRight: '16px' }}
+                  />
+                  <IonLabel style={{ opacity: task.status === 'done' ? 0.6 : 1 }}>
+                    <h2 style={{ textDecoration: task.status === 'done' ? 'line-through' : 'none', fontWeight: 'bold' }}>
+                      {task.title}
+                    </h2>
+                    <p>{task.description || 'Açıklama yok'}</p>
+                    <div style={{ marginTop: '8px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      {getPriorityBadge(task.priority)}
+                      {task.estimated_minutes && (
+                        <IonBadge color="light" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <IonIcon icon={hourglassOutline} />
+                          {task.estimated_minutes} dk
+                        </IonBadge>
+                      )}
+                    </div>
+                  </IonLabel>
+                </IonItem>
+                <IonItemOptions side="end">
+                  <IonItemOption color="danger" onClick={() => handleDeleteTask(task.id)}>
+                    <IonIcon slot="icon-only" icon={trashOutline} />
+                  </IonItemOption>
+                </IonItemOptions>
+              </IonItemSliding>
             ))}
           </IonList>
         )}

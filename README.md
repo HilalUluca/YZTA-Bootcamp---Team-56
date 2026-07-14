@@ -22,7 +22,7 @@
   <tr>
     <td><b>Furkan Türker</b></td>
     <td>Product Owner</td>
-    <td> Backend Geliştirme </td>
+    <td> Backend </td>
   </tr>
   <tr>
     <td><b>Doğukan Kaya</b></td>
@@ -32,12 +32,12 @@
   <tr>
     <td><b>Asya Aynur Gers</b></td>
     <td>Developer</td>
-    <td> Frontend Geliştirme </td>
+    <td> Frontend </td>
   </tr>
   <tr>
     <td><b>Mete Ülken</b></td>
     <td>Developer</td>
-    <td> Backend Geliştirme </td>
+    <td> Backend </td>
   </tr>
 </table>
 
@@ -48,22 +48,65 @@
 <summary><b>📝 Ürün Açıklaması & Yol Haritası</b></summary>
 <br>
 
-**FocusForge;** uzaktan veya bağımsız çalışan profesyoneller için geliştirilmiş, yapay zeka destekli otonom bir kişisel verimlilik ve performans yönetimi platformudur. Geleneksel ve pasif to-do uygulamalarının aksine; kullanıcının dijital ayak iziyle anlık duygu durumunu semantik olarak birleştiren, erteleme davranışlarının altındaki kök sebepleri otonom olarak çözen ve kullanıcıya proaktif, sorgulayan, harekete geçiren reçeteler sunan bir **Multi-Agent** mimarisidir.
+**Yapay Zeka Destekli Otonom Performans ve Alışkanlık Yönetimi Mimarisi**
 
-### 🗺️ Üç Aşamalı Genişleme Stratejimiz:
-*   **Faz 1 (Mevcut B2C MVP):** Single-page arayüzü, "Unutmayan AI" hafıza motoru ve Sorumluluk Skoru barındıran; temel görev yönetimi ve yapay zeka koç sohbetini içeren bireysel performans asistanı.
-*   **Faz 2 (Gelecek B2C Genişleme & Proaktif Müdahale):** Mobil işletim sistemi izinleri doğrultusunda ekran süresi kritik sınırı aştığında otonom olarak devreye giren proaktif uyarı mekanizmaları, akıllı saat (Wearable UI) entegrasyonları, stres anlarında tetiklenen otonom nefes egzersizi öneri modülleri ve semantik verimlilik raporlarının otomatik dökümantasyon altyapısı.
-*   **Faz 3 (B2B Enterprise):** Şirketlerin yazılım/mühendis ekiplerinde "Sessiz İstifa" (Quiet Quitting) dalgalarını önleyen; Jira/Slack API entegrasyonlarına sahip kurumsal SaaS modeli ve anonimleştirilmiş "İK Tükenmişlik Erken Uyarı Dashboard'u".
+**FocusForge;** uzaktan çalışan profesyoneller, indie geliştiriciler ve disiplin inşa etmeye çalışan bireyler için tasarlanmış **proaktif ve otonom bir verimlilik platformudur.** Geleneksel "To-Do" uygulamaları, kullanıcının girdiği görevleri pasif bir şekilde listeler ve suçluluk duygusunu besler. FocusForge ise bir liste değil; kullanıcının dijital ayak iziyle anlık duygu durumunu **semantik olarak birleştiren Rasyonel bir Strateji Ortağıdır (Director Agent).** Sistem; kullanıcının uyku, ekran süresi ve tamamlanma oranları gibi verilerini analiz eder, erteleme davranışlarının altındaki kök sebepleri otonom olarak çözer ve büyük projeleri zihinsel yük yaratmayacak eylemlere (Tool Calling) böler. "Neden yapmadın?" diye sormaz; "Bu eylemsizlik seni hedefinden matematiksel olarak şu kadar saptırıyor, şimdi şu 15 dakikalık adımı at" diyerek eyleme geçirir.
+
+
+* **Dual-Track (Çift Yönlü) Veritabanı Mimarisi:** Görevler (`Must-Do`) ve sürekli alışkanlıklar (`Habit`) veritabanı seviyesinde birbirinden ayrılır. 
+* **Mood & Habit Tracker:** Sistem, her gün kullanıcının modunu, enerji seviyesini ve geliştirmek istediği alışkanlıklarını takip eder. Bu veriler, kullanıcının "Sorumluluk Skoru" ile eşleştirilerek, hangi günlerde daha üretken olduğunu gösteren semantik bir korelasyon matrisi oluşturur.
+* **Kurban Psikolojisine Karşı Semantik Yüzleşme:** Sistem, kullanıcıyı sahte bir şekilde motive etmeye çalışmaz. Kullanıcının günlük mod bildirimlerini ve biyolojik verilerini (uyku/ekran süresi) semantik olarak analiz ederek darboğazları tespit eder. Ertelemenin maliyetini rasyonel bir şekilde önüne koyar.
+* **Sorumluluk Skoru (Gamification):** Kullanıcının sistemle kurduğu ilişkinin istikrarı, geciken görevleri ve tamamlanan alışkanlıkları dinamik bir algoritmaya tabi tutularak matematiksel bir "Sorumluluk Skoru" (0-100) üretir.
+
+### 🗺️ Üç Aşamalı Genişleme Stratejisi (Roadmap)
+
+#### Faz 1: B2C Bireysel Asistan MVP (Mevcut Aşama)
+* **Hibrit UI ve Agentic Akış:** Kullanıcının Director (AI) ile sohbet ettiği ve AI'ın arkada `break_down_task` aracıyla büyük işleri parçalayıp chatin içine onaylanabilir interaktif UI Widget'ları (Checklist Kartları) gönderdiği temel yapı.
+* **Günlük Mod ve Alışkanlık Takibi:** Kullanıcının günlük enerji ve mod girişlerini veritabanına işleyen `Habit` modülünün entegrasyonu.
+* **LLM Destekli Önceliklendirme:** Kullanıcının görev havuzunun arka planda LLM (Büyük Dil Modeli) ile analiz edilip otomatik Eisenhower sınıflandırmasına tabi tutulması.
+
+#### Faz 2: Sensör ve İşletim Sistemi Entegrasyonları (Proaktif Müdahale)
+* **Bağlamsal Veri Akışı:** Kullanıcının mobil cihazından veya akıllı saatinden gelen (Apple Health / Google Fit / OS Screen Time) API'lerinin sisteme entegrasyonu.
+* **Otonom Tetikleyiciler:** Ekran süresi kritik eşiği aştığında veya biyolojik verilerde yorgunluk saptandığında, uygulamanın otonom bildirimler (Push Notifications) üreterek kullanıcının dijital döngüsünü kırması. Stres anlarında tetiklenen otonom nefes egzersizi öneri modülleri.
+
+#### Faz 3: B2B Kurumsal Entegrasyon (Tükenmişlik ve Performans Yönetimi)
+* **Sessiz İstifa (Quiet Quitting) Kalkanı:**   Yazılım ve mühendislik ekipleri için Jira ve Slack API entegrasyonları.
+* **Erken Uyarı Dashboard'u:** Takım içindeki iş yükü dağılımının ve bireysel tükenmişlik emarelerinin (sistemde uzun süre eylemsizlik vb.) yöneticilere anonimleştirilmiş, semantik veri raporları olarak sunulması.
 
 </details>
 
 <details>
-<summary><b>✨ Mevcut Ürün Özellikleri </b></summary>
+<summary><b>✨ Mevcut Ürün Özellikleri ve API Endpoint'leri </b></summary>
 <br>
 
 *   **Akıllı Görev Yönetimi (Temel CRUD API):** Kullanıcıların günlük hedeflerini ekleme, silme, düzenleme ve tamamlama süreçlerinin backend entegrasyonu.
 *   **Yapay Zeka Koçu Entegrasyonu:** Google Gemini API bağlantısı koordine edilerek, kullanıcının motivasyon durumuna göre stratejik, net ve proaktif geri bildirimler üreten ilk istem (prompt) şablonlarının altyapısının kurulması.
 *   **Güvenli Kullanıcı Yönetimi (Auth):** Projenin iskeletini oluşturan şifreli kullanıcı kayıt ve giriş sisteminin FastAPI mimarisinde ayağa kaldırılması.
+
+### 🔌 API Endpoint'leri
+**Auth & Kullanıcı**
+- `POST /api/auth/register` : Yeni kullanıcı kaydı
+- `POST /api/auth/login` : Kullanıcı girişi (JWT Token)
+- `GET /api/auth/me` : Mevcut kullanıcı bilgilerini getir
+- `PATCH /api/auth/profile` : Kullanıcı AI profilini güncelle (Onboarding)
+
+**Görev Yönetimi & Planlama**
+- `GET /api/tasks/` : Görevleri listele
+- `POST /api/tasks/` : Yeni görev ekle
+- `PUT /api/tasks/{task_id}` : Görev güncelle
+- `DELETE /api/tasks/{task_id}` : Görev sil
+- `POST /api/planner/daily-plan` : AI ile günlük plan oluştur
+- `POST /api/planner/bulk-create` : Toplu görev oluşturma (parçalama sonrası)
+
+**Odaklanma & Yansıma & İstatistik**
+- `POST /api/focus/start` & `end` : Odaklanma seansları
+- `POST /api/reflections/` : Günlük yansıma (mod ve enerji) kaydı
+- `GET /api/stats/dashboard` : Dashboard özet verileri (XP, Level, Streak, Görevler)
+- `GET /api/score` : Sorumluluk skoru
+- `POST /api/achievements/check` : Rozet ve başarım kontrolü (otomatik XP/Rozet ataması)
+
+**Yapay Zeka Sohbet**
+- `POST /api/chat/` : LangChain & Director Agent ile akıllı sohbet
 
 </details>
 

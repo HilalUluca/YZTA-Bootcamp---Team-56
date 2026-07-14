@@ -49,6 +49,14 @@ def get_coach_tone(score: float) -> str:
 def calculate_responsibility_score(user: User, db: Session) -> dict:
     """
     Kullanicinin sorumluluk skorunu hesaplar.
+
+    Returns:
+        dict: {
+            "score": float (0-100),
+            "level": str (excellent/good/fair/poor),
+            "coach_tone": str (AI kocun kullanacagi ton),
+            "breakdown": dict (skor detayi)
+        }
     """
     now = datetime.now(timezone.utc)
     last_7_days = now - timedelta(days=7)
@@ -117,7 +125,6 @@ def calculate_responsibility_score(user: User, db: Session) -> dict:
     # 0-100 araliginda tut
     score = max(0.0, min(100.0, score))
 
-    # Sadece UI seviyesini belirliyoruz, tonu merkezi fonksiyondan aliyoruz
     if score >= 80:
         level = "excellent"
     elif score >= 50:

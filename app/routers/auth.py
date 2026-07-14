@@ -137,3 +137,31 @@ def complete_onboarding(
     db.refresh(current_user)
 
     return current_user
+
+
+@router.patch("/profile", response_model=UserResponse)
+def update_profile(
+    profile_data: dict,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Kullanici profilini gunceller.
+
+    ai_profile JSON alanina yeni veriler ekler veya mevcut verileri gunceller.
+    Ornek: {"profession": "Yazilimci", "sleep_pattern": "00:00-08:00"}
+    """
+    # Mevcut profili al ve guncelle
+    current_profile = current_user.ai_profile or {}
+    current_profile.update(profile_data)
+    current_user.ai_profile = current_profile
+
+    # full_name guncelleme
+    if "full_name" in profile_data:
+        current_user.full_name = profile_data["full_name"]
+
+    db.commit()
+    db.refresh(current_user)
+
+    return current_user
+

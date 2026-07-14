@@ -1,0 +1,389 @@
+import React, { useState, useEffect } from 'react';
+import {
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonTitle,
+  IonToolbar,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonCheckbox,
+  IonFab,
+  IonFabButton,
+  IonIcon,
+  IonModal,
+  IonButton,
+  IonButtons,
+  IonInput,
+  IonTextarea,
+  IonSelect,
+  IonSelectOption,
+  IonRefresher,
+  IonRefresherContent,
+  IonBadge,
+  IonToast,
+  IonLoading,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardTitle,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonChip,
+} from '@ionic/react';
+import { add, alertCircleOutline, hourglassOutline, flameOutline, trophyOutline, flashOutline, statsChartOutline } from 'ionicons/icons';
+import api from '../services/api';
+import './Tab1.css';
+
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  priority: string;
+  status: string;
+  estimated_minutes?: number;
+  due_date?: string;
+}
+
+interface DashboardData {
+  user: {
+    username: string;
+    full_name: string;
+    level: number;
+    total_xp: number;
+    streak_count: number;
+  };
+  tasks: {
+    total: number;
+    open: number;
+    completed_today: number;
+    overdue: number;
+    todays_list: Task[];
+  };
+  focus: {
+    minutes_today: number;
+    sessions_today: number;
+    total_minutes: number;
+    total_hours: number;
+  };
+  score: {
+    value: number;
+    level: string;
+    coach_tone: string;
+  };
+}
+
+const Tab1: React.FC = () => {
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
+
+  // Yeni görev formu
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState('low');
+  const [estMinutes, setEstMinutes] = useState<number | undefined>(undefined);
+
+  // Dashboard verilerini backend'den çek
+  const loadDashboard = async () => {
+    try {
+      const res = await api.get('/stats/dashboard');
+      setDashboard(res.data);
+      setTasks(res.data.tasks.todays_list || []);
+    } catch (err: any) {
+      console.log('Dashboard yüklenemedi, mock data kullanılıyor:', err.message);
+      // Backend bağlantısı yoksa mock data
+      setTasks([
+        { id: 'mock-1', title: 'Backend bağlantısı kurulamadı', priority: 'low', status: 'todo' },
+      ]);
+    }
+  };
+
+  // Görev listesini backend'den çek
+  const loadTasks = async () => {
+    try {
+      const res = await api.get('/tasks/', { params: { limit: 20 } });
+      if (res.data.tasks) {
+        setTasks(res.data.tasks);
+      }
+    } catch (err) {
+      console.log('Görevler yüklenemedi');
+    }
+  };
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
+  const handleRefresh = async (event: CustomEvent) => {
+    setIsLoading(true);
+    await loadDashboard();
+    setIsLoading(false);
+    event.detail.complete();
+  };
+
+  const handleToggleComplete = async (taskId: string, currentStatus: string) => {
+    if (currentStatus === 'done') return;
+
+    try {
+      await api.put(`/tasks/${taskId}`, { status: 'done' });
+      setToastMessage('Görev tamamlandı! 🎉');
+      setShowToast(true);
+      loadDashboard(); // Verileri yenile
+    } catch (err) {
+      // Fallback: sadece UI'da güncelle
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'done' } : t));
+      setToastMessage('Görev tamamlandı! 🎉');
+      setShowToast(true);
+    }
+  };
+
+  const handleAddTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return;
+
+    try {
+      await api.post('/tasks/', {
+        title,
+        description: description || undefined,
+        priority,
+        estimated_minutes: estMinutes || undefined,
+      });
+      setToastMessage('Görev eklendi ✅');
+      setShowToast(true);
+      loadDashboard(); // Yenile
+    } catch (err) {
+      // Fallback mock
+      setTasks(prev => [{ id: Math.random().toString(), title, priority, status: 'todo', description, estimated_minutes: estMinutes }, ...prev]);
+      setToastMessage('Görev eklendi (offline)');
+      setShowToast(true);
+    }
+
+    setTitle('');
+    setDescription('');
+    setPriority('low');
+    setEstMinutes(undefined);
+    setShowModal(false);
+  };
+
+  const getPriorityBadge = (prio: string) => {
+    switch (prio) {
+      case 'urgent_important':
+        return <IonBadge color="danger">Acil & Önemli</IonBadge>;
+      case 'important':
+        return <IonBadge color="warning">Önemli</IonBadge>;
+      case 'urgent':
+        return <IonBadge color="secondary">Acil</IonBadge>;
+      default:
+        return <IonBadge color="medium">Düşük</IonBadge>;
+    }
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'success';
+    if (score >= 50) return 'warning';
+    return 'danger';
+  };
+
+  return (
+    <IonPage>
+      <IonHeader>
+        <IonToolbar color="primary">
+          <IonTitle>
+            {dashboard ? `Merhaba, ${dashboard.user.full_name || dashboard.user.username}` : 'FocusForge'}
+          </IonTitle>
+        </IonToolbar>
+      </IonHeader>
+
+      <IonContent className="ion-padding">
+        <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
+          <IonRefresherContent></IonRefresherContent>
+        </IonRefresher>
+
+        <IonLoading isOpen={isLoading} message="Yükleniyor..." />
+
+        {/* Dashboard Kartları */}
+        {dashboard && (
+          <IonGrid>
+            <IonRow>
+              <IonCol size="6">
+                <IonCard>
+                  <IonCardContent style={{ textAlign: 'center' }}>
+                    <IonIcon icon={trophyOutline} style={{ fontSize: '28px', color: 'var(--ion-color-warning)' }} />
+                    <h1 style={{ margin: '4px 0', fontSize: '24px', fontWeight: 'bold' }}>Lvl {dashboard.user.level}</h1>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>{dashboard.user.total_xp} XP</p>
+                  </IonCardContent>
+                </IonCard>
+              </IonCol>
+              <IonCol size="6">
+                <IonCard>
+                  <IonCardContent style={{ textAlign: 'center' }}>
+                    <IonIcon icon={flameOutline} style={{ fontSize: '28px', color: 'var(--ion-color-danger)' }} />
+                    <h1 style={{ margin: '4px 0', fontSize: '24px', fontWeight: 'bold' }}>{dashboard.user.streak_count}</h1>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>Gün Streak</p>
+                  </IonCardContent>
+                </IonCard>
+              </IonCol>
+            </IonRow>
+            <IonRow>
+              <IonCol size="6">
+                <IonCard>
+                  <IonCardContent style={{ textAlign: 'center' }}>
+                    <IonIcon icon={flashOutline} style={{ fontSize: '28px', color: 'var(--ion-color-tertiary)' }} />
+                    <h1 style={{ margin: '4px 0', fontSize: '24px', fontWeight: 'bold' }}>{dashboard.focus.minutes_today}dk</h1>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>Bugün Odaklanma</p>
+                  </IonCardContent>
+                </IonCard>
+              </IonCol>
+              <IonCol size="6">
+                <IonCard>
+                  <IonCardContent style={{ textAlign: 'center' }}>
+                    <IonIcon icon={statsChartOutline} style={{ fontSize: '28px', color: `var(--ion-color-${getScoreColor(dashboard.score.value)})` }} />
+                    <h1 style={{ margin: '4px 0', fontSize: '24px', fontWeight: 'bold' }}>{dashboard.score.value}</h1>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>Skor /100</p>
+                  </IonCardContent>
+                </IonCard>
+              </IonCol>
+            </IonRow>
+          </IonGrid>
+        )}
+
+        {/* Görev Özeti */}
+        {dashboard && (
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+            <IonChip color="primary">
+              <IonLabel>Açık: {dashboard.tasks.open}</IonLabel>
+            </IonChip>
+            <IonChip color="success">
+              <IonLabel>Bugün: {dashboard.tasks.completed_today} ✓</IonLabel>
+            </IonChip>
+            {dashboard.tasks.overdue > 0 && (
+              <IonChip color="danger">
+                <IonLabel>Gecikmiş: {dashboard.tasks.overdue}</IonLabel>
+              </IonChip>
+            )}
+          </div>
+        )}
+
+        {/* Görev Listesi */}
+        <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Görevlerim</h3>
+
+        {tasks.length === 0 && !isLoading ? (
+          <div style={{ textAlign: 'center', marginTop: '40px', color: 'var(--ion-color-medium)' }}>
+            <IonIcon icon={alertCircleOutline} style={{ fontSize: '64px' }} />
+            <h3>Henüz bir görevin yok!</h3>
+            <p>"+" butonuna basarak ilk görevini ekle.</p>
+          </div>
+        ) : (
+          <IonList>
+            {tasks.map((task) => (
+              <IonItem key={task.id} style={{ '--padding-start': '0px', marginBottom: '8px', borderRadius: '8px' }}>
+                <IonCheckbox
+                  slot="start"
+                  checked={task.status === 'done'}
+                  disabled={task.status === 'done'}
+                  onIonChange={() => handleToggleComplete(task.id, task.status)}
+                  style={{ marginRight: '16px' }}
+                />
+                <IonLabel style={{ opacity: task.status === 'done' ? 0.6 : 1 }}>
+                  <h2 style={{ textDecoration: task.status === 'done' ? 'line-through' : 'none', fontWeight: 'bold' }}>
+                    {task.title}
+                  </h2>
+                  <div style={{ marginTop: '8px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    {getPriorityBadge(task.priority)}
+                    {task.estimated_minutes && (
+                      <IonBadge color="light" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <IonIcon icon={hourglassOutline} />
+                        {task.estimated_minutes} dk
+                      </IonBadge>
+                    )}
+                  </div>
+                </IonLabel>
+              </IonItem>
+            ))}
+          </IonList>
+        )}
+
+        {/* Görev Ekleme FAB */}
+        <IonFab vertical="bottom" horizontal="end" slot="fixed">
+          <IonFabButton onClick={() => setShowModal(true)}>
+            <IonIcon icon={add} />
+          </IonFabButton>
+        </IonFab>
+
+        {/* Yeni Görev Modalı */}
+        <IonModal isOpen={showModal} onDidDismiss={() => setShowModal(false)}>
+          <IonHeader>
+            <IonToolbar color="primary">
+              <IonButtons slot="start">
+                <IonButton onClick={() => setShowModal(false)}>İptal</IonButton>
+              </IonButtons>
+              <IonTitle>Yeni Görev Ekle</IonTitle>
+            </IonToolbar>
+          </IonHeader>
+
+          <IonContent className="ion-padding">
+            <form onSubmit={handleAddTask}>
+              <IonItem style={{ marginBottom: '16px' }}>
+                <IonLabel position="stacked">Görev Başlığı *</IonLabel>
+                <IonInput
+                  required
+                  value={title}
+                  placeholder="Örn: SQL Ödevi Hazırla"
+                  onIonInput={(e) => setTitle(e.detail.value!)}
+                />
+              </IonItem>
+
+              <IonItem style={{ marginBottom: '16px' }}>
+                <IonLabel position="stacked">Açıklama</IonLabel>
+                <IonTextarea
+                  value={description}
+                  placeholder="Göreve dair detaylar..."
+                  onIonInput={(e) => setDescription(e.detail.value!)}
+                />
+              </IonItem>
+
+              <IonItem style={{ marginBottom: '16px' }}>
+                <IonLabel position="stacked">Öncelik</IonLabel>
+                <IonSelect value={priority} onIonChange={(e) => setPriority(e.detail.value)}>
+                  <IonSelectOption value="urgent_important">Acil & Önemli</IonSelectOption>
+                  <IonSelectOption value="important">Önemli</IonSelectOption>
+                  <IonSelectOption value="urgent">Acil</IonSelectOption>
+                  <IonSelectOption value="low">Düşük Öncelik</IonSelectOption>
+                </IonSelect>
+              </IonItem>
+
+              <IonItem style={{ marginBottom: '24px' }}>
+                <IonLabel position="stacked">Tahmini Süre (Dakika)</IonLabel>
+                <IonInput
+                  type="number"
+                  value={estMinutes}
+                  placeholder="Örn: 45"
+                  onIonInput={(e) => setEstMinutes(e.detail.value ? parseInt(e.detail.value) : undefined)}
+                />
+              </IonItem>
+
+              <IonButton expand="block" type="submit" style={{ '--border-radius': '10px', fontWeight: 'bold' }}>
+                Görevi Kaydet
+              </IonButton>
+            </form>
+          </IonContent>
+        </IonModal>
+
+        <IonToast
+          isOpen={showToast}
+          onDidDismiss={() => setShowToast(false)}
+          message={toastMessage}
+          duration={2000}
+        />
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default Tab1;

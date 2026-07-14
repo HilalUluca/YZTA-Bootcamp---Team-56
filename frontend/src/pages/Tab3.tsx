@@ -60,8 +60,9 @@ const Tab3: React.FC<Tab3Props> = ({ onLogout }) => {
     loadProfile();
   }, []);
 
-  // XP çubuğu için ilerleme oranı (örneğin her seviye için 1000 XP gerektiğini varsayalım)
-  const xpNeeded = 1000;
+  // XP çubuğu için ilerleme oranı.
+  // Backend formülü: level = (total_xp // 500) + 1 → her seviye 500 XP.
+  const xpNeeded = 500;
   const currentLevelXp = profile ? profile.total_xp % xpNeeded : 0;
   const xpProgress = profile ? currentLevelXp / xpNeeded : 0;
 

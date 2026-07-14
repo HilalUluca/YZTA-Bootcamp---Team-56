@@ -191,7 +191,11 @@ const Tab2: React.FC = () => {
                 placeholder="Forge'a bir mesaj yazın..."
                 onIonInput={(e) => setInputVal(e.detail.value!)}
                 disabled={isSending}
-                style={{ '--padding-start': '8px' }}
+                style={{
+                  '--padding-start': '8px',
+                  '--color': 'var(--ion-text-color)',
+                  '--placeholder-color': 'var(--ion-color-medium)',
+                }}
               />
             </IonItem>
             <IonButton

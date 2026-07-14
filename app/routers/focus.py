@@ -106,7 +106,12 @@ def end_focus_session(
     # Seansi bitir
     now = datetime.now(timezone.utc)
     session.end_time = now
-    session.duration_minutes = int((now - session.start_time).total_seconds() / 60)
+
+    # SQLite timezone bilgisi saklamaz, start_time naive gelebilir
+    start = session.start_time
+    if start.tzinfo is None:
+        start = start.replace(tzinfo=timezone.utc)
+    session.duration_minutes = int((now - start).total_seconds() / 60)
     session.productivity_rating = end_data.productivity_rating
     session.notes = end_data.notes
     session.interruption_count = end_data.interruption_count

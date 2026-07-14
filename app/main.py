@@ -4,7 +4,7 @@ FocusForge Backend — Ana Uygulama
 AI Destekli Kişisel Verimlilik & Odaklanma Asistanı
 
 Çalıştırmak için:
-    uvicorn app.main:app --reload
+    uvicorn app.main:app --reloadvb,,
 
 Swagger API dokümantasyonu:
     http://localhost:8000/docs
@@ -18,6 +18,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.database import engine, Base
 from app.routers import auth_router, tasks_router, chat_router, focus_router, reflections_router, habits_router
+from app.routers.achievements import router as achievements_router
+from app.routers.dashboard import router as dashboard_router
+from app.routers.planner import router as planner_router
 
 settings = get_settings()
 
@@ -76,7 +79,15 @@ app.include_router(tasks_router)
 app.include_router(chat_router)
 app.include_router(focus_router)
 app.include_router(reflections_router)
+app.include_router(auth_router)
+app.include_router(tasks_router)
+app.include_router(chat_router)
+app.include_router(focus_router)
+app.include_router(reflections_router)
 app.include_router(habits_router)
+app.include_router(dashboard_router)
+app.include_router(planner_router)
+app.include_router(achievements_router)
 
 
 @app.get("/", tags=["Genel"])

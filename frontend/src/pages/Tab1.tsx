@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   IonContent,
   IonHeader,
@@ -24,8 +24,15 @@ import {
   IonBadge,
   IonToast,
   IonLoading,
+  IonCard,
+  IonCardContent,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonChip,
 } from '@ionic/react';
-import { add, alertCircleOutline, hourglassOutline } from 'ionicons/icons';
+import { add, alertCircleOutline, hourglassOutline, flameOutline, trophyOutline, flashOutline, statsChartOutline } from 'ionicons/icons';
+import api from '../services/api';
 import './Tab1.css';
 
 interface Task {
@@ -35,82 +42,126 @@ interface Task {
   priority: string;
   status: string;
   estimated_minutes?: number;
+  due_date?: string;
+}
+
+interface DashboardData {
+  user: {
+    username: string;
+    full_name: string;
+    level: number;
+    total_xp: number;
+    streak_count: number;
+  };
+  tasks: {
+    total: number;
+    open: number;
+    completed_today: number;
+    overdue: number;
+    todays_list: Task[];
+  };
+  focus: {
+    minutes_today: number;
+    sessions_today: number;
+    total_minutes: number;
+    total_hours: number;
+  };
+  score: {
+    value: number;
+    level: string;
+    coach_tone: string;
+  };
 }
 
 const Tab1: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: 'mock-1',
-      title: 'FocusForge sunum slaytlarını hazırla',
-      description: 'Takım içi sunum için slaytların ve grafiklerin çıkarılması.',
-      priority: 'urgent_important',
-      status: 'todo',
-      estimated_minutes: 45,
-    },
-    {
-      id: 'mock-2',
-      title: 'FastAPI veritabanı şemasını incele',
-      description: 'SQLAlchemy modelleri ve ilişkileri gözden geçirilecek.',
-      priority: 'important',
-      status: 'todo',
-      estimated_minutes: 30,
-    },
-    {
-      id: 'mock-3',
-      title: 'Ionic React mobil arayüz prototipini tamamla',
-      description: 'Sekmeli mobil arayüzün statik ekranlarının hazırlanması.',
-      priority: 'urgent',
-      status: 'done',
-      estimated_minutes: 60,
-    },
-  ]);
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
 
-  // Yeni görev formu state'leri
+  // Yeni görev formu
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('low');
   const [estMinutes, setEstMinutes] = useState<number | undefined>(undefined);
 
+  // Dashboard verilerini backend'den çek
+  const loadDashboard = async () => {
+    try {
+      const res = await api.get('/stats/dashboard');
+      setDashboard(res.data);
+      setTasks(res.data.tasks.todays_list || []);
+    } catch (err: any) {
+      console.log('Dashboard yüklenemedi, mock data kullanılıyor:', err.message);
+      // Backend bağlantısı yoksa mock data
+      setTasks([
+        { id: 'mock-1', title: 'Backend bağlantısı kurulamadı', priority: 'low', status: 'todo' },
+      ]);
+    }
+  };
+
+  // Görev listesini backend'den çek
+  const loadTasks = async () => {
+    try {
+      const res = await api.get('/tasks/', { params: { limit: 20 } });
+      if (res.data.tasks) {
+        setTasks(res.data.tasks);
+      }
+    } catch (err) {
+      console.log('Görevler yüklenemedi');
+    }
+  };
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
   const handleRefresh = async (event: CustomEvent) => {
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      event.detail.complete();
-    }, 800);
+    await loadDashboard();
+    setIsLoading(false);
+    event.detail.complete();
   };
 
   const handleToggleComplete = async (taskId: string, currentStatus: string) => {
     if (currentStatus === 'done') return;
 
-    setTasks(prevTasks =>
-      prevTasks.map(t => (t.id === taskId ? { ...t, status: 'done' } : t))
-    );
-    setToastMessage('Görev tamamlandı! Tebrikler 🎉');
-    setShowToast(true);
+    try {
+      await api.put(`/tasks/${taskId}`, { status: 'done' });
+      setToastMessage('Görev tamamlandı! 🎉');
+      setShowToast(true);
+      loadDashboard(); // Verileri yenile
+    } catch (err) {
+      // Fallback: sadece UI'da güncelle
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'done' } : t));
+      setToastMessage('Görev tamamlandı! 🎉');
+      setShowToast(true);
+    }
   };
 
   const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
-    const newTask: Task = {
-      id: Math.random().toString(),
-      title,
-      description: description || undefined,
-      priority,
-      status: 'todo',
-      estimated_minutes: estMinutes || undefined,
-    };
+    try {
+      await api.post('/tasks/', {
+        title,
+        description: description || undefined,
+        priority,
+        estimated_minutes: estMinutes || undefined,
+      });
+      setToastMessage('Görev eklendi ✅');
+      setShowToast(true);
+      loadDashboard(); // Yenile
+    } catch (err) {
+      // Fallback mock
+      setTasks(prev => [{ id: Math.random().toString(), title, priority, status: 'todo', description, estimated_minutes: estMinutes }, ...prev]);
+      setToastMessage('Görev eklendi (offline)');
+      setShowToast(true);
+    }
 
-    setTasks(prevTasks => [newTask, ...prevTasks]);
-    setToastMessage('Görev başarıyla eklendi (Mock).');
-    setShowToast(true);
-    
-    // Formu temizle ve kapat
     setTitle('');
     setDescription('');
     setPriority('low');
@@ -118,7 +169,6 @@ const Tab1: React.FC = () => {
     setShowModal(false);
   };
 
-  // Öncelik renkleri ve etiketleri
   const getPriorityBadge = (prio: string) => {
     switch (prio) {
       case 'urgent_important':
@@ -132,11 +182,19 @@ const Tab1: React.FC = () => {
     }
   };
 
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'success';
+    if (score >= 50) return 'warning';
+    return 'danger';
+  };
+
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar color="primary">
-          <IonTitle>Görevlerim</IonTitle>
+          <IonTitle>
+            {dashboard ? `Merhaba, ${dashboard.user.full_name || dashboard.user.username}` : 'Görevlerim'}
+          </IonTitle>
         </IonToolbar>
       </IonHeader>
 
@@ -146,6 +204,72 @@ const Tab1: React.FC = () => {
         </IonRefresher>
 
         <IonLoading isOpen={isLoading} message="Yükleniyor..." />
+
+        {/* Dashboard Kartları */}
+        {dashboard && (
+          <IonGrid>
+            <IonRow>
+              <IonCol size="6">
+                <IonCard>
+                  <IonCardContent style={{ textAlign: 'center' }}>
+                    <IonIcon icon={trophyOutline} style={{ fontSize: '28px', color: 'var(--ion-color-warning)' }} />
+                    <h1 style={{ margin: '4px 0', fontSize: '24px', fontWeight: 'bold' }}>Lvl {dashboard.user.level}</h1>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>{dashboard.user.total_xp} XP</p>
+                  </IonCardContent>
+                </IonCard>
+              </IonCol>
+              <IonCol size="6">
+                <IonCard>
+                  <IonCardContent style={{ textAlign: 'center' }}>
+                    <IonIcon icon={flameOutline} style={{ fontSize: '28px', color: 'var(--ion-color-danger)' }} />
+                    <h1 style={{ margin: '4px 0', fontSize: '24px', fontWeight: 'bold' }}>{dashboard.user.streak_count}</h1>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>Gün Streak</p>
+                  </IonCardContent>
+                </IonCard>
+              </IonCol>
+            </IonRow>
+            <IonRow>
+              <IonCol size="6">
+                <IonCard>
+                  <IonCardContent style={{ textAlign: 'center' }}>
+                    <IonIcon icon={flashOutline} style={{ fontSize: '28px', color: 'var(--ion-color-tertiary)' }} />
+                    <h1 style={{ margin: '4px 0', fontSize: '24px', fontWeight: 'bold' }}>{dashboard.focus.minutes_today}dk</h1>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>Bugün Odaklanma</p>
+                  </IonCardContent>
+                </IonCard>
+              </IonCol>
+              <IonCol size="6">
+                <IonCard>
+                  <IonCardContent style={{ textAlign: 'center' }}>
+                    <IonIcon icon={statsChartOutline} style={{ fontSize: '28px', color: `var(--ion-color-${getScoreColor(dashboard.score.value)})` }} />
+                    <h1 style={{ margin: '4px 0', fontSize: '24px', fontWeight: 'bold' }}>{dashboard.score.value}</h1>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>Skor /100</p>
+                  </IonCardContent>
+                </IonCard>
+              </IonCol>
+            </IonRow>
+          </IonGrid>
+        )}
+
+        {/* Görev Özeti */}
+        {dashboard && (
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+            <IonChip color="primary">
+              <IonLabel>Açık: {dashboard.tasks.open}</IonLabel>
+            </IonChip>
+            <IonChip color="success">
+              <IonLabel>Bugün: {dashboard.tasks.completed_today} ✓</IonLabel>
+            </IonChip>
+            {dashboard.tasks.overdue > 0 && (
+              <IonChip color="danger">
+                <IonLabel>Gecikmiş: {dashboard.tasks.overdue}</IonLabel>
+              </IonChip>
+            )}
+          </div>
+        )}
+
+        {/* Görev Listesi */}
+        <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Görevlerim</h3>
 
         {tasks.length === 0 && !isLoading ? (
           <div style={{ textAlign: 'center', marginTop: '40px', color: 'var(--ion-color-medium)' }}>
@@ -262,4 +386,3 @@ const Tab1: React.FC = () => {
 };
 
 export default Tab1;
-

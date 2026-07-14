@@ -1,0 +1,104 @@
+FocusForge — Backend İyileştirme Notları
+(Frontend tarafından iletildi — Aynur)
+Tarih: 2026-07-14
+
+Bu notlar, frontend'i backend'e bağlarken fark edilen ve DOĞRULANAN
+backend tarafı işleri/iyileştirmeleri içerir. Öncelik sırasına göre yazıldı.
+Her madde: sorun, ilgili dosya, etki ve önerilen çözüm içerir.
+
+
+============================================================
+1) [ÇÖZÜLDÜ ✓] Odaklanma seansı bitirme (/end) 500 hatası
+============================================================
+Dosya  : app/routers/focus.py  ->  end_focus_session()
+Durum  : Düzeltildi ve doğrulandı (PATCH /api/focus/{id}/end artık 200 dönüyor).
+
+Sorun neydi:
+  SQLite'tan okunan start_time timezone'suz (naive) geliyordu,
+  datetime.now(timezone.utc) ise timezone'lu (aware). İkisini çıkarınca
+  "TypeError: can't subtract offset-naive and offset-aware datetimes" -> 500.
+
+Uygulanan düzeltme (teşekkürler):
+  start = session.start_time
+  if start.tzinfo is None:
+      start = start.replace(tzinfo=timezone.utc)
+  session.duration_minutes = int((now - start).total_seconds() / 60)
+
+Not: Ekstra bir işlem gerekmiyor; sadece "bu çözüldü, doğrulandı" bilgisi.
+
+
+============================================================
+2) [YAPILACAK] Custom odaklanma süresi (planned_duration) saklanmıyor
+============================================================
+İlgili:
+  - app/schemas/focus.py     -> FocusSessionStart.planned_duration (alan VAR)
+  - app/routers/focus.py     -> start_focus_session() (alanı KULLANMIYOR)
+  - app/models/focus_session.py -> FocusSession (planned_duration SÜTUNU YOK)
+
+Sorun:
+  FocusSessionStart şemasında planned_duration alanı var, ama:
+   - start_focus_session router'ı bu alanı hiç okumuyor/kaydetmiyor.
+   - FocusSession modelinde planned_duration diye bir sütun yok.
+
+Etki:
+  Frontend "Özel süre" seçeneğiyle örn. 30 dk gönderiyor
+  (session_type="custom", planned_duration=30). Backend planlanan süreyi
+  saklamadığı için "30 planladı ama 22 dk odaklandı" gibi bir kıyas/analitik
+  yapılamıyor. ÖZELLİK ÇALIŞIYOR (çünkü gerçek süre /end'de hesaplanıp
+  duration_minutes'e yazılıyor); bu madde yalnızca "planlanan süreyi de
+  saklamak" içindir.
+
+Önerilen çözüm (planlanan süre saklanmak istenirse):
+  a) Modele sütun ekle (app/models/focus_session.py):
+       planned_duration: Mapped[int] = mapped_column(Integer, nullable=True)
+  b) start_focus_session içinde kaydet:
+       new_session = FocusSession(
+           ...,
+           planned_duration=session_data.planned_duration,
+       )
+  c) Alembic migration oluştur (yeni sütun için).
+  d) (Opsiyonel) FocusSessionResponse'a planned_duration ekle ki frontend
+     geri okuyabilsin.
+
+  Frontend ZATEN planned_duration gönderiyor; sütun eklenince otomatik dolar,
+  frontend'de değişiklik gerekmez.
+
+
+============================================================
+3) [İYİLEŞTİRME] Kısa seanslarda süre 0 dakikaya yuvarlanıyor
+============================================================
+Dosya: app/routers/focus.py -> end_focus_session()
+
+Detay:
+  session.duration_minutes = int((now - start).total_seconds() / 60)
+  60 saniyeden kısa seanslar 0 dakika kaydediliyor. XP hesabı da
+  (xp_earned = duration_minutes * productivity_rating) sıfır çıkıyor.
+
+Etki:
+  Test/demo sırasında kısa seanslar "0 dk, 0 XP" görünüyor. Gerçek 25/50 dk
+  seanslarda sorun yok; sadece çok kısa seanslarda kafa karıştırıcı.
+
+Öneri:
+  Saniye bazlı bir alan tutmak, ya da en az 1 dk saymak / round() kullanmak.
+  (Öncelik düşük.)
+
+
+============================================================
+4) [HATIRLATMA] Ortam / güvenlik
+============================================================
+- .env dosyası .gitignore ile hariç tutulmuş ve git tarafından takip
+  edilmiyor (iyi durumda). .env.example mevcut.
+- Gemini API anahtarı olmadan POST /api/chat/ 503 "Gemini API anahtarı
+  ayarlanmamış" döndürüyor (beklenen davranış). Her geliştiricinin kendi
+  .env dosyasında GEMINI_API_KEY tanımlaması gerekiyor.
+
+
+============================================================
+GENEL NOT
+============================================================
+Yukarıdakiler dışında frontend ile bağlanan endpoint'ler sorunsuz çalışıyor:
+  - Auth:  register / login / me
+  - Tasks: listele / ekle / tamamla (PATCH .../complete) / geri al (PUT status=todo) / sil
+  - Chat:  mesaj (POST /) + geçmiş (GET /history)
+  - Focus: start / end / stats/summary
+Engelleyici başka bir sorun görülmedi.

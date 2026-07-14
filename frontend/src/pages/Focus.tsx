@@ -9,8 +9,6 @@ import {
   IonLabel,
   IonSelect,
   IonSelectOption,
-  IonSegment,
-  IonSegmentButton,
   IonButton,
   IonButtons,
   IonInput,
@@ -35,6 +33,8 @@ const Focus: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedTaskId, setSelectedTaskId] = useState<string>('');
   const [durationMin, setDurationMin] = useState<number>(25);
+  const [customMode, setCustomMode] = useState<boolean>(false);
+  const DURATION_PRESETS = [15, 25, 45, 50];
 
   // Timer durumu
   const [secondsLeft, setSecondsLeft] = useState<number>(25 * 60);
@@ -134,9 +134,14 @@ const Focus: React.FC = () => {
   // Seansı başlat: POST /focus/start
   const startSession = async () => {
     try {
+      // Süreye göre seans türü: 25/50 hazır tür, diğerleri "custom"
+      const sessionType =
+        durationMin === 25 ? 'pomodoro_25' : durationMin === 50 ? 'pomodoro_50' : 'custom';
       const res = await api.post('/focus/start', {
         task_id: selectedTaskId || undefined,
-        session_type: durationMin === 50 ? 'pomodoro_50' : 'pomodoro_25',
+        session_type: sessionType,
+        // planned_duration'ı gönderiyoruz; backend şu an saklamıyor ama zararsız.
+        planned_duration: durationMin,
       });
       setSessionId(res.data.id);
       setIsActive(true);
@@ -238,19 +243,53 @@ const Focus: React.FC = () => {
           </IonButton>
         </div>
 
-        <IonSegment
-          value={String(durationMin)}
-          disabled={isActive}
-          onIonChange={(e) => selectDuration(parseInt(e.detail.value as string))}
-          style={{ marginBottom: '24px' }}
-        >
-          <IonSegmentButton value="25">
-            <IonLabel>25 dakika</IonLabel>
-          </IonSegmentButton>
-          <IonSegmentButton value="50">
-            <IonLabel>50 dakika</IonLabel>
-          </IonSegmentButton>
-        </IonSegment>
+        {/* Süre seçimi: hazır süreler + Özel */}
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            {DURATION_PRESETS.map((p) => (
+              <IonButton
+                key={p}
+                size="small"
+                fill={!customMode && durationMin === p ? 'solid' : 'outline'}
+                disabled={isActive}
+                onClick={() => {
+                  setCustomMode(false);
+                  selectDuration(p);
+                }}
+                style={{ '--border-radius': '20px' }}
+              >
+                {p} dk
+              </IonButton>
+            ))}
+            <IonButton
+              size="small"
+              fill={customMode ? 'solid' : 'outline'}
+              disabled={isActive}
+              onClick={() => setCustomMode(true)}
+              style={{ '--border-radius': '20px' }}
+            >
+              Özel
+            </IonButton>
+          </div>
+
+          {customMode && (
+            <IonItem lines="full" style={{ marginTop: '12px', borderRadius: '12px' }}>
+              <IonLabel position="stacked">Özel süre (dakika)</IonLabel>
+              <IonInput
+                type="number"
+                value={durationMin}
+                placeholder="Örn: 30"
+                min={1}
+                max={180}
+                disabled={isActive}
+                onIonInput={(e) => {
+                  const v = parseInt(e.detail.value || '');
+                  if (!isNaN(v) && v > 0) selectDuration(Math.min(v, 180));
+                }}
+              />
+            </IonItem>
+          )}
+        </div>
 
         {/* Büyük daire timer */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>

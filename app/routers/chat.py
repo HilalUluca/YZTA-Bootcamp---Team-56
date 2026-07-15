@@ -17,7 +17,9 @@ from app.schemas.chat import ChatMessage, ChatResponse
 from app.config import get_settings
 
 # YENİ EKLENEN: Director prompt motorumuzu içe aktarıyoruz
-from app.agents.director import build_director_system_prompt
+from app.agents.director import build_director_system_prompt, classify_intent
+from app.services import ai_planner_agent
+from app.models.task import Task, TaskStatus
 
 # LangChain Kütüphaneleri
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -43,7 +45,6 @@ def get_chat_history(
         .limit(limit)
         .all()
     )
-    # Arayüzde kronolojik sıralama için mesajları ters çeviriyoruz
     messages.reverse()
     return [
         {
@@ -78,11 +79,52 @@ async def chat_with_ai(
         llm = ChatGoogleGenerativeAI(
             model="gemini-2.5-flash",
             google_api_key=settings.gemini_api_key,
-            temperature=0.7 # Yaratıcılık ve netlik dengesi
+            temperature=0.7
         )
 
         # 2. DİNAMİK BEYNİ ÇAĞIR (Cold Start & Tone Adaptation)
         full_system_prompt = build_director_system_prompt(current_user)
+
+        # YENİ: Intent'e göre planner'dan veri çek, context'e ekle
+        intent = classify_intent(message.message)
+        planner_context = ""
+
+        if intent == "breakdown":
+            result = await ai_planner_agent.break_down_task(task_name=message.message)
+            planner_context = f"\n\n[SİSTEM VERİSİ - alt görevler]: {result.model_dump_json()}"
+
+        elif intent == "plan":
+            open_tasks = [
+                {
+                    "title": t.title,
+                    "description": t.description,
+                    "deadline": t.due_date.isoformat() if t.due_date else None,
+                }
+                for t in db.query(Task).filter(
+                    Task.user_id == current_user.id,
+                    Task.status.in_([TaskStatus.TODO, TaskStatus.IN_PROGRESS])
+                ).all()
+            ]
+            result = await ai_planner_agent.prioritize_tasks(tasks=open_tasks)
+            planner_context = f"\n\n[SİSTEM VERİSİ - öncelik sıralaması]: {result.model_dump_json()}"
+
+        elif intent == "motivate":
+            open_tasks = [
+                {"title": t.title, "description": t.description}
+                for t in db.query(Task).filter(
+                    Task.user_id == current_user.id,
+                    Task.status.in_([TaskStatus.TODO, TaskStatus.IN_PROGRESS])
+                ).all()
+            ]
+            result = await ai_planner_agent.get_ai_recommendations(user_tasks=open_tasks)
+            planner_context = f"\n\n[SİSTEM VERİSİ - öneriler]: {result}"
+
+        if planner_context:
+            full_system_prompt += (
+                "\n\nAşağıda sistemin ürettiği ham veri var. Bunu ASLA olduğu gibi "
+                "kopyalama, kendi kimliğin ve tonunla yeniden yorumla:"
+                + planner_context
+            )
 
         # 3. Prompt Şablonunu Hazırla
         prompt = ChatPromptTemplate.from_messages([

@@ -17,12 +17,12 @@ AI kocun tonu bu skora gore degisir:
 """
 
 from datetime import datetime, timezone, timedelta
-from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy.orm import Session  # pyright: ignore[reportMissingImports]
+from sqlalchemy import func  # pyright: ignore[reportMissingImports]
 
-from app.models.user import User
-from app.models.task import Task, TaskStatus
-from app.models.focus_session import FocusSession, Reflection, DailyStats
+from app.models.user import User  # pyright: ignore[reportMissingImports]
+from app.models.task import Task, TaskStatus  # pyright: ignore[reportMissingImports]
+from app.models.focus_session import FocusSession, Reflection, DailyStats  # pyright: ignore[reportMissingImports]
 
 
 # Skor degisim degerleri
@@ -125,14 +125,19 @@ def calculate_responsibility_score(user: User, db: Session) -> dict:
     # 0-100 araliginda tut
     score = max(0.0, min(100.0, score))
 
+    # Seviye ve koc tonu belirle
     if score >= 80:
         level = "excellent"
+        coach_tone = "Tesvik edici ve ovgu dolu. Kullaniciyi kutla, basarilarini vurgula."
     elif score >= 50:
         level = "good"
+        coach_tone = "Dengeli ve stratejik. Destekleyici ama gelistirme alanlarina da degin."
     elif score >= 30:
         level = "fair"
+        coach_tone = "Sert ama adil. Net konusmali, somut adimlar sunmali."
     else:
         level = "poor"
+        coach_tone = "Hesap soran, zorlayici. Erteleme nedenlerini sorgula, acil plan olustur."
 
     return {
         "score": round(score, 1),

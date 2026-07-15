@@ -1,75 +1,180 @@
-import uuid
-import enum
-from datetime import datetime
+"""
+AI Sohbet (Chat) API endpoint'i.
 
-from sqlalchemy import String, Text, DateTime, Integer, Float, JSON, Uuid, Enum, ForeignKey, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+Sprint 1: Basit chatbot (Tamamlandı)
+Sprint 2: LangChain multi-agent orkestrasyon ve Hafıza Yönetimi (Director Agent Entegrasyonu)
+"""
 
-from app.database import Base
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+from sqlalchemy import desc
+
+from app.database import get_db
+from app.models.user import User
+from app.models.chat import ChatMessageDB
+from app.services.auth import get_current_user
+from app.schemas.chat import ChatMessage, ChatResponse
+from app.config import get_settings
+
+# YENİ EKLENEN: Director prompt motorumuzu içe aktarıyoruz
+from app.agents.director import build_director_system_prompt, classify_intent
+from app.services import ai_planner_agent
+from app.models.task import Task, TaskStatus
+
+# LangChain Kütüphaneleri
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.chat_history import InMemoryChatMessageHistory
+
+router = APIRouter(prefix="/api/chat", tags=["AI Sohbet"])
+settings = get_settings()
 
 
-class TaskPriority(str, enum.Enum):
-    """Eisenhower matrisine göre görev önceliği."""
-    URGENT_IMPORTANT = "urgent_important"      # Acil ve Önemli → Hemen yap
-    IMPORTANT = "important"                     # Önemli ama acil değil → Planla
-    URGENT = "urgent"                           # Acil ama önemli değil → Delege et
-    LOW = "low"                                 # Ne acil ne önemli → Elemeyi düşün
-
-
-class TaskStatus(str, enum.Enum):
-    """Görev durumu."""
-    TODO = "todo"
-    IN_PROGRESS = "in_progress"
-    DONE = "done"
-    CANCELLED = "cancelled"
-
-
-class Task(Base):
-    """Görev tablosu."""
-
-    __tablename__ = "tasks"
-
-    id: Mapped[uuid.UUID] = mapped_column(
-        Uuid, primary_key=True, default=uuid.uuid4
+@router.get("/history", response_model=list[dict])
+def get_chat_history(
+    limit: int = Query(default=20, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Kullanıcının geçmiş sohbet kayıtlarını getirir (en eskiden en yeniye doğru)."""
+    messages = (
+        db.query(ChatMessageDB)
+        .filter(ChatMessageDB.user_id == current_user.id)
+        .order_by(desc(ChatMessageDB.created_at))
+        .limit(limit)
+        .all()
     )
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
-    )
-    title: Mapped[str] = mapped_column(String(500), nullable=False)
-    description: Mapped[str] = mapped_column(Text, nullable=True)
+    messages.reverse()
+    return [
+        {
+            "id": str(msg.id),
+            "sender": msg.sender,
+            "message": msg.message,
+            "created_at": msg.created_at.isoformat() if msg.created_at else None
+        }
+        for msg in messages
+    ]
 
-    # Öncelik ve durum
-    priority: Mapped[TaskPriority] = mapped_column(
-        Enum(TaskPriority), default=TaskPriority.LOW
-    )
-    ai_priority_score: Mapped[float] = mapped_column(Float, default=0.0)
-    status: Mapped[TaskStatus] = mapped_column(
-        Enum(TaskStatus), default=TaskStatus.TODO
-    )
 
-    # Zaman bilgileri
-    due_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
-    estimated_minutes: Mapped[int] = mapped_column(Integer, nullable=True)
-    actual_minutes: Mapped[int] = mapped_column(Integer, nullable=True)
+@router.post("/", response_model=ChatResponse)
+async def chat_with_ai(
+    message: ChatMessage,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    AI Director ile LangChain altyapısı üzerinden sohbet et.
+    Kalıcı veritabanı hafızası kullanarak dinamik prompt beslemesi yapar.
+    """
 
-    # Alt görev desteği (görev parçalama için)
-    parent_task_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=True
-    )
+    if not settings.gemini_api_key:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Gemini API anahtarı ayarlanmamış. .env dosyasını kontrol edin.",
+        )
 
-    # Etiketler
-    tags: Mapped[dict] = mapped_column(JSON, default=list)
+    try:
+        # 1. LangChain LLM Tanımlaması (Gemini 2.5 Flash kullanıyoruz)
+        llm = ChatGoogleGenerativeAI(
+            model="gemini-2.5-flash",
+            google_api_key=settings.gemini_api_key,
+            temperature=0.7
+        )
 
-    # Zaman damgaları
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-    )
-    completed_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+        # 2. DİNAMİK BEYNİ ÇAĞIR (Cold Start & Tone Adaptation)
+        full_system_prompt = build_director_system_prompt(current_user)
 
-    # İlişkiler
-    subtasks = relationship("Task", backref="parent_task", remote_side="Task.id")
+        # YENİ: Intent'e göre planner'dan veri çek, context'e ekle
+        intent = classify_intent(message.message)
+        planner_context = ""
+
+        if intent == "breakdown":
+            result = await ai_planner_agent.break_down_task(task_name=message.message)
+            planner_context = f"\n\n[SİSTEM VERİSİ - alt görevler]: {result.model_dump_json()}"
+        elif intent == "motivate":
+            open_tasks = [
+                {"title": t.title, "description": t.description}
+                for t in db.query(Task).filter(
+                    Task.user_id == current_user.id,
+                    Task.status.in_([TaskStatus.TODO, TaskStatus.IN_PROGRESS])
+                ).all()
+            ]
+            result = await ai_planner_agent.get_ai_recommendations(user_tasks=open_tasks)
+            planner_context = f"\n\n[SİSTEM VERİSİ - öneriler]: {result}"
+
+        if planner_context:
+            full_system_prompt += (
+                "\n\nAşağıda sistemin ürettiği ham veri var. Bunu ASLA olduğu gibi "
+                "kopyalama, kendi kimliğin ve tonunla yeniden yorumla:"
+                + planner_context
+            )
+
+        # 3. Prompt Şablonunu Hazırla
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", full_system_prompt),
+            MessagesPlaceholder(variable_name="history"),
+            ("human", "{input}"),
+        ])
+
+        # 4. Veritabanından geçmiş son 10 mesajı çek ve hafızaya yükle
+        past_db_messages = (
+            db.query(ChatMessageDB)
+            .filter(ChatMessageDB.user_id == current_user.id)
+            .order_by(desc(ChatMessageDB.created_at))
+            .limit(10)
+            .all()
+        )
+        past_db_messages.reverse()
+
+        history = InMemoryChatMessageHistory()
+        for msg in past_db_messages:
+            if msg.sender == "human":
+                history.add_user_message(msg.message)
+            elif msg.sender == "ai":
+                history.add_ai_message(msg.message)
+
+        def get_session_history(session_id: str) -> InMemoryChatMessageHistory:
+            return history
+
+        chain = prompt | llm
+        chain_with_history = RunnableWithMessageHistory(
+            chain,
+            get_session_history,
+            input_messages_key="input",
+            history_messages_key="history",
+        )
+
+        # 5. Modeli Tetikle
+        ai_message = chain_with_history.invoke(
+            {"input": message.message},
+            config={"configurable": {"session_id": str(current_user.id)}},
+        )
+        response_text = ai_message.content
+
+        # 6. Mesajları kalıcı olması için veritabanına kaydet
+        user_db_message = ChatMessageDB(
+            user_id=current_user.id,
+            sender="human",
+            message=message.message
+        )
+        ai_db_message = ChatMessageDB(
+            user_id=current_user.id,
+            sender="ai",
+            message=response_text
+        )
+        db.add(user_db_message)
+        db.add(ai_db_message)
+        db.commit()
+
+        return ChatResponse(
+            response=response_text,
+            agent_name="Director",
+            suggestions=[],
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"LangChain yanıt üretemedi: {str(e)}",
+        )

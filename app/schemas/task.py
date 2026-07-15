@@ -2,12 +2,23 @@
 
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
+
+# pyright: reportMissingImports=false
 
 from pydantic import BaseModel, Field
-
 from app.models.task import TaskPriority, TaskStatus
 
+# --- Context Modeli (Tüm ajanlar için ortak dil) ---
+
+class UserContext(BaseModel):
+    """
+    Token tasarrufu sağlayan, ajanlar arası veri taşıma modeli.
+    """
+    mood: str = Field(..., description="Anlık ruh hali")
+    energy_level: int = Field(..., ge=1, le=5, description="1-5 arası enerji")
+    persona: str = Field("stratejist", description="AI yanıt tonu")
+    profile_snippet: str | None = None   # "[PROFILE] identity: hayvansever | ..."
 
 # --- Görev Oluşturma ---
 
@@ -19,13 +30,13 @@ class TaskCreate(BaseModel):
     due_date: Optional[datetime] = None
     estimated_minutes: Optional[int] = None
     parent_task_id: Optional[uuid.UUID] = None
-    tags: Optional[list[str]] = None
+    tags: Optional[List[str]] = None
 
 
 # --- Görev Güncelleme ---
 
 class TaskUpdate(BaseModel):
-    """Görev güncelleme isteği. Sadece gönderilen alanlar güncellenir."""
+    """Görev güncelleme isteği."""
     title: Optional[str] = Field(default=None, min_length=1, max_length=500)
     description: Optional[str] = None
     priority: Optional[TaskPriority] = None
@@ -33,7 +44,7 @@ class TaskUpdate(BaseModel):
     due_date: Optional[datetime] = None
     estimated_minutes: Optional[int] = None
     actual_minutes: Optional[int] = None
-    tags: Optional[list[str]] = None
+    tags: Optional[List[str]] = None
 
 
 # --- Görev Yanıtı ---
@@ -51,7 +62,7 @@ class TaskResponse(BaseModel):
     estimated_minutes: Optional[int] = None
     actual_minutes: Optional[int] = None
     parent_task_id: Optional[uuid.UUID] = None
-    tags: list = []
+    tags: List[str] = []
     created_at: datetime
     updated_at: datetime
     completed_at: Optional[datetime] = None
@@ -63,5 +74,5 @@ class TaskResponse(BaseModel):
 
 class TaskListResponse(BaseModel):
     """Görev listesi yanıtı."""
-    tasks: list[TaskResponse]
+    tasks: List[TaskResponse]
     total: int

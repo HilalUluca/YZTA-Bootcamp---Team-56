@@ -2,6 +2,7 @@
 from app.models.user import User
 from app.services.gamification import get_coach_tone
 
+
 def build_director_system_prompt(user: User) -> str:
     """
     User objesini alır ve merkezi gamification servisini kullanarak 
@@ -78,3 +79,22 @@ def build_director_system_prompt(user: User) -> str:
     3. ADIM ADIM AKSİYON (Tekrarsız Yapı): Kullanıcıya görev seçmesini emrederken her seferinde aynı 3 maddelik listeyi ("1. Unut, 2. Belirle, 3. Bitir") basma. Eğer kullanıcı zaten bir önceki adımda o görevi belirlediyse veya veri girdiyse, bir sonraki mantıklı adıma geç (Örn: "Verini analiz ettik, şimdi o 15 dakikalık görevin adını koy ve süreyi başlat.").
     """
     return system_prompt
+
+
+# --- Orchestrator / Intent Sınıflandırma ---
+# Bu fonksiyonu app/routers/chat.py doğrudan kullanıyor.
+
+INTENT_KEYWORDS = {
+    "breakdown": ["böl", "parçala", "adım adım nasıl", "alt görev"],
+    "plan": ["planla", "sırala", "önceliklendir", "hangi görevi önce"],
+    "motivate": ["yapamıyorum", "isteksizim", "enerjim yok", "odaklanamıyorum", "motive"],
+}
+
+
+def classify_intent(message: str) -> str:
+    """Ucuz keyword eşleşmesi. Eşleşmezse 'chat' döner (ekstra LLM çağrısı yok)."""
+    lowered = message.lower()
+    for intent, keywords in INTENT_KEYWORDS.items():
+        if any(k in lowered for k in keywords):
+            return intent
+    return "chat"

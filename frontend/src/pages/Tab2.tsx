@@ -65,27 +65,50 @@ const Tab2: React.FC = () => {
     setMessages((prev) => [...prev, newUserMessage]);
     setIsSending(true);
 
-    // Mock yanıt listesi
-    const mockReplies = [
-      "Harika bir noktaya değindin! Görevlerini tamamlamak için 25 dakikalık bir Pomodoro seansı başlatmamı ister misin?",
-      "Erteleme davranışının önüne geçmek için bu görevi 15'er dakikalık 3 küçük parçaya bölmeyi deneyelim.",
-      "Bu hedef gerçekten çok önemli. Odaklanmanı artırmak için telefonunu başka bir odaya bırakmanı öneririm.",
-      "Çok iyi gidiyorsun! Motivasyonunu yüksek tutmak için küçük adımlarla ilerlemeye devam et.",
-      "Stres seviyeni azaltmak için 2 dakikalık bir nefes egzersizi yapmak ister misin?"
-    ];
+    try {
+      // MİMARİ MÜHÜR: Gerçek Backend (FastAPI) Bağlantısı
+      const response = await fetch('http://127.0.0.1:8000/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // Not: app/schemas/chat.py içindeki Pydantic modeline göre buradaki 'message' anahtarını
+        // 'text' veya 'content' olarak değiştirmen gerekebilir.
+        body: JSON.stringify({ message: userText }), 
+      });
 
-    const randomReply = mockReplies[Math.floor(Math.random() * mockReplies.length)];
+      if (!response.ok) {
+        throw new Error(`HTTP hatası! Durum: ${response.status}`);
+      }
 
-    setTimeout(() => {
+      const data = await response.json();
+      
+      // Backend'den dönen JSON'un yapısına göre doğru değeri çekiyoruz (defensive approach)
+      const forgeText = data.response || data.text || data.message || data.reply || "Forge'dan veri alınamadı.";
+
       const forgeResponse: Message = {
         id: Math.random().toString(),
         sender: 'forge',
-        text: randomReply,
+        text: forgeText,
         timestamp: new Date(),
       };
+      
       setMessages((prev) => [...prev, forgeResponse]);
+      
+    } catch (error) {
+      console.error("API Entegrasyon Hatası:", error);
+      
+      // Hata Yönetimi: Sistemin çökmesi durumunda kullanıcıyı bilgilendir
+      const errorResponse: Message = {
+        id: Math.random().toString(),
+        sender: 'forge',
+        text: "Sistem hatası: Backend'e ulaşılamıyor. Lütfen uvicorn terminalini kontrol et.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorResponse]);
+    } finally {
       setIsSending(false);
-    }, 1200);
+    }
   };
 
   return (
@@ -148,7 +171,7 @@ const Tab2: React.FC = () => {
               >
                 <IonSpinner name="dots" color="primary" />
                 <IonText style={{ fontSize: '13px', color: 'var(--ion-color-medium)' }}>
-                  Forge düşünüyor...
+                  Forge analiz ediyor...
                 </IonText>
               </div>
             </div>
@@ -162,7 +185,7 @@ const Tab2: React.FC = () => {
             <IonItem style={{ flex: 1, '--background': 'transparent' }}>
               <IonInput
                 value={inputVal}
-                placeholder="Forge'a bir mesaj yazın..."
+                placeholder="Forge'a bir strateji veya sorun yazın..."
                 onIonInput={(e) => setInputVal(e.detail.value!)}
                 disabled={isSending}
                 style={{ '--padding-start': '8px' }}
@@ -184,4 +207,3 @@ const Tab2: React.FC = () => {
 };
 
 export default Tab2;
-

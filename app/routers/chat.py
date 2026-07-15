@@ -18,7 +18,7 @@ from app.config import get_settings
 
 # YENİ EKLENEN: Director prompt motorumuzu içe aktarıyoruz
 from app.agents.director import build_director_system_prompt, classify_intent
-from app.services import ai_planner_agent
+from app.agents import ai_planner_agent
 from app.models.task import Task, TaskStatus
 
 # LangChain Kütüphaneleri

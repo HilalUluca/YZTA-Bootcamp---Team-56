@@ -40,6 +40,7 @@ async def lifespan(app: FastAPI):
 
 # FastAPI uygulamasını oluştur
 app = FastAPI(
+   
     title="FocusForge API",
     description=(
         "AI Destekli Kisisel Verimlilik & Odaklanma Asistani.\n\n"

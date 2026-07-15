@@ -1,6 +1,6 @@
 # Services package
 
-from app.services.ai_planner_agent import (
+from app.agents.ai_planner_agent import (
     prioritize_tasks,
     break_down_task,
     get_ai_recommendations,

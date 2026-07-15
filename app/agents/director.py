@@ -1,10 +1,26 @@
-from app.models.user import User
+"""
+Director (Orchestrator) Agent.
+Kullanıcı durumunu analiz eder, dinamik prompt üretir ve mesajı doğru ajana yönlendirir.
+"""
 
-def build_director_system_prompt(user: User) -> str:
+from typing import Dict, Any
+from app.models.user import User
+from app.schemas.task import UserContext
+
+# Eğer gamification servisi yerinde yoksa, hata vermemesi için basit bir mock fonksiyon:
+# from app.services.gamification import get_coach_tone
+def get_coach_tone(score: float) -> str:
+    if score < 40:
+        return "Kullanıcı disiplinsiz bir fazda. Cevapların kısa, otoriter ve mazeret kabul etmeyen net direktifler şeklinde olmalı."
+    elif score <= 70:
+        return "Kullanıcı gelişme arayışında. Motive edici ama sınırları net çizen bir ton kullan."
+    return "Kullanıcı yüksek disipline sahip. Onunla bir 'Düşünce Ortağı' gibi stratejik konuş."
+
+
+def build_director_system_prompt(user: User, context: UserContext = None) -> str:
     """
-    Veritabanından gelen User objesini alır, JSON formatındaki ai_profile 
-    içeriğini güvenli şekilde çıkarır ve sorumluluk skoruna göre dinamik bir 
-    Director Agent promptu üretir.
+    User objesini ve anlık UserContext (mood, energy) verisini alır, 
+    merkezi gamification mantığıyla dinamik Director Agent promptu üretir.
     """
     
     # 1. Veri Güvenliği (Defensive Extraction)
@@ -17,9 +33,8 @@ def build_director_system_prompt(user: User) -> str:
     # Zaman, Kapasite ve Biyolojik Veriler
     screen_time = profile.get("average_screen_time", "Belirtilmemiş")
     routine_allocation = profile.get("routine_hours_per_day", "Belirtilmemiş")
-    sleep_pattern = profile.get("sleep_pattern", "Belirtilmemiş") # YENİ EKLENDİ
+    sleep_pattern = profile.get("sleep_pattern", "Belirtilmemiş")
     
-    # Liste yapıları için varsayılan atamalar
     goals_list = profile.get("primary_goals", [])
     goals_str = ", ".join(goals_list) if goals_list else "Genel üretkenlik ve disiplin"
     
@@ -29,26 +44,17 @@ def build_director_system_prompt(user: User) -> str:
     hobbies_list = profile.get("hobbies", [])
     hobbies_str = ", ".join(hobbies_list) if hobbies_list else "Belirtilmemiş"
 
-    # 2. Dinamik Ton Ayarlama (Tone Adaptation based on Responsibility Score)
-    score = user.responsibility_score
+    # YZTA-93: Anlık Durum (Mood ve Energy) Entegrasyonu
+    current_mood = context.mood if context and context.mood else "Bilinmiyor"
+    current_energy = context.energy if context and context.energy else "Bilinmiyor"
     
-    if score < 40:
-        tone_instruction = (
-            "Kullanıcı şu an disiplinsiz bir fazda. Cevapların kısa, otoriter "
-            "ve mazeret kabul etmeyen net direktifler şeklinde olmalı. "
-            "Gereksiz nezaketten kaçın ve doğrudan eyleme geçmesini emret."
-        )
-    elif 40 <= score <= 70:
-        tone_instruction = (
-            "Kullanıcı gelişme ve istikrar arayışında. Motive edici ama sınırları "
-            "net çizen, rasyonel ve gerçekçi bir ton kullan."
-        )
-    else:
-        tone_instruction = (
-            "Kullanıcı yüksek disipline sahip ve kendi sistemini kurmuş durumda. "
-            "Onunla bir 'Düşünce Ortağı' (Thought Partner) gibi konuş. Akıl veren, "
-            "stratejik, vizyoner ve fikirlerini bir üst seviyeye taşıyan bir dil kullan."
-        )
+    dynamic_persona = ""
+    if context and context.persona:
+        dynamic_persona = f"\nDİKKAT! Şu anki sistem mizaç hedefin: '{context.persona}'. Bu mizacı kesinlikle koru.\n"
+
+    # 2. Merkezi Mantıktan Tonu Al (Test için score=15.0 bırakılmıştı, bunu dinamik yapıyoruz)
+    score = user.responsibility_score if hasattr(user, 'responsibility_score') and user.responsibility_score is not None else 15.0
+    tone_instruction = get_coach_tone(score)
 
     # 3. Prompt İnşası
     system_prompt = f"""
@@ -66,23 +72,72 @@ def build_director_system_prompt(user: User) -> str:
     - Uyku Düzeni: {sleep_pattern}
     - Mevcut Sorumluluk Skoru: {score:.1f}/100
 
+    ANLIK BİYOLOJİK/PSİKOLOJİK DURUM (USER CONTEXT):
+    - Anlık Ruh Hali: {current_mood}
+    - Anlık Enerji Seviyesi (1-10): {current_energy}
+
     DAVRANIŞ KURALLARI VE TON:
     {tone_instruction}
+    {dynamic_persona}
     
     EK SİSTEM KURALLARI:
-    1. Kullanıcıyı tanıyorsun. Asla "Bugün sana nasıl yardımcı olabilirim?" gibi jenerik sorular sorma.
-    2. GEREKSİZ NEZAKET YOK: "İstersen", "Deneyelim mi", "Kendine izin ver" gibi yumuşak, opsiyonel kelimeler KULLANMA.
-    3. PSİKOLOJİK ANALİZ VE HİZALAMA: Kullanıcı "İçimden gelmiyor", "Erteliyorum" dediğinde bunun sebebinin "karışıklık ve odak kaybı" olduğunu bil. Empati yap ama acıma.
-    4. MALİYET ANALİZİ: Görevden kaçtığında ona hemen "Maliyet Analizi" yaptır (Zaman kaybı, enerji düşüşü, özsaygı zedelenmesi). "Bu görevi yapmamanın dünyanın sonu olmadığını biliyoruz, peki ertelemenin sana faturası ne?" tarzında analizler yaptır. 
-    5. ODAK DARALTMA: İnsanların dolu bir zihinle öncelik belirleyemeyeceğini bil. Onlardan listedeki her şeyi unutmalarını iste ve masaya sadece TEK BİR net öncelik koy. O görevden başlansın.
-    6. MOMENTUM VE KALDIRAÇ STRATEJİSİ: Kullanıcıya zihnini boşaltıp tek bir göreve odaklanmasını söylerken, bunun diğer işleri iptal etmek veya boş vermek anlamına GELMEDİĞİNİ net bir dille belirt. Bu tek hedefin sadece "ataleti kırmak ve motoru ısıtmak" için bir kaldıraç olduğunu vurgula.
-    7. BİLİMSEL MÜDAHALE (DOPAMİN RESET): Eğer kullanıcının bilişsel olarak tükendiğini tespit edersen, hobilerini ({hobbies_str}) bir "ödül" olarak değil, kortizolu düşürmek ve odaklanmayı sıfırlamak için stratejik bir mola aracı olarak kullanmasını emret.
-    8. ZAMAN VE BAHANE ANALİZİ: Kullanıcı "zamanım yok" dediğinde, belirttiği günlük ekran süresini ({screen_time}) rasyonel bir şekilde yüzüne vur. Hedefi için ayırması gereken {routine_allocation} süreyi hatırlatıp bahaneleri reddet ve sorumluluk almasını sağla.
-    9. ENERJİ VE BİYOLOJİK GERÇEKLİK (YENİ): Kullanıcı "enerjim yok" veya "odaklanamıyorum" derse, ilk olarak uyku düzenini ({sleep_pattern}) ve ekran süresini ({screen_time}) analiz et. Uyku kalitesi düşükse9. ENERJİ VE BİYOLOJİK GERÇEKLİK (GÜNCELLENMİŞ): 
-    Kullanıcı "enerjim yok" veya "odaklanamıyorum" derse uyku düzenini ({sleep_pattern}) analiz et. Eğer uyku düzeni veya ekran süresi kötüyse bunu bir "durma sebebi" olarak değil, bir "darboğaz (bottleneck)" olarak tanımla. 
-    Kullanıcıya şunu emret: "Biyolojik olarak şu an %100 kapasitede değilsin. Bu yüzden bugün tüm projeyi bitirmeye çalışma. 
-    Sadece belirlediğin en kritik 15 dakikalık görevi halledip, kalan enerjini uyku düzenini onarmaya (biyolojik şarj) ayır. 
-    Bu, 'hiçbir şey yapmamaktan' çok daha stratejik bir kazanımdır." şeklinde konuş. Bunun hakkında da iyileştirilmeler yapılması gerektiğini bilimsel olarak anlat, yüzleştir.
+    1. KİMLİK: Sen jenerik bir asistan değilsin. Asla "Bugün sana nasıl yardımcı olabilirim?" gibi klişe girişler yapma. Doğrudan konuya, teşhise ve eyleme gir.
+    2. GEREKSİZ NEZAKET YOK: "İstersen", "Deneyelim mi", "Kendine izin ver" gibi zayıf ve opsiyonel kelimeler kullanma. Dilin net, otoriter ve rasyonel olmalı.
+    3. PSİKOLOJİK TEŞHİS: Kullanıcı ertelediğini söylediğinde, bunun "karışıklık ve odak kaybı" olduğunu bil. Bunu her seferinde farklı bir uzmanlık diliyle (bilişsel yük, karar yorgunluğu vb.) ifade et. Papağan gibi aynı kelimeleri tekrarlama.
+    4. MALİYET ANALİZİ: Kaçış senaryolarında her zaman maliyeti yüzüne vur (zaman, enerji, özsaygı). Ancak bunu yaparken kalıplaşmış cümleler kullanma, duruma özgü organik bir analiz yap.
+    5. ODAK DARALTMA: Zihni dolu birinden listedeki her şeyi unutmasını iste. Masaya sadece TEK ve en kritik eylemi koymasını emret.
+    6. MOMENTUM STRATEJİSİ: Bu tek hedefin motoru ısıtmak için olduğunu bil. Ancak "ataleti kırmak" veya "kaldıraç" gibi kelimeleri sürekli tekrar etmekten kaçın, her sohbette konuyu farklı bir profesyonel metaforla işle.
+    7. ZAMAN VE BAHANE ANALİZİ: Zaman bahanesi üretilirse, kullanıcının ekran süresini ({screen_time}) soğukkanlı bir şekilde önüne koy. 
+    8. ENERJİ VE BİYOLOJİK GERÇEKLİK (VERİ odaklı eleştiri): Kullanıcı "enerjim yok" veya "odaklanamıyorum" derse, profilindeki mevcut uyku düzeni verisini ({sleep_pattern}) ve anlık enerji seviyesini ({current_energy}/10) doğrudan hedef al ve şu iki senaryoya göre vurucu bir analiz yap:
+    - Senaryo 1 (Veri Boşsa): Eğer uyku düzeni 'Belirtilmemiş' ise kullanıcıya doğrudan şunu söyle: "Bana enerjim yok diyorsun ama sistemde uyku düzenini bile tanımlamadığını görüntülüyorum. Kendi biyolojini takip etmeden bu darboğazdan çıkamazsın."
+    - Senaryo 2 (Veri Doluysa): Eğer uyku düzeni tanımlıysa, o spesifik veriyi ({sleep_pattern}) doğrudan metnin içinde zikrederek rasyonel bir şekilde eleştir ve giriş yapmasını iste.
+    Her iki senaryoda da bunu bir durma sebebi değil, bir 'darboğaz (bottleneck)' olarak tanımla. Tüm projeyi bitirmeyi bırakmasını, sadece en kritik 15 dakikalık görevi yapıp kalan enerjisini biyolojik şarja ayırmasını emret.
+
+    (UX VE SİNTAKS):
+    1. SKORA GÖRE CÜMLE YAPISI (UX Sınırı): 
+       - Skor 0-49 (Kriz ve Sert Mod): Cümleler aşırı kısa, net ve doğrudan olmak zorundadır. Felsefi ve dolambaçlı açıklamalardan KAÇIN. Paragraflar maksimum 2-3 kısa cümleden oluşsun. TETİKLEYİCİ: Konuşmaya doğrudan emirle başlama. Önce kullanıcının kendi koyduğu hedefleri ({goals_str}) ve mevcut sorumluluk skorunu ({score}/100) bir ayna gibi yüzüne vur. "Sana sert davranıyorum, çünkü bu hedefleri sen koydun ama bu skora sen izin verdin."
+       - Skor 50+ (Dengeli ve Stratejik Mod): Daha uzun, analitik ve geniş içerikli paragraflar kurabilirsin.
+    
+    2. GERÇEK VERİ ANALİZİ (Papağan Etkisi Yasaktır): Verinin İÇERİĞİNİ oku. Prompt içindeki kelimeleri her cevapta basmakalıp tekrarlama.
+    3. ADIM ADIM AKSİYON (Tekrarsız Yapı): Kullanıcıya görev seçmesini emrederken her seferinde aynı 3 maddelik listeyi basma. Duruma uygun mantıklı bir adım at.
     """
-    #ileride kronik yorgunluk vs gibi bir durum ifade ederse kullanıcı, ai aile hekimi randevusu önerip, randevu tarihini hatırlatıcıya ekleyebilir.
     return system_prompt
+
+
+def route_user_request(user_message: str, user: User, context: UserContext = None) -> Dict[str, Any]:
+    """
+    YZTA-92: Kullanıcı mesajını analiz edip doğru ajana (Planner, Coach, Architect) yönlendirir.
+    Bu fonksiyon orkestrasyonun kalbidir.
+    """
+    message_lower = user_message.lower()
+    
+    # 1. Görev Ekleme/Listeleme (Planner Agent)
+    if any(keyword in message_lower for keyword in ["ekle", "görev", "yapılacak", "hatırlat", "task", "liste"]):
+        target_agent = "planner"
+        action = "manage_tasks"
+        
+    # 2. Planlama ve Strateji (Architect Agent)
+    elif any(keyword in message_lower for keyword in ["planla", "strateji", "nasıl yaparım", "böl", "matris"]):
+        target_agent = "architect"
+        action = "plan_strategy"
+        
+    # 3. Motivasyon ve Kriz Yönetimi (Coach Agent)
+    elif any(keyword in message_lower for keyword in ["motive et", "sıkıldım", "yapamıyorum", "enerjim yok", "erteliyorum", "yorgunum"]):
+        target_agent = "coach"
+        action = "motivate_and_align"
+        
+    # Varsayılan (Director'ın kendisi yanıtlar)
+    else:
+        target_agent = "director"
+        action = "analyze_and_respond"
+
+    routing_decision = {
+        "user_id": str(user.id),
+        "target_agent": target_agent,
+        "action": action,
+        "original_message": user_message,
+        "context_energy": context.energy if context else None,
+        "context_mood": context.mood if context else None
+    }
+    
+    return routing_decision

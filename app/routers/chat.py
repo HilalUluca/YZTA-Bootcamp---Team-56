@@ -74,9 +74,9 @@ async def chat_with_ai(
         )
 
     try:
-        # 1. LangChain LLM Tanımlaması (Gemini 2.5 Flash kullanıyoruz)
+        # 1. LangChain LLM Tanımlaması (güncel Gemini Flash alias'ı)
         llm = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash",
+            model="gemini-flash-latest",
             google_api_key=settings.gemini_api_key,
             temperature=0.7 # Yaratıcılık ve netlik dengesi
         )
@@ -124,7 +124,22 @@ async def chat_with_ai(
             {"input": message.message},
             config={"configurable": {"session_id": str(current_user.id)}},
         )
-        response_text = ai_message.content
+        # Bazı Gemini modelleri content'i düz string yerine blok listesi
+        # ([{"type": "text", "text": ...}]) olarak döndürür. Sadece metni al,
+        # "extras" (base64 thought-signature vb.) alanlarını yok say.
+        raw_content = ai_message.content
+        if isinstance(raw_content, str):
+            response_text = raw_content
+        elif isinstance(raw_content, list):
+            parts = []
+            for block in raw_content:
+                if isinstance(block, str):
+                    parts.append(block)
+                elif isinstance(block, dict):
+                    parts.append(block.get("text", ""))
+            response_text = "".join(parts)
+        else:
+            response_text = str(raw_content)
 
         # 6. Mesajları kalıcı olması için veritabanına kaydet
         user_db_message = ChatMessageDB(

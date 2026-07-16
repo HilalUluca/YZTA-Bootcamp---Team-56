@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 import {
   IonContent,
   IonPage,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonCard,
   IonCardHeader,
   IonCardSubtitle,
@@ -19,6 +16,7 @@ import {
   IonLoading,
 } from '@ionic/react';
 import api from '../services/api';
+import parrotImg from '../assets/parrot-login.png';
 
 interface LoginProps {
   onLoginSuccess: () => void;
@@ -86,17 +84,61 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
   return (
     <IonPage>
-      <IonHeader>
-        <IonToolbar color="primary">
-          <IonTitle>FocusForge</IonTitle>
-        </IonToolbar>
-      </IonHeader>
+      <IonContent
+        className="ion-padding"
+        style={{ '--background': 'var(--ion-background-color)' }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            minHeight: '100%',
+          }}
+        >
+          {/* Karşılama görseli: papağan */}
+          <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+            <img
+              src={parrotImg}
+              alt="FocusForge papağanı"
+              style={{
+                width: '140px',
+                height: '140px',
+                objectFit: 'contain',
+                filter: 'drop-shadow(0 6px 16px rgba(255, 107, 53, 0.35))',
+              }}
+            />
+            <h1
+              style={{
+                fontSize: '28px',
+                fontWeight: 800,
+                margin: '8px 0 0 0',
+                color: 'var(--ion-color-primary)',
+                letterSpacing: '0.5px',
+              }}
+            >
+              FocusForge
+            </h1>
+            <p
+              style={{
+                margin: '4px 0 0 0',
+                color: 'var(--ion-color-medium)',
+                fontSize: '15px',
+              }}
+            >
+              Odaklan, üret, seviye atla 🚀
+            </p>
+          </div>
 
-      <IonContent className="ion-padding" style={{ '--background': 'var(--ion-background-color, #121212)' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '80%' }}>
-          <IonCard style={{ borderRadius: '16px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+          <IonCard
+            style={{
+              borderRadius: '16px',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+              margin: '16px 0',
+            }}
+          >
             <IonCardHeader style={{ textAlign: 'center' }}>
-              <IonCardTitle style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--ion-color-primary)' }}>
+              <IonCardTitle style={{ fontSize: '22px', fontWeight: 'bold', color: 'var(--ion-color-primary)' }}>
                 {isLoginMode ? 'Tekrar Hoş Geldin!' : 'Aramıza Katıl!'}
               </IonCardTitle>
               <IonCardSubtitle>
@@ -151,7 +193,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 <IonButton
                   expand="block"
                   type="submit"
-                  style={{ marginTop: '24px', '--border-radius': '10px', fontWeight: 'bold' }}
+                  style={{
+                    marginTop: '24px',
+                    height: '50px',
+                    '--border-radius': '25px',
+                    '--box-shadow': '0 6px 18px rgba(var(--ion-color-primary-rgb), 0.4)',
+                    fontWeight: 'bold',
+                    fontSize: '16px',
+                  }}
                 >
                   {isLoginMode ? 'Giriş Yap' : 'Kayıt Ol'}
                 </IonButton>

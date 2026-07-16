@@ -32,6 +32,13 @@
   /* Açık modda krem/ferah zemin */
   --ion-background-color: #fff8f2;
   --ion-background-color-rgb: 255, 248, 242;
+
+  /* Açık modda yazı rengi (kreme yakışan sıcak koyu ton).
+     Bunu tanımlamak ZORUNLU: aksi halde --ion-text-color boş kalır ve
+     var(--ion-text-color) kullanan yerler rengi miras alır (okunmaz beyaz olabilir).
+     Koyu modda Ionic'in dark paleti bunu :root.md ile beyaza çevirir. */
+  --ion-text-color: #2b1a12;
+  --ion-text-color-rgb: 43, 26, 18;
 }
 
 /* KOYU MOD:

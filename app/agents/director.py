@@ -6,15 +6,7 @@ Kullanıcı durumunu analiz eder, dinamik prompt üretir ve mesajı doğru ajana
 from typing import Dict, Any
 from app.models.user import User
 from app.schemas.task import UserContext
-
-# Eğer gamification servisi yerinde yoksa, hata vermemesi için basit bir mock fonksiyon:
-# from app.services.gamification import get_coach_tone
-def get_coach_tone(score: float) -> str:
-    if score < 40:
-        return "Kullanıcı disiplinsiz bir fazda. Cevapların kısa, otoriter ve mazeret kabul etmeyen net direktifler şeklinde olmalı."
-    elif score <= 70:
-        return "Kullanıcı gelişme arayışında. Motive edici ama sınırları net çizen bir ton kullan."
-    return "Kullanıcı yüksek disipline sahip. Onunla bir 'Düşünce Ortağı' gibi stratejik konuş."
+from app.services.gamification import get_coach_tone
 
 
 def build_director_system_prompt(user: User, context: UserContext = None) -> str:
@@ -52,8 +44,8 @@ def build_director_system_prompt(user: User, context: UserContext = None) -> str
     if context and context.persona:
         dynamic_persona = f"\nDİKKAT! Şu anki sistem mizaç hedefin: '{context.persona}'. Bu mizacı kesinlikle koru.\n"
 
-    # 2. Merkezi Mantıktan Tonu Al (Test için score=15.0 bırakılmıştı, bunu dinamik yapıyoruz)
-    score = user.responsibility_score if hasattr(user, 'responsibility_score') and user.responsibility_score is not None else 15.0
+    # 2. Merkezi Mantıktan Tonu Al (artık gamification.py'deki TEK doğruluk kaynağından)
+    score = user.responsibility_score if hasattr(user, 'responsibility_score') and user.responsibility_score is not None else 50.0
     tone_instruction = get_coach_tone(score)
 
     # 3. Prompt İnşası
@@ -110,22 +102,29 @@ def route_user_request(user_message: str, user: User, context: UserContext = Non
     Bu fonksiyon orkestrasyonun kalbidir.
     """
     message_lower = user_message.lower()
-    
-    # 1. Görev Ekleme/Listeleme (Planner Agent)
-    if any(keyword in message_lower for keyword in ["ekle", "görev", "yapılacak", "hatırlat", "task", "liste"]):
-        target_agent = "planner"
-        action = "manage_tasks"
-        
-    # 2. Planlama ve Strateji (Architect Agent)
-    elif any(keyword in message_lower for keyword in ["planla", "strateji", "nasıl yaparım", "böl", "matris"]):
+
+    # NOT: Sıralama önemli — "görevlerimi planla" gibi mesajlar hem "görev" hem
+    # "planla" içerir. Daha SPESİFİK niyetler (architect/coach) önce kontrol
+    # edilir; "görev/ekle/liste" gibi genel kelimeler en son, geniş kapsayıcı
+    # (catch-all) olarak kontrol edilir. Aksi halde her şey yanlışlıkla
+    # planner'a düşer ve gerçek AI analizi (prioritize/breakdown/recommend)
+    # hiç tetiklenmez.
+
+    # 1. Planlama ve Strateji (Architect Agent)
+    if any(keyword in message_lower for keyword in ["planla", "strateji", "nasıl yaparım", "böl", "matris", "önceliklendir", "sırala"]):
         target_agent = "architect"
         action = "plan_strategy"
-        
-    # 3. Motivasyon ve Kriz Yönetimi (Coach Agent)
+
+    # 2. Motivasyon ve Kriz Yönetimi (Coach Agent)
     elif any(keyword in message_lower for keyword in ["motive et", "sıkıldım", "yapamıyorum", "enerjim yok", "erteliyorum", "yorgunum"]):
         target_agent = "coach"
         action = "motivate_and_align"
-        
+
+    # 3. Görev Ekleme/Listeleme (Planner Agent) — genel kelimeler, en son kontrol edilir
+    elif any(keyword in message_lower for keyword in ["ekle", "görev", "yapılacak", "hatırlat", "task", "liste"]):
+        target_agent = "planner"
+        action = "manage_tasks"
+
     # Varsayılan (Director'ın kendisi yanıtlar)
     else:
         target_agent = "director"

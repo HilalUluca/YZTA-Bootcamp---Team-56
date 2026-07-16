@@ -119,17 +119,22 @@ def complete_onboarding(
     """
     İlk kayıt sonrası kullanıcı profilini oluşturur (cold-start çözümü).
 
-    AI'ın 1. günden anlamlı önerilerde bulunabilmesi için
-    kullanıcıdan hedefler, çalışma saatleri ve tercihler alınır.
+    Director Agent'ın 1. günden itibaren sert, rasyonel ve veriye dayalı 
+    analizler (uyku, ekran süresi, zayıflıklar) yapabilmesi için gerekli 
+    tüm biyolojik ve psikolojik verileri alır.
     """
+    # Gelen veriyi dict'e çevirip güvenli (defensive) atama yapıyoruz.
+    onboarding_dict = data.model_dump(exclude_unset=True)
+    
     current_user.ai_profile = {
-        "goals": data.goals,
-        "work_hours": {
-            "start": data.work_hours_start,
-            "end": data.work_hours_end,
-        },
-        "biggest_challenge": data.biggest_challenge,
-        "preferred_technique": data.preferred_technique,
+        "profession": onboarding_dict.get("profession", "Belirtilmemiş"),
+        "age": onboarding_dict.get("age", "Belirtilmemiş"),
+        "average_screen_time": onboarding_dict.get("average_screen_time", "Belirtilmemiş"),
+        "routine_hours_per_day": onboarding_dict.get("routine_hours_per_day", "Belirtilmemiş"),
+        "sleep_pattern": onboarding_dict.get("sleep_pattern", "Belirtilmemiş"),
+        "primary_goals": onboarding_dict.get("primary_goals", []),
+        "weaknesses": onboarding_dict.get("weaknesses", []),
+        "hobbies": onboarding_dict.get("hobbies", []),
         "onboarding_completed": True,
     }
 

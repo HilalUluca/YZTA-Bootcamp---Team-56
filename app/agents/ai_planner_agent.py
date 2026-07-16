@@ -7,10 +7,12 @@ Görev önceliklendirme ve parçalamayı yapay zeka ile gerçekleştirir.
 
 YZTA-70: Yapay zekayla görev önceliklendirme
 YZTA-71: Büyük görevleri alt görevlere bölme
+YZTA-93: 'Bugünün planı' prompt optimizasyonu (enerji bazlı sıralama, mola önerileri, motivasyon mesajı)
 """
 
 import json
 import logging
+import random
 from typing import List, Optional
 from datetime import datetime
 
@@ -119,7 +121,7 @@ def _get_llm():
         )
     
     return ChatGoogleGenerativeAI(
-        model="gemini-pro",
+        model="gemini-2.5-flash",
         google_api_key=settings.gemini_api_key,
         temperature=0.7,
         convert_system_message_to_human=True
@@ -346,8 +348,124 @@ Lütfen şu JSON formatında cevap ver:
 
 
 # ============================================================================
-# YARDIMCI FONKSİYONLAR
+# YARDIMCI FONKSİYONLAR (YZTA-93: enerji bazlı zenginleştirme)
 # ============================================================================
+
+# Enerji seviyesine göre çalışma/mola blok konfigürasyonu.
+# work_minutes: bir odak bloğunun süresi, break_minutes: sonrasındaki mola,
+# max_tasks: bu enerji seviyesinde önerilecek maksimum görev sayısı (bilişsel yük kontrolü).
+_ENERGY_CONFIG = {
+    "low": {"work_minutes": 20, "break_minutes": 10, "max_tasks": 1},
+    "medium": {"work_minutes": 35, "break_minutes": 7, "max_tasks": 3},
+    "high": {"work_minutes": 55, "break_minutes": 10, "max_tasks": 6},
+}
+
+_BREAK_SUGGESTIONS = {
+    "low": ["Kısa bir yürüyüş yap", "Su iç ve pencereden dışarı bak", "Gözlerini dinlendir"],
+    "medium": ["5 dakika esneme hareketleri yap", "Bir bardak su iç", "Derin nefes egzersizi yap"],
+    "high": ["Kısa bir mola ver ama momentumu kaybetme", "Ayağa kalk, gerinme yap", "Su iç"],
+}
+
+_MOTIVATION_MESSAGES = {
+    "low": [
+        "Bugün tüm listeyi unut. Tek bir göreve odaklan, gerisi beklesin.",
+        "Enerjin düşük, bu bir duraklama değil bir darboğaz. Sadece bir adım at.",
+        "Küçük bir başlangıç bile bugün için yeterli. Tek göreve odaklan.",
+    ],
+    "medium": [
+        "Dengeli bir tempo tutturabilirsin. Öncelikli görevlerden başla.",
+        "Bugün istikrarlı ilerleyebileceğin bir gün. Listeyi sırayla işle.",
+        "Ne çok yavaş ne çok hızlı; sağlam adımlarla ilerle.",
+    ],
+    "high": [
+        "Enerjin yüksek, bugün zor görevi ilk sıraya al ve bitir.",
+        "Bu momentumu en kritik göreve yönlendir, gerisi kolaylaşır.",
+        "Bugün ağır işi kaldırabilirsin. En zorlu görevle başla.",
+    ],
+}
+
+
+def _normalize_energy_level(energy_level: str) -> str:
+    """Beklenmeyen bir değer gelirse 'medium'a düşer, böylece sistem hata vermez."""
+    normalized = (energy_level or "medium").strip().lower()
+    return normalized if normalized in _ENERGY_CONFIG else "medium"
+
+
+def _generate_motivation_message(energy_level: str, task_count: int) -> str:
+    """Enerji seviyesine göre rotasyonlu, tekrarsız kısa motivasyon mesajı üretir."""
+    pool = _MOTIVATION_MESSAGES[energy_level]
+    message = random.choice(pool)
+    if task_count == 0:
+        return "Listende açık görev yok. Yeni bir hedef belirlemek ister misin?"
+    return message
+
+
+def _create_schedule(
+    tasks: List[PrioritizedTask],
+    available_time: int,
+    energy_level: str
+) -> List[dict]:
+    """
+    Prioritized task'lerden enerji seviyesine duyarlı bir günlük çizelge oluşturur.
+    Görev bloklarının arasına, enerjiye göre ayarlanmış mola blokları eklenir.
+
+    YZTA-93: Artık energy_level parametresi gerçekten kullanılıyor:
+    - Düşük enerji: tek (veya az sayıda) görev + sık/kısa molalar (bilişsel yük azaltma)
+    - Orta enerji: dengeli sayıda görev + orta molalar
+    - Yüksek enerji: daha fazla görev + uzun odak blokları
+    """
+    energy_level = _normalize_energy_level(energy_level)
+    config = _ENERGY_CONFIG[energy_level]
+
+    schedule: List[dict] = []
+    assigned_time = 0
+
+    # Sırala: Urgent & Important, Important, Urgent, Low (mevcut mantık korunuyor)
+    category_order = {
+        "urgent_important": 0,
+        "important": 1,
+        "urgent": 2,
+        "low": 3
+    }
+
+    sorted_tasks = sorted(
+        tasks,
+        key=lambda t: (category_order.get(t.eisenhower_category, 4), -t.priority_score)
+    )
+
+    # Enerji seviyesine göre görev sayısını sınırla (bilişsel yük kontrolü)
+    sorted_tasks = sorted_tasks[: config["max_tasks"]]
+
+    for i, task in enumerate(sorted_tasks):
+        if assigned_time >= available_time:
+            break
+
+        block_duration = min(config["work_minutes"], available_time - assigned_time)
+
+        schedule.append({
+            "block_type": "task",
+            "task_name": task.task_name,
+            "priority_score": task.priority_score,
+            "category": task.eisenhower_category,
+            "suggested_duration_minutes": block_duration,
+        })
+        assigned_time += block_duration
+
+        # Son görevden sonra mola eklemeye gerek yok
+        is_last_task = i == len(sorted_tasks) - 1
+        if not is_last_task and assigned_time < available_time:
+            break_duration = min(config["break_minutes"], available_time - assigned_time)
+            if break_duration <= 0:
+                continue
+            schedule.append({
+                "block_type": "break",
+                "suggestion": random.choice(_BREAK_SUGGESTIONS[energy_level]),
+                "duration_minutes": break_duration,
+            })
+            assigned_time += break_duration
+
+    return schedule
+
 
 async def get_ai_recommendations(
     user_tasks: List[dict],
@@ -357,6 +475,11 @@ async def get_ai_recommendations(
     """
     Kullanıcının günlük enerjisine ve kullanılabilir süresine göre 
     yapay zeka önerileri sun.
+
+    YZTA-93: Çıktı zenginleştirildi:
+    - recommended_schedule artık enerji seviyesine göre görev sayısı/blok
+      uzunluğu ayarlıyor ve mola bloklarını da içeriyor.
+    - motivation_message: enerji seviyesine göre kısa, rotasyonlu bir mesaj.
     
     Args:
         user_tasks: Görev listesi
@@ -364,25 +487,30 @@ async def get_ai_recommendations(
         available_time_minutes: Bugün kullanılabilir zaman (dakika)
     
     Returns:
-        dict: Günlük plan ve öneriler
+        dict: Günlük plan, mola önerileri ve motivasyon mesajı içeren öneri paketi
     """
     
     try:
-        context = f"Kullanıcı enerjisi: {user_energy_level}. Bugün {available_time_minutes} dakika boş zamanı var."
+        energy_level = _normalize_energy_level(user_energy_level)
+        context = f"Kullanıcı enerjisi: {energy_level}. Bugün {available_time_minutes} dakika boş zamanı var."
         
         prioritized = await prioritize_tasks(
             user_tasks,
             user_context=context
         )
         
+        schedule = _create_schedule(
+            prioritized.tasks,
+            available_time_minutes,
+            energy_level
+        )
+
         recommendation = {
             "prioritized_tasks": [t.model_dump() for t in prioritized.tasks],
             "summary": prioritized.summary,
-            "recommended_schedule": _create_schedule(
-                prioritized.tasks,
-                available_time_minutes,
-                user_energy_level
-            ),
+            "recommended_schedule": schedule,
+            "motivation_message": _generate_motivation_message(energy_level, len(prioritized.tasks)),
+            "energy_level": energy_level,
             "generated_at": datetime.now().isoformat()
         }
         
@@ -391,44 +519,3 @@ async def get_ai_recommendations(
     except Exception as e:
         logger.error(f"AI önerilendirme hatası: {str(e)}")
         raise
-
-
-def _create_schedule(
-    tasks: List[PrioritizedTask],
-    available_time: int,
-    energy_level: str
-) -> List[dict]:
-    """
-    Prioritized task'lerden günlük bir çizelge oluştur.
-    """
-    schedule = []
-    assigned_time = 0
-    
-    # Sırala: Urgent & Important, Important, Urgent, Low
-    category_order = {
-        "urgent_important": 0,
-        "important": 1,
-        "urgent": 2,
-        "low": 3
-    }
-    
-    sorted_tasks = sorted(
-        tasks,
-        key=lambda t: (category_order.get(t.eisenhower_category, 4), -t.priority_score)
-    )
-    
-    for task in sorted_tasks:
-        if assigned_time >= available_time:
-            break
-        
-        task_slot = {
-            "task_name": task.task_name,
-            "priority_score": task.priority_score,
-            "category": task.eisenhower_category,
-            "suggested_duration_minutes": min(45, available_time - assigned_time)
-        }
-        
-        schedule.append(task_slot)
-        assigned_time += task_slot["suggested_duration_minutes"]
-    
-    return schedule

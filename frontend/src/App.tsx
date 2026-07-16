@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Redirect, Route } from 'react-router-dom';
 import {
   IonApp,
@@ -11,10 +11,12 @@ import {
   setupIonicReact
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { checkboxOutline, chatbubblesOutline, personOutline } from 'ionicons/icons';
+import { homeOutline, checkboxOutline, chatbubblesOutline, personOutline, timerOutline } from 'ionicons/icons';
+import Home from './pages/Home';
 import Tab1 from './pages/Tab1';
 import Tab2 from './pages/Tab2';
 import Tab3 from './pages/Tab3';
+import Focus from './pages/Focus';
 import Login from './pages/Login';
 
 /* Core CSS required for Ionic components to work properly */
@@ -47,28 +49,70 @@ import './theme/variables.css';
 setupIonicReact();
 
 const App: React.FC = () => {
+  // "Kullanıcı giriş yapmış mı?" hafızası.
+  // Başlangıçta localStorage'da token varsa true kabul ediyoruz
+  // (böylece sayfa yenilenince tekrar giriş istemiyor).
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(
+    () => !!localStorage.getItem('token')
+  );
+
+  // Login başarılı olunca Login.tsx bu fonksiyonu çağırır.
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+  };
+
+  // Tab3'teki "Çıkış Yap" butonu bu fonksiyonu çağırır.
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // geçiş kartını sil
+    setIsLoggedIn(false); // tekrar Login ekranına dön
+  };
+
+  // Giriş yapılmamışsa: sadece Login ekranını göster.
+  if (!isLoggedIn) {
+    return (
+      <IonApp>
+        <Login onLoginSuccess={handleLoginSuccess} />
+      </IonApp>
+    );
+  }
+
+  // Giriş yapılmışsa: sekmeli uygulamayı göster.
   return (
     <IonApp>
       <IonReactRouter>
         <IonTabs>
           <IonRouterOutlet>
+            <Route exact path="/home">
+              <Home />
+            </Route>
             <Route exact path="/tab1">
               <Tab1 />
+            </Route>
+            <Route exact path="/focus">
+              <Focus />
             </Route>
             <Route exact path="/tab2">
               <Tab2 />
             </Route>
             <Route path="/tab3">
-              <Tab3 onLogout={() => console.log('Mock logout')} />
+              <Tab3 onLogout={handleLogout} />
             </Route>
             <Route exact path="/">
-              <Redirect to="/tab1" />
+              <Redirect to="/home" />
             </Route>
           </IonRouterOutlet>
           <IonTabBar slot="bottom">
+            <IonTabButton tab="home" href="/home">
+              <IonIcon aria-hidden="true" icon={homeOutline} />
+              <IonLabel>Ana Sayfa</IonLabel>
+            </IonTabButton>
             <IonTabButton tab="tab1" href="/tab1">
               <IonIcon aria-hidden="true" icon={checkboxOutline} />
               <IonLabel>Görevler</IonLabel>
+            </IonTabButton>
+            <IonTabButton tab="focus" href="/focus">
+              <IonIcon aria-hidden="true" icon={timerOutline} />
+              <IonLabel>Odaklan</IonLabel>
             </IonTabButton>
             <IonTabButton tab="tab2" href="/tab2">
               <IonIcon aria-hidden="true" icon={chatbubblesOutline} />

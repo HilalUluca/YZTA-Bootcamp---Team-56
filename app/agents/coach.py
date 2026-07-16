@@ -1,12 +1,12 @@
 import os
-from langchain_google_genai import ChatGoogleGenerAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.chat_message_histories import ChatMessageHistory
 
 # 1. Google Gemini Model Bağlantısı
-llm = ChatGoogleGenerAI(
-    model="gemini-pro", 
+llm = ChatGoogleGenerativeAI(
+    model="gemini-flash-latest",
     google_api_key=os.getenv("GEMINI_API_KEY"),
     temperature=0.7
 )

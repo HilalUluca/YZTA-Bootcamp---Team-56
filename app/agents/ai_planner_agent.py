@@ -27,6 +27,29 @@ from app.config import Settings
 logger = logging.getLogger(__name__)
 
 
+def _extract_text(response) -> str:
+    """
+    LLM yanıtından düz metni çıkarır.
+
+    Bazı Gemini modelleri content'i düz string yerine blok listesi
+    ([{"type": "text", "text": ...}]) olarak döndürür. Bu durumda sadece
+    metni birleştirir, "extras" (base64 thought-signature vb.) alanlarını
+    yok sayar; aksi halde parser.parse() liste alıp patlar.
+    """
+    content = getattr(response, "content", response)
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for block in content:
+            if isinstance(block, str):
+                parts.append(block)
+            elif isinstance(block, dict):
+                parts.append(block.get("text", ""))
+        return "".join(parts)
+    return str(content)
+
+
 # ============================================================================
 # PYDANTIC MODELLER
 # ============================================================================
@@ -121,7 +144,7 @@ def _get_llm():
         )
     
     return ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
+        model="gemini-flash-latest",
         google_api_key=settings.gemini_api_key,
         temperature=0.7,
         convert_system_message_to_human=True
@@ -236,10 +259,10 @@ Lütfen her görev için şu JSON formatında analiz yap:
         
         # LangChain chain - async
         response = await llm.ainvoke(prompt)
-        response_text = response.content
-        
+        response_text = _extract_text(response)
+
         logger.debug(f"LLM yanıtı: {response_text[:300]}...")
-        
+
         # JSON parse ve Pydantic model validation
         try:
             output = parser.parse(response_text)
@@ -324,10 +347,10 @@ Lütfen şu JSON formatında cevap ver:
         
         # LangChain chain - async
         response = await llm.ainvoke(prompt)
-        response_text = response.content
-        
+        response_text = _extract_text(response)
+
         logger.debug(f"LLM yanıtı: {response_text[:300]}...")
-        
+
         # JSON parse ve Pydantic model validation
         try:
             output = parser.parse(response_text)

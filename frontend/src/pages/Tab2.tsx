@@ -13,8 +13,10 @@ import {
   IonList,
   IonText,
   IonSpinner,
+  IonToast,
 } from '@ionic/react';
 import { send } from 'ionicons/icons';
+import api from '../services/api';
 import './Tab2.css';
 
 interface Message {
@@ -24,18 +26,42 @@ interface Message {
   timestamp: Date;
 }
 
+// İlk açılışta gösterilecek karşılama mesajı (geçmiş boşsa)
+const WELCOME_MESSAGE: Message = {
+  id: 'welcome',
+  sender: 'forge',
+  text: 'Merhaba! Ben verimlilik koçun Forge. Bugün odaklanmana nasıl yardımcı olabilirim? Hedeflerin hakkında konuşabiliriz ya da ertelediğin işleri nasıl bölebileceğimizi planlayabiliriz.',
+  timestamp: new Date(),
+};
+
 const Tab2: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'init',
-      sender: 'forge',
-      text: 'Merhaba! Ben verimlilik koçun Forge. Bugün odaklanmana nasıl yardımcı olabilirim? Hedeflerin hakkında konuşabiliriz ya da ertelediğin işleri nasıl bölebileceğimizi planlayabiliriz.',
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [inputVal, setInputVal] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
   const contentRef = useRef<HTMLIonContentElement>(null);
+
+  // Sayfa yüklendiğinde geçmiş sohbet mesajlarını backend'den çek
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const res = await api.get('/chat/history', { params: { limit: 50 } });
+        if (res.data && res.data.length > 0) {
+          const historyMessages: Message[] = res.data.map((msg: any) => ({
+            id: msg.id,
+            sender: msg.sender === 'human' ? 'user' : 'forge',
+            text: msg.message,
+            timestamp: new Date(msg.created_at),
+          }));
+          setMessages((prev) => [...prev, ...historyMessages]);
+        }
+      } catch (err: any) {
+        console.log('Sohbet geçmişi yüklenemedi:', err.message);
+      }
+    };
+    loadHistory();
+  }, []);
 
   // Yeni mesaj eklendiğinde en alta kaydır
   useEffect(() => {
@@ -45,6 +71,26 @@ const Tab2: React.FC = () => {
   const scrollToBottom = () => {
     if (contentRef.current) {
       contentRef.current.scrollToBottom(300);
+    }
+  };
+
+  // Geçmiş sohbeti yükle: GET /api/chat/history
+  const loadHistory = async () => {
+    try {
+      const res = await api.get('/chat/history', { params: { limit: 50 } });
+      // Backend sender'ı "human"/"ai" döndürür; arayüzde "user"/"forge"e çeviriyoruz.
+      const history: Message[] = (res.data || []).map((m: any) => ({
+        id: m.id,
+        sender: m.sender === 'human' ? 'user' : 'forge',
+        text: m.message,
+        timestamp: m.created_at ? new Date(m.created_at) : new Date(),
+      }));
+      // Geçmiş varsa onu göster; yoksa karşılama mesajı kalır.
+      if (history.length > 0) {
+        setMessages(history);
+      }
+    } catch (err) {
+      // Geçmiş yüklenemezse sessizce karşılama mesajıyla devam et.
     }
   };
 
@@ -65,27 +111,33 @@ const Tab2: React.FC = () => {
     setMessages((prev) => [...prev, newUserMessage]);
     setIsSending(true);
 
-    // Mock yanıt listesi
-    const mockReplies = [
-      "Harika bir noktaya değindin! Görevlerini tamamlamak için 25 dakikalık bir Pomodoro seansı başlatmamı ister misin?",
-      "Erteleme davranışının önüne geçmek için bu görevi 15'er dakikalık 3 küçük parçaya bölmeyi deneyelim.",
-      "Bu hedef gerçekten çok önemli. Odaklanmanı artırmak için telefonunu başka bir odaya bırakmanı öneririm.",
-      "Çok iyi gidiyorsun! Motivasyonunu yüksek tutmak için küçük adımlarla ilerlemeye devam et.",
-      "Stres seviyeni azaltmak için 2 dakikalık bir nefes egzersizi yapmak ister misin?"
-    ];
+    try {
+      // Backend'deki POST /api/chat/ endpoint'ine gerçek istek at
+      const res = await api.post('/chat/', { message: userText });
 
-    const randomReply = mockReplies[Math.floor(Math.random() * mockReplies.length)];
-
-    setTimeout(() => {
       const forgeResponse: Message = {
         id: Math.random().toString(),
         sender: 'forge',
-        text: randomReply,
+        text: res.data.response,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, forgeResponse]);
+    } catch (err: any) {
+      const errorText =
+        err.response?.status === 401
+          ? 'Oturum süresi dolmuş. Lütfen tekrar giriş yapın.'
+          : err.response?.data?.detail || 'AI koçuna ulaşılamadı. Lütfen tekrar deneyin.';
+
+      const errorMessage: Message = {
+        id: Math.random().toString(),
+        sender: 'forge',
+        text: `⚠️ ${errorText}`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
       setIsSending(false);
-    }, 1200);
+    }
   };
 
   return (
@@ -165,7 +217,11 @@ const Tab2: React.FC = () => {
                 placeholder="Forge'a bir mesaj yazın..."
                 onIonInput={(e) => setInputVal(e.detail.value!)}
                 disabled={isSending}
-                style={{ '--padding-start': '8px' }}
+                style={{
+                  '--padding-start': '8px',
+                  '--color': 'var(--ion-text-color)',
+                  '--placeholder-color': 'var(--ion-color-medium)',
+                }}
               />
             </IonItem>
             <IonButton
@@ -179,6 +235,14 @@ const Tab2: React.FC = () => {
           </form>
         </IonToolbar>
       </IonFooter>
+
+      <IonToast
+        isOpen={showToast}
+        onDidDismiss={() => setShowToast(false)}
+        message={toastMessage}
+        duration={3000}
+        color="danger"
+      />
     </IonPage>
   );
 };

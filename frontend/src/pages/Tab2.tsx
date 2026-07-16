@@ -42,8 +42,24 @@ const Tab2: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const contentRef = useRef<HTMLIonContentElement>(null);
 
-  // Açılışta geçmiş sohbeti backend'den yükle
+  // Sayfa yüklendiğinde geçmiş sohbet mesajlarını backend'den çek
   useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const res = await api.get('/chat/history', { params: { limit: 50 } });
+        if (res.data && res.data.length > 0) {
+          const historyMessages: Message[] = res.data.map((msg: any) => ({
+            id: msg.id,
+            sender: msg.sender === 'human' ? 'user' : 'forge',
+            text: msg.message,
+            timestamp: new Date(msg.created_at),
+          }));
+          setMessages((prev) => [...prev, ...historyMessages]);
+        }
+      } catch (err: any) {
+        console.log('Sohbet geçmişi yüklenemedi:', err.message);
+      }
+    };
     loadHistory();
   }, []);
 
@@ -96,8 +112,9 @@ const Tab2: React.FC = () => {
     setIsSending(true);
 
     try {
-      // Gerçek AI cevabı: POST /api/chat/  { message }
+      // Backend'deki POST /api/chat/ endpoint'ine gerçek istek at
       const res = await api.post('/chat/', { message: userText });
+
       const forgeResponse: Message = {
         id: Math.random().toString(),
         sender: 'forge',
@@ -105,10 +122,19 @@ const Tab2: React.FC = () => {
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, forgeResponse]);
-    } catch (err) {
-      // Sahte cevap yok; kullanıcıya net hata göster. Yazdığı mesaj listede kalır.
-      setToastMessage('Forge şu an yanıt veremedi. Lütfen biraz sonra tekrar dene.');
-      setShowToast(true);
+    } catch (err: any) {
+      const errorText =
+        err.response?.status === 401
+          ? 'Oturum süresi dolmuş. Lütfen tekrar giriş yapın.'
+          : err.response?.data?.detail || 'AI koçuna ulaşılamadı. Lütfen tekrar deneyin.';
+
+      const errorMessage: Message = {
+        id: Math.random().toString(),
+        sender: 'forge',
+        text: `⚠️ ${errorText}`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsSending(false);
     }

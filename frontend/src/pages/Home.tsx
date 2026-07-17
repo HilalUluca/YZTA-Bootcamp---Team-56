@@ -27,9 +27,12 @@ import {
   flameOutline,
   trophyOutline,
   alertCircleOutline,
+  journalOutline,
+  chevronForwardOutline,
 } from 'ionicons/icons';
 import api from '../services/api';
 import parrotImg from '../assets/parrot-login.png';
+import Reflection, { ReflectionData } from './Reflection';
 
 interface DashboardData {
   user: {
@@ -65,6 +68,10 @@ const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Günlük yansıma
+  const [todayReflection, setTodayReflection] = useState<ReflectionData | null>(null);
+  const [showReflection, setShowReflection] = useState<boolean>(false);
+
   const loadDashboard = async () => {
     setIsLoading(true);
     setError(null);
@@ -78,12 +85,23 @@ const Home: React.FC = () => {
     }
   };
 
+  // Bugünün yansıması var mı? Backend yoksa 404 döner → henüz yapılmamış demektir.
+  const loadTodayReflection = async () => {
+    try {
+      const res = await api.get('/reflections/today');
+      setTodayReflection(res.data);
+    } catch (err) {
+      setTodayReflection(null);
+    }
+  };
+
   useEffect(() => {
     loadDashboard();
+    loadTodayReflection();
   }, []);
 
   const handleRefresh = async (event: CustomEvent) => {
-    await loadDashboard();
+    await Promise.all([loadDashboard(), loadTodayReflection()]);
     event.detail.complete();
   };
 
@@ -238,8 +256,44 @@ const Home: React.FC = () => {
                 )}
               </IonCardContent>
             </IonCard>
+
+            {/* Günlük Yansıma kartı — bugünün durumunu gösterir, modalı açar */}
+            <IonCard
+              button
+              onClick={() => setShowReflection(true)}
+              style={{ borderRadius: '16px', marginTop: '10px' }}
+            >
+              <IonCardContent>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <IonIcon
+                    icon={todayReflection ? checkmarkDoneOutline : journalOutline}
+                    style={{ fontSize: '28px', color: todayReflection ? 'var(--ion-color-tertiary)' : 'var(--ion-color-primary)' }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <h2 style={{ margin: 0, fontSize: '17px', fontWeight: 'bold' }}>
+                      {todayReflection ? 'Bugünü değerlendirdin ✓' : 'Günlük Yansıma'}
+                    </h2>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: 'var(--ion-color-medium)' }}>
+                      {todayReflection ? 'Görüntüle veya düzenle' : 'Günün nasıl geçti? Kısa bir değerlendirme yap.'}
+                    </p>
+                  </div>
+                  <IonIcon icon={chevronForwardOutline} style={{ color: 'var(--ion-color-medium)' }} />
+                </div>
+              </IonCardContent>
+            </IonCard>
           </>
         )}
+
+        {/* Günlük yansıma modalı */}
+        <Reflection
+          isOpen={showReflection}
+          onClose={() => setShowReflection(false)}
+          existing={todayReflection}
+          onSaved={(r) => {
+            setTodayReflection(r);
+            loadDashboard(); // XP/veri güncellensin
+          }}
+        />
       </IonContent>
     </IonPage>
   );

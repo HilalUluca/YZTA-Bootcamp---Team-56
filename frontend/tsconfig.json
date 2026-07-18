@@ -1,10 +1,7 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "useDefineForClassFields": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "allowJs": false,
-    "skipLibCheck": true,
+    "compilerOptions": {
+    "ignoreDeprecations": "6.0", 
+    // Mevcut ayarların burada kalmaya devam edecek...
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "strict": true,

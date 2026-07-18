@@ -11,6 +11,16 @@ class ChatMessage(BaseModel):
         default=None,
         description="Opsiyonel bağlam: 'motivation', 'planning', 'reflection'"
     )
+    # YENİ EKLENEN: UserContext (mood/energy) için opsiyonel alanlar.
+    # Frontend doldurmazsa None kalır, Director "Bilinmiyor" olarak yorumlar.
+    mood: Optional[str] = Field(
+        default=None,
+        description="Anlık ruh hali (örn: stresli, yorgun, enerjik)"
+    )
+    energy: Optional[int] = Field(
+        default=None, ge=1, le=10,
+        description="1-10 arası anlık enerji seviyesi"
+    )
 
 
 class ChatResponse(BaseModel):

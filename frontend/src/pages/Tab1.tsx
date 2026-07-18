@@ -34,7 +34,7 @@ import {
   IonCol,
   IonChip,
 } from '@ionic/react';
-import { add, alertCircleOutline, hourglassOutline, flameOutline, trophyOutline, flashOutline, statsChartOutline, trashOutline } from 'ionicons/icons';
+import { add, alertCircleOutline, hourglassOutline, flameOutline, trophyOutline, flashOutline, statsChartOutline, trashOutline, calendarOutline, gitBranchOutline } from 'ionicons/icons';
 import api from '../services/api';
 import './Tab1.css';
 
@@ -45,7 +45,8 @@ interface Task {
   priority: string;
   status: string;
   estimated_minutes?: number;
-  due_date?: string;
+  due_date?: string | null;
+  parent_task_id?: string | null;
 }
 
 interface DashboardData {
@@ -200,11 +201,36 @@ const Tab1: React.FC = () => {
     }
   };
 
+  // Deadline rozetini hazırlar: gecikmiş / bugün / yarın / tarih
+  const getDueInfo = (iso: string, isDone: boolean) => {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    const gunBasi = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    const farkGun = Math.round((gunBasi(d) - gunBasi(new Date())) / 86400000);
+    const tarihYazi = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+
+    // Tamamlanmış görevde "gecikti" uyarısı göstermeye gerek yok
+    if (isDone) return { label: tarihYazi, color: 'medium' };
+    if (farkGun < 0) return { label: `${Math.abs(farkGun)} gün gecikti`, color: 'danger' };
+    if (farkGun === 0) return { label: 'Bugün', color: 'warning' };
+    if (farkGun === 1) return { label: 'Yarın', color: 'warning' };
+    return { label: tarihYazi, color: 'medium' };
+  };
+
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'success';
     if (score >= 50) return 'warning';
     return 'danger';
   };
+
+  // Alt görev sayıları: hangi görevin kaç alt görevi var?
+  // Backend ayrı bir alan döndürmüyor; listedeki parent_task_id'lerden türetiyoruz.
+  const subtaskCounts: Record<string, number> = {};
+  tasks.forEach((t) => {
+    if (t.parent_task_id) {
+      subtaskCounts[t.parent_task_id] = (subtaskCounts[t.parent_task_id] || 0) + 1;
+    }
+  });
 
   return (
     <IonPage>
@@ -316,12 +342,38 @@ const Tab1: React.FC = () => {
                     style={{ marginRight: '16px' }}
                   />
                   <IonLabel style={{ opacity: task.status === 'done' ? 0.6 : 1 }}>
+                    {/* Bu görev bir alt görevse belli olsun */}
+                    {task.parent_task_id && (
+                      <p style={{ margin: '0 0 2px 0', fontSize: '12px', color: 'var(--ion-color-medium)' }}>
+                        ↳ alt görev
+                      </p>
+                    )}
                     <h2 style={{ textDecoration: task.status === 'done' ? 'line-through' : 'none', fontWeight: 'bold' }}>
                       {task.title}
                     </h2>
                     <p>{task.description || 'Açıklama yok'}</p>
-                    <div style={{ marginTop: '8px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div style={{ marginTop: '8px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                       {getPriorityBadge(task.priority)}
+
+                      {/* Deadline / tarih */}
+                      {task.due_date && (() => {
+                        const due = getDueInfo(task.due_date, task.status === 'done');
+                        return due ? (
+                          <IonBadge color={due.color} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <IonIcon icon={calendarOutline} />
+                            {due.label}
+                          </IonBadge>
+                        ) : null;
+                      })()}
+
+                      {/* Alt görev sayısı */}
+                      {subtaskCounts[task.id] > 0 && (
+                        <IonBadge color="tertiary" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <IonIcon icon={gitBranchOutline} />
+                          {subtaskCounts[task.id]} alt görev
+                        </IonBadge>
+                      )}
+
                       {task.estimated_minutes && (
                         <IonBadge color="light" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <IonIcon icon={hourglassOutline} />

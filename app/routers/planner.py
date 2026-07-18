@@ -18,6 +18,7 @@ from app.database import get_db
 from app.models.user import User
 from app.models.task import Task, TaskStatus, TaskPriority
 from app.services.auth import get_current_user
+from app.agents.ai_planner_agent import get_ai_recommendations
 
 router = APIRouter(prefix="/api/planner", tags=["AI Planlama"])
 
@@ -82,7 +83,7 @@ async def create_daily_plan(
     Kullanicinin acik gorevlerini + enerji seviyesini alir,
     Gemini API ile analiz edip oncelikli plan dondurur.
     """
-    from app.services.ai_planner_agent import get_ai_recommendations
+    
 
     # Kullanicinin acik gorevlerini al
     tasks = (

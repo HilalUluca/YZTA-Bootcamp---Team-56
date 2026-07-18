@@ -12,7 +12,6 @@ import {
   IonIcon,
   IonList,
   IonText,
-  IonSpinner,
   IonToast,
 } from '@ionic/react';
 import { send } from 'ionicons/icons';
@@ -224,10 +223,12 @@ const Tab2: React.FC = () => {
                   gap: '8px',
                 }}
               >
-                <IonSpinner name="dots" color="primary" />
-                <IonText style={{ fontSize: '13px', color: 'var(--ion-color-medium)' }}>
-                  Forge düşünüyor...
-                </IonText>
+                {/* Forge yazıyor: üç nokta sırayla zıplar (stil Tab2.css'te) */}
+                <div className="forge-typing" role="status" aria-label="Forge yazıyor">
+                  <span />
+                  <span />
+                  <span />
+                </div>
               </div>
             </div>
           )}

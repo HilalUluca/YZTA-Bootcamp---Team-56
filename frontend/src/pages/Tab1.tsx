@@ -6,6 +6,8 @@ import {
   IonTitle,
   IonToolbar,
   IonList,
+  IonSegment,
+  IonSegmentButton,
   IonItem,
   IonItemSliding,
   IonItemOptions,
@@ -36,6 +38,7 @@ import {
 } from '@ionic/react';
 import { add, alertCircleOutline, hourglassOutline, flameOutline, trophyOutline, flashOutline, statsChartOutline, trashOutline, calendarOutline, gitBranchOutline } from 'ionicons/icons';
 import api from '../services/api';
+import EisenhowerMatrix from './EisenhowerMatrix';
 import './Tab1.css';
 
 interface Task {
@@ -82,6 +85,7 @@ const Tab1: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'matrix'>('list'); // liste / Eisenhower matrisi
   const [showModal, setShowModal] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
@@ -315,7 +319,23 @@ const Tab1: React.FC = () => {
         {/* Görev Listesi */}
         <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Görevlerim</h3>
 
-        {error ? (
+        {/* Görünüm değiştirme: Liste / Eisenhower matrisi */}
+        <IonSegment
+          value={viewMode}
+          onIonChange={(e) => setViewMode(e.detail.value as 'list' | 'matrix')}
+          style={{ marginBottom: '12px' }}
+        >
+          <IonSegmentButton value="list">
+            <IonLabel>Liste</IonLabel>
+          </IonSegmentButton>
+          <IonSegmentButton value="matrix">
+            <IonLabel>Matris</IonLabel>
+          </IonSegmentButton>
+        </IonSegment>
+
+        {viewMode === 'matrix' ? (
+          <EisenhowerMatrix />
+        ) : error ? (
           <div style={{ textAlign: 'center', marginTop: '40px', color: 'var(--ion-color-danger)' }}>
             <IonIcon icon={alertCircleOutline} style={{ fontSize: '64px' }} />
             <h3>Bir sorun oluştu</h3>

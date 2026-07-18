@@ -37,6 +37,34 @@ SCORE_RULES = {
 }
 
 
+def get_coach_tone(score: float) -> str:
+    """
+    Sorumluluk skoruna gore AI kocun kullanacagi tonu dondurur.
+    Bu, calculate_responsibility_score() ile AYNI 4 kademeli esik tablosunu
+    kullanan TEK dogruluk kaynagidir. Director agent de bu fonksiyonu
+    dogrudan import ederek kullanir (kendi kopyasini olusturmaz).
+    """
+    if score >= 80:
+        return "Tesvik edici ve ovgu dolu. Kullaniciyi kutla, basarilarini vurgula."
+    elif score >= 50:
+        return "Dengeli ve stratejik. Destekleyici ama gelistirme alanlarina da degin."
+    elif score >= 30:
+        return "Sert ama adil. Net konusmali, somut adimlar sunmali."
+    else:
+        return "Hesap soran, zorlayici. Erteleme nedenlerini sorgula, acil plan olustur."
+
+
+def _get_level(score: float) -> str:
+    """Skora karsilik gelen seviye etiketini dondurur (excellent/good/fair/poor)."""
+    if score >= 80:
+        return "excellent"
+    elif score >= 50:
+        return "good"
+    elif score >= 30:
+        return "fair"
+    return "poor"
+
+
 def calculate_responsibility_score(user: User, db: Session) -> dict:
     """
     Kullanicinin sorumluluk skorunu hesaplar.
@@ -116,24 +144,10 @@ def calculate_responsibility_score(user: User, db: Session) -> dict:
     # 0-100 araliginda tut
     score = max(0.0, min(100.0, score))
 
-    # Seviye ve koc tonu belirle
-    if score >= 80:
-        level = "excellent"
-        coach_tone = "Tesvik edici ve ovgu dolu. Kullaniciyi kutla, basarilarini vurgula."
-    elif score >= 50:
-        level = "good"
-        coach_tone = "Dengeli ve stratejik. Destekleyici ama gelistirme alanlarina da degin."
-    elif score >= 30:
-        level = "fair"
-        coach_tone = "Sert ama adil. Net konusmali, somut adimlar sunmali."
-    else:
-        level = "poor"
-        coach_tone = "Hesap soran, zorlayici. Erteleme nedenlerini sorgula, acil plan olustur."
-
     return {
         "score": round(score, 1),
-        "level": level,
-        "coach_tone": coach_tone,
+        "level": _get_level(score),
+        "coach_tone": get_coach_tone(score),
         "breakdown": {
             "tasks_on_time": on_time,
             "tasks_late": late,

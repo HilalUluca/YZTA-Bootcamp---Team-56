@@ -23,7 +23,9 @@ from app.models.user import User
 from app.models.task import Task, TaskStatus, TaskPriority
 from app.schemas.task import TaskCreate, TaskUpdate, TaskResponse, TaskListResponse
 from app.services.auth import get_current_user
-
+from app.agents.ai_planner_agent import break_down_task
+from app.agents.ai_planner_agent import prioritize_tasks
+ 
 router = APIRouter(prefix="/api/tasks", tags=["Görev Yönetimi"])
 
 
@@ -236,7 +238,7 @@ async def prioritize_user_tasks(
     - Gemini API ile analiz eder
     - Her goreve oncelik skoru ve kategori atar
     """
-    from app.services.ai_planner_agent import prioritize_tasks
+
 
     # Kullanicinin acik gorevlerini al
     tasks = (
@@ -291,7 +293,6 @@ async def break_down_user_task(
     Ornek: "Web sitesi gelistir" -> 5-8 alt gorev
     Her alt gorev icin tahmini sure ve aciklama doner.
     """
-    from app.services.ai_planner_agent import break_down_task
 
     try:
         result = await break_down_task(

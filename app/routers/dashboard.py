@@ -177,3 +177,24 @@ def get_dashboard(
         "last_reflection": last_reflection_data,
         "generated_at": now.isoformat(),
     }
+
+
+@router.get("/mood-habit-correlation")
+def get_mood_habit_correlation_endpoint(
+    days: int = 30,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Sage (Analist Ajanı) üzerinden kullanıcının son N gün içerisindeki ruh hali ve 
+    alışkanlık tamamlamaları arasındaki ilişkiyi (korelasyon) ve AI içgörüsünü getirir.
+    """
+    from app.agents.analytics import run_mood_habit_analysis
+    
+    if days < 7 or days > 90:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Gün sayısı 7 ile 90 arasında olmalıdır."
+        )
+        
+    return run_mood_habit_analysis(user=current_user, db=db, days=days)

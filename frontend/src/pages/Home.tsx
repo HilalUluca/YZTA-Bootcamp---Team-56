@@ -29,10 +29,12 @@ import {
   alertCircleOutline,
   journalOutline,
   chevronForwardOutline,
+  sparklesOutline,
 } from 'ionicons/icons';
 import api from '../services/api';
 import parrotImg from '../assets/parrot-login.png';
 import Reflection, { ReflectionData } from './Reflection';
+import DailyPlan from './DailyPlan';
 
 interface DashboardData {
   user: {
@@ -71,6 +73,9 @@ const Home: React.FC = () => {
   // Günlük yansıma
   const [todayReflection, setTodayReflection] = useState<ReflectionData | null>(null);
   const [showReflection, setShowReflection] = useState<boolean>(false);
+
+  // AI günlük plan
+  const [showPlan, setShowPlan] = useState<boolean>(false);
 
   const loadDashboard = async () => {
     setIsLoading(true);
@@ -254,6 +259,16 @@ const Home: React.FC = () => {
                     ))}
                   </IonList>
                 )}
+
+                {/* AI ile günü planla — görev olsun olmasın HER ZAMAN görünür */}
+                <IonButton
+                  expand="block"
+                  onClick={() => setShowPlan(true)}
+                  style={{ marginTop: '16px', '--border-radius': '25px', fontWeight: 'bold' }}
+                >
+                  <IonIcon slot="start" icon={sparklesOutline} />
+                  AI ile Günü Planla
+                </IonButton>
               </IonCardContent>
             </IonCard>
 
@@ -293,6 +308,13 @@ const Home: React.FC = () => {
             setTodayReflection(r);
             loadDashboard(); // XP/veri güncellensin
           }}
+        />
+
+        {/* AI günlük plan modalı */}
+        <DailyPlan
+          isOpen={showPlan}
+          onClose={() => setShowPlan(false)}
+          openTaskCount={remaining}
         />
       </IonContent>
     </IonPage>

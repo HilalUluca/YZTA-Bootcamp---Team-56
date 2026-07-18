@@ -171,10 +171,45 @@ Sprint 1 boyunca gerçekleştirdiğimiz günlük durum değerlendirmeleri, planl
 </details>
 
 <details>
-<summary><b> Sprint 2 (Planlama Aşamasında)</b></summary>
+<summary><b> Sprint 2 </b></summary>
 <br>
+  
+### 📑 Backlog Düzeni ve Story Seçimleri 
+Backlog'umuz projenin öncelikli çalışan iskeletini (MVP) ayağa kaldıracak kullanıcı hikayelerine (**User Story**) göre dizilmiştir. Sprint başına tahmin edilen toplam hikaye puanı, ekip üyelerinin takvim yoğunlukları dengelenerek yapılmaya çalışılsa da Frontend alanında bir darboğaz yaşanmıştır. Story başına çıkan tahmin puanı, toplam puanın yarısından az tutularak risk minimize edilmiştir. Story'ler yapılacak alt teknik işlere (task'lere) bölünerek JIRA panosuna işlenmiştir.
 
-* 
+### 💬 Daily Scrum 
+Takım üyelerinin farklı şehirlerdeki yoğun takvimleri nedeniyle zamanı doğru yönetmek adına Daily Scrum toplantılarının **Slack veya WhatsApp üzerinden yazılı** ve **Meet üzerinden sesli** olmak üzere hibrit yürütülmesine karar verilmiştir. 
+
+Sprint 2 boyunca gerçekleştirdiğimiz durum değerlendirmeleri, planlama diyalogları ve akran öğrenimi süreçlerinin tüm ekran görüntüsü kanıtlarına aşağıdaki bağlantıdan tek bir klasör altında şeffafça ulaşabilirsiniz:![Daily Scrum](Project%20Management/Daily%20Scrum)
+### 📊 Sprint Board Update & Ürün Durumu
+
+| 🔄 JIRA Sprint Board | 📱 Product Screenshot |
+| :--- | :--- |
+| [🔗 JIRA Sprint Board Görünümü](./Project%20Management/Daily%20Scrum/Jira%20Board%201.png) | [🔗 FastAPI Swagger UI Ürün Görünümü](./UI%20Gallery/Sprint%201/FASTAPI%20Swagger%20UI%201.png) |
+
+
+
+* ## 🔎 Sprint Review 
+
+*   **Sprint Hedefi:** Projenin öncelikli olarak hedeflenen "basit bir şekilde çalışan uygulama (MVP)" iskeletinin ayağa kaldırılması, backend ve yapay zeka (AI) servislerinin entegrasyonudur.
+*   **Mevcut Durum:** Hedef başarıyla tamamlanmıştır. Ana mimari üzerinde çalışan, kararlı ve entegre bir sistem çıktısı elde edilmiştir.
+
+### 🛠️ 2. Tamamlanan ve Demo Edilecek İşler (Done & Ready for Demo)
+*   **Mimari Optimizasyon ve Bug Çözümü:** Sistemin ayağa kalkmasını engelleyen, router/agent yönlendirmelerindeki `HTTP 500` (Internal Server Error) hataları, AI chat entegrasyonu ve mock data sorunu analitik yöntemlerle çözülmüş, mimari kararlı hale getirilmiştir.
+*   **Backend & AI Entegrasyonu:** Planlanan tüm backend servisleri ve yapay zeka modülleri başarıyla birleştirilmiş, API uçları (endpoints) çalışır şekilde teslim edilmiştir.
+*   **Git Flow & Kalite Kontrol:** Tüm süreç boyunca repository temiz tutulmuş, açılan Pull Request'ler (PR) conflict içermeyecek şekilde incelenmiş (Review) ve ana dala (main/develop) merge edilmiştir.
+
+### ⚠️ 3. Karşılaşılan Zorluklar ve Tespitler (Impediments & Findings)
+*   **Asenkron İletişim Eksikliği:** Uygulanan otonom/asenkron iletişim modelinin, takım içi koordinasyonu zayıflattığı ve aksamalara yol açtığı net bir şekilde tespit edilmiştir.
+*   **Frontend İş Yükü Dengesi:** Tek kişinin üzerinde kalan Frontend arayüzü tarafında bariz bir iş yükü dengesizliği ve darboğaz oluşmuştur. Çözüm için bir toplantı yapılıp sonuca bağlanmış ancak asenkron iletişimde tekrar bir tıkanıklık oluşmasıyla Frontend iş yükü paylaşımının çözümü Sprint 3'e bırakılmıştır.
+
+### 🎯 4. Bir Sonraki Adım 
+*   Toplantı kararları doğrultusunda, asenkron yapının getirdiği kopuklukları kırmak adına **biri hafta içi, diğeri hafta sonu** olmak üzere haftada 2 senkron toplantı periyodu başlatılacaktır.
+*  Sprint 3 planlamasında doğrudan frontend iş yükü dengesizliğini çözmek adına bu aksiyona geçilecektir.
+
+* ## 🔎 Sprint 2 Retrospective 
+*   **Neleri Geliştirmeliyiz?:** Asenkron iletişimin güçsüz kalması nedeniyle Frontend iş bölümü yapılmasının havada kaldığı ve frontend tarafında büyük bir iş yükü dengesizliği yaşandığı fark edilmiştir.
+*   **Aksiyon Kararı (Sprint 3 Geçişi):** İletişim kopukluğunu çözmek adına bundan sonra her hafta sabit olmak üzere biri hafta içi, diğeri hafta sonu olacak şekilde haftada 2 senkron toplantı yapılmasına karar verilmiştir. Sprint 3'e başlanmadan Frontend iş yükü probleminin çözülmesi hedeflenmiştir.
 
 </details>
 

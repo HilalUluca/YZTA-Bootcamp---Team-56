@@ -127,11 +127,17 @@ FocusForge takımının Çevik (Agile) yönetim süreçleri, maliyet/efor analiz
 
 ### 📌 Sprint 1 Kapasite Raporu
 * **Toplam İş Yükü (Total Story Points):** 82 Puan
-* **1. Hafta Tamamlanan (Completed):** 43 Puan
-* **2. Hafta İçin Kalan (Remaining):** 39 Puan
+* **Tamamlanan (Completed):** 43 Puan
+* **Kalan (Remaining):** 39 Puan
+
+### 📌 Sprint 2 Kapasite Raporu
+* **Toplam İş Yükü (Total Story Points):** 289 Puan
+* **Tamamlanan (Completed):** 43 Puan
+* **Kalan (Remaining):** 39 Puan
+
 
 ### 🔗 Canlı Yönetim Panosu
-Ekibimizin güncel Product Backlog'una, görev atamalarına ve 1. Sprint Burndown (Erime) grafiğine aşağıdaki bağlantıdan ulaşabilirsiniz:
+Ekibimizin güncel Product Backlog'una, görev atamalarına ve 1. ve 2. Sprint Burndown (Erime) grafiğine aşağıdaki bağlantıdan ulaşabilirsiniz:
 
 👉 **[FocusForge Miro Sprint Board & Burndown Chart](https://miro.com/welcomeonboard/U3BtZmFtcDgzYm1GdmlXUlUrZDNDU08vSFhwYmpZd01VcnlXeCtrRmhkQVZQSG5xbkxKeHZJaEkrd2d6WHNKVms5b01PVzVlR1JFRlN0a3VHYnNFOEtyd0wwMlhKTU0rSjhuUjRlUjhSVUlVQW9PckRwemF4M0dtK1hhZFFQaWlNakdSWkpBejJWRjJhRnhhb1UwcS9BPT0hdjE=?share_link_id=809806536559)**
 
@@ -185,7 +191,7 @@ Sprint 2 boyunca gerçekleştirdiğimiz durum değerlendirmeleri, planlama diyal
 
 | 🔄 JIRA Sprint Board | 📱 Product Screenshot |
 | :--- | :--- |
-| [🔗 JIRA Sprint Board Görünümü](Project%20Management/Jira%20Board,%20Sprint%202) | [🔗 UI Ürün Görünümü](Project%20Management/Jira%20Board,%20Sprint2) |
+| [🔗 JIRA Sprint Board Görünümü](Project%20Management/Jira%20Board,%20Sprint2) | [🔗 UI Ürün Görünümü](UI%20Gallery/Sprint%202) |
 
 
 * ## 🔎 Sprint Review 

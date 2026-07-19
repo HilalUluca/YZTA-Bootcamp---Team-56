@@ -175,41 +175,40 @@ Sprint 1 boyunca gerçekleştirdiğimiz günlük durum değerlendirmeleri, planl
 <br>
   
 ### 📑 Backlog Düzeni ve Story Seçimleri 
-Backlog'umuz projenin öncelikli çalışan iskeletini (MVP) ayağa kaldıracak kullanıcı hikayelerine (**User Story**) göre dizilmiştir. Sprint başına tahmin edilen toplam hikaye puanı, ekip üyelerinin takvim yoğunlukları dengelenerek yapılmaya çalışılsa da Frontend alanında bir darboğaz yaşanmıştır. Story başına çıkan tahmin puanı, toplam puanın yarısından az tutularak risk minimize edilmiştir. Story'ler yapılacak alt teknik işlere (task'lere) bölünerek JIRA panosuna işlenmiştir.
+Backlog'umuz projenin öncelikli çalışan iskeletini (MVP) ayağa kaldıracak kullanıcı hikayelerine (User Story) göre dizilmiştir. Sprint 1'de yaşanan frontend darboğazını ve kapasite aşımını (over-commitment) çözmek adına, Sprint 2'de yapay zeka (AI) araçlarının çarpan etkisi rasyonel bir şekilde hesaba katılmıştır. Saf UI tasarımlarının puan yükü AI desteğiyle düşürülmüş, el emeği gerektiren kritik altyapı, veri tabanı migrasyonları ve entegrasyon işlerinin puanları ise gerçekçi seviyelere çekilerek dengelenmiştir. Story'ler yapılacak alt teknik işlere (task'lere) bölünerek JIRA panosuna işlenmiştir.
 
 ### 💬 Daily Scrum 
-Takım üyelerinin farklı şehirlerdeki yoğun takvimleri nedeniyle zamanı doğru yönetmek adına Daily Scrum toplantılarının **Slack veya WhatsApp üzerinden yazılı** ve **Meet üzerinden sesli** olmak üzere hibrit yürütülmesine karar verilmiştir. 
+Hibrit ve asenkron iletişim modelinin, takım içi senkronizasyonu yavaşlattığı ve geliştirme süreçlerinde kopukluklara yol açtığı tespit edilmiştir. Bu verimsizliği kırmak ve takvimi daha sıkı yönetmek adına Sprint 2 itibarıyla **asenkron modelin yanında** haftada 2 kez zorunlu, canlı ve odaklanmış **Meet toplantıları** düzenlenmesine ve tüm teknik krizlerin anlık aksiyonlarla çözülmesine karar verilmiştir.
 
-Sprint 2 boyunca gerçekleştirdiğimiz durum değerlendirmeleri, planlama diyalogları ve akran öğrenimi süreçlerinin tüm ekran görüntüsü kanıtlarına aşağıdaki bağlantıdan tek bir klasör altında şeffafça ulaşabilirsiniz:![Daily Scrum](Project%20Management/Daily%20Scrum)
+Sprint 2 boyunca gerçekleştirdiğimiz durum değerlendirmeleri, planlama diyalogları ve akran öğrenimi süreçlerinin tüm ekran görüntüsü kanıtlarına aşağıdaki bağlantıdan tek bir klasör altında şeffafça ulaşabilirsiniz:![Daily Scrum](Project%20Management/Daily%20Scrum,%20Sprint%202)
 ### 📊 Sprint Board Update & Ürün Durumu
 
 | 🔄 JIRA Sprint Board | 📱 Product Screenshot |
 | :--- | :--- |
-| [🔗 JIRA Sprint Board Görünümü](./Project%20Management/Daily%20Scrum/Jira%20Board%201.png) | [🔗 FastAPI Swagger UI Ürün Görünümü](./UI%20Gallery/Sprint%201/FASTAPI%20Swagger%20UI%201.png) |
-
+| [🔗 JIRA Sprint Board Görünümü](Project%20Management/Jira%20Board,%20Sprint%202) | [🔗 UI Ürün Görünümü](Project%20Management/Jira%20Board,%20Sprint2) |
 
 
 * ## 🔎 Sprint Review 
 
 *   **Sprint Hedefi:** Projenin öncelikli olarak hedeflenen "basit bir şekilde çalışan uygulama (MVP)" iskeletinin ayağa kaldırılması, backend ve yapay zeka (AI) servislerinin entegrasyonudur.
-*   **Mevcut Durum:** Hedef başarıyla tamamlanmıştır. Ana mimari üzerinde çalışan, kararlı ve entegre bir sistem çıktısı elde edilmiştir.
+*   **Mevcut Durum:** Hedef büyük oranda tamamlanmıştır. Backend ve AI servisleri katmanında kararlı ve entegre bir sistem çıktısı elde edilmiş; arayüz entegrasyonları planlanan takvime uygun şekilde yürütülmüştür.
 
 ### 🛠️ 2. Tamamlanan ve Demo Edilecek İşler (Done & Ready for Demo)
-*   **Mimari Optimizasyon ve Bug Çözümü:** Sistemin ayağa kalkmasını engelleyen, router/agent yönlendirmelerindeki `HTTP 500` (Internal Server Error) hataları, AI chat entegrasyonu ve mock data sorunu analitik yöntemlerle çözülmüş, mimari kararlı hale getirilmiştir.
+*   **Mimari Optimizasyon ve Bug Çözümü:** Sistemin ayağa kalkmasını engelleyen router/agent yönlendirmelerindeki `HTTP 500` (Internal Server Error) hataları, AI chat entegrasyonu ve mock data sorunları analitik yöntemlerle çözülmüş, mimari kararlı hale getirilmiştir.
 *   **Backend & AI Entegrasyonu:** Planlanan tüm backend servisleri ve yapay zeka modülleri başarıyla birleştirilmiş, API uçları (endpoints) çalışır şekilde teslim edilmiştir.
-*   **Git Flow & Kalite Kontrol:** Tüm süreç boyunca repository temiz tutulmuş, açılan Pull Request'ler (PR) conflict içermeyecek şekilde incelenmiş (Review) ve ana dala (main/develop) merge edilmiştir.
+*   **Git Flow & Kalite Kontrol:** Tüm süreç boyunca repository temiz tutulmuş, açılan Pull Request'ler (PR) conflict içermeyecek şekilde incelenmiş ve ana dala (main/develop) merge edilmiştir.
 
 ### ⚠️ 3. Karşılaşılan Zorluklar ve Tespitler (Impediments & Findings)
-*   **Asenkron İletişim Eksikliği:** Uygulanan otonom/asenkron iletişim modelinin, takım içi koordinasyonu zayıflattığı ve aksamalara yol açtığı net bir şekilde tespit edilmiştir.
-*   **Frontend İş Yükü Dengesi:** Tek kişinin üzerinde kalan Frontend arayüzü tarafında bariz bir iş yükü dengesizliği ve darboğaz oluşmuştur. Çözüm için bir toplantı yapılıp sonuca bağlanmış ancak asenkron iletişimde tekrar bir tıkanıklık oluşmasıyla Frontend iş yükü paylaşımının çözümü Sprint 3'e bırakılmıştır.
+*   **Asenkron İletişim Bariyeri:** Sprint 1'den devralınan otonom/asenkron iletişim modelinin, dinamik hackathon sürecinde takım içi koordinasyonu zayıflattığı ve entegrasyon süreçlerinde zamansal aksamalara yol açtığı net bir şekilde deneyimlenmiştir.
+*   **Frontend Darboğazı:** Arayüz geliştirme eforunun dengesiz dağılması, Frontend tarafında bariz bir iş yükü yığılmasına sebep olmuştur. İletişim modelindeki hantallık nedeniyle bu süreçte anlık müdahale yapılamamış ve risk yönetimi amacıyla iş yükünün yeniden dağıtılması aksiyonu Sprint 3 planlamasına aktarılmıştır.
 
 ### 🎯 4. Bir Sonraki Adım 
-*   Toplantı kararları doğrultusunda, asenkron yapının getirdiği kopuklukları kırmak adına **biri hafta içi, diğeri hafta sonu** olmak üzere haftada 2 senkron toplantı periyodu başlatılacaktır.
-*  Sprint 3 planlamasında doğrudan frontend iş yükü dengesizliğini çözmek adına bu aksiyona geçilecektir.
+*   Asenkron yapının getirdiği kopuklukları tamamen kırmak adına, Sprint 3 itibarıyla **biri hafta içi, diğeri hafta sonu** olmak üzere haftada 2 senkron/canlı toplantı periyodu zorunlu olarak başlatılacaktır.
+*  Frontend iş yükü dengesizliğini rasyonel bir görev dağılımıyla tamamen ortadan kaldırmak olacaktır.
 
 * ## 🔎 Sprint 2 Retrospective 
-*   **Neleri Geliştirmeliyiz?:** Asenkron iletişimin güçsüz kalması nedeniyle Frontend iş bölümü yapılmasının havada kaldığı ve frontend tarafında büyük bir iş yükü dengesizliği yaşandığı fark edilmiştir.
-*   **Aksiyon Kararı (Sprint 3 Geçişi):** İletişim kopukluğunu çözmek adına bundan sonra her hafta sabit olmak üzere biri hafta içi, diğeri hafta sonu olacak şekilde haftada 2 senkron toplantı yapılmasına karar verilmiştir. Sprint 3'e başlanmadan Frontend iş yükü probleminin çözülmesi hedeflenmiştir.
+*   **Neleri Geliştirmeliyiz?:** Asenkron ve yazılı iletişimin kriz anlarında yetersiz kaldığını fark ettik. Takım içi görev paylaşımlarının havada kalmaması için daha proaktif ve şeffaf bir takip mekanizması kurmalıyız.
+*   **Aksiyon Kararı (Sprint 3 Geçişi):** İletişim bariyerini yıkmak için haftada iki kez sabit canlı Meet toplantılarına geçiş kararı alınmıştır. Sprint 3 planlaması kilitlenmeden önce, Frontend üzerindeki yükü hafifletecek teknik iş bölümü net olarak tamamlanacaktır.
 
 </details>
 

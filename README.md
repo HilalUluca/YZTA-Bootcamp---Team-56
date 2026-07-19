@@ -131,9 +131,9 @@ FocusForge takımının Çevik (Agile) yönetim süreçleri, maliyet/efor analiz
 * **Kalan (Remaining):** 39 Puan
 
 ### 📌 Sprint 2 Kapasite Raporu
-* **Toplam İş Yükü (Total Story Points):** 289 Puan
-* **Tamamlanan (Completed):** 43 Puan
-* **Kalan (Remaining):** 39 Puan
+* **Toplam İş Yükü (Total Story Points):** 283 Puan
+* **Tamamlanan (Completed):** 174 Puan
+* **Kalan (Remaining):** 109 Puan
 
 
 ### 🔗 Canlı Yönetim Panosu

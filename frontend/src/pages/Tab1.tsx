@@ -39,6 +39,7 @@ import {
 import { add, alertCircleOutline, hourglassOutline, flameOutline, trophyOutline, flashOutline, statsChartOutline, trashOutline, calendarOutline, gitBranchOutline } from 'ionicons/icons';
 import api from '../services/api';
 import EisenhowerMatrix from './EisenhowerMatrix';
+import TaskDetail, { DetailTask } from './TaskDetail';
 import './Tab1.css';
 
 interface Task {
@@ -87,6 +88,10 @@ const Tab1: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'matrix'>('list'); // liste / Eisenhower matrisi
   const [showModal, setShowModal] = useState(false);
+
+  // Görev detay modalı
+  const [detailTask, setDetailTask] = useState<DetailTask | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
 
@@ -361,7 +366,13 @@ const Tab1: React.FC = () => {
                     onIonChange={() => handleToggleComplete(task.id, task.status)}
                     style={{ marginRight: '16px' }}
                   />
-                  <IonLabel style={{ opacity: task.status === 'done' ? 0.6 : 1 }}>
+                  <IonLabel
+                    onClick={() => {
+                      setDetailTask(task);
+                      setShowDetail(true);
+                    }}
+                    style={{ opacity: task.status === 'done' ? 0.6 : 1, cursor: 'pointer' }}
+                  >
                     {/* Bu görev bir alt görevse belli olsun */}
                     {task.parent_task_id && (
                       <p style={{ margin: '0 0 2px 0', fontSize: '12px', color: 'var(--ion-color-medium)' }}>
@@ -484,6 +495,17 @@ const Tab1: React.FC = () => {
           onDidDismiss={() => setShowToast(false)}
           message={toastMessage}
           duration={2000}
+        />
+
+        {/* Görev detay modalı */}
+        <TaskDetail
+          isOpen={showDetail}
+          task={detailTask}
+          onClose={() => setShowDetail(false)}
+          onChanged={() => {
+            loadTasks();
+            loadDashboard();
+          }}
         />
       </IonContent>
     </IonPage>

@@ -30,11 +30,13 @@ import {
   journalOutline,
   chevronForwardOutline,
   sparklesOutline,
+  repeatOutline,
 } from 'ionicons/icons';
 import api from '../services/api';
 import parrotImg from '../assets/parrot-login.png';
 import Reflection, { ReflectionData } from './Reflection';
 import DailyPlan from './DailyPlan';
+import Habits from './Habits';
 
 interface DashboardData {
   user: {
@@ -76,6 +78,9 @@ const Home: React.FC = () => {
 
   // AI günlük plan
   const [showPlan, setShowPlan] = useState<boolean>(false);
+
+  // Alışkanlıklar
+  const [showHabits, setShowHabits] = useState<boolean>(false);
 
   const loadDashboard = async () => {
     setIsLoading(true);
@@ -296,6 +301,26 @@ const Home: React.FC = () => {
                 </div>
               </IonCardContent>
             </IonCard>
+
+            {/* Alışkanlıklar kartı — günlük check-in modalını açar */}
+            <IonCard
+              button
+              onClick={() => setShowHabits(true)}
+              style={{ borderRadius: '16px', marginTop: '10px' }}
+            >
+              <IonCardContent>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <IonIcon icon={repeatOutline} style={{ fontSize: '28px', color: 'var(--ion-color-primary)' }} />
+                  <div style={{ flex: 1 }}>
+                    <h2 style={{ margin: 0, fontSize: '17px', fontWeight: 'bold' }}>Alışkanlıklar</h2>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: 'var(--ion-color-medium)' }}>
+                      Günlük alışkanlıklarını işaretle ve serini büyüt.
+                    </p>
+                  </div>
+                  <IonIcon icon={chevronForwardOutline} style={{ color: 'var(--ion-color-medium)' }} />
+                </div>
+              </IonCardContent>
+            </IonCard>
           </>
         )}
 
@@ -315,6 +340,13 @@ const Home: React.FC = () => {
           isOpen={showPlan}
           onClose={() => setShowPlan(false)}
           openTaskCount={remaining}
+        />
+
+        {/* Alışkanlıklar modalı */}
+        <Habits
+          isOpen={showHabits}
+          onClose={() => setShowHabits(false)}
+          onChanged={loadDashboard}
         />
       </IonContent>
     </IonPage>

@@ -27,9 +27,16 @@ import {
   flameOutline,
   trophyOutline,
   alertCircleOutline,
+  journalOutline,
+  chevronForwardOutline,
+  sparklesOutline,
+  repeatOutline,
 } from 'ionicons/icons';
 import api from '../services/api';
 import parrotImg from '../assets/parrot-login.png';
+import Reflection, { ReflectionData } from './Reflection';
+import DailyPlan from './DailyPlan';
+import Habits from './Habits';
 
 interface DashboardData {
   user: {
@@ -65,6 +72,16 @@ const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Günlük yansıma
+  const [todayReflection, setTodayReflection] = useState<ReflectionData | null>(null);
+  const [showReflection, setShowReflection] = useState<boolean>(false);
+
+  // AI günlük plan
+  const [showPlan, setShowPlan] = useState<boolean>(false);
+
+  // Alışkanlıklar
+  const [showHabits, setShowHabits] = useState<boolean>(false);
+
   const loadDashboard = async () => {
     setIsLoading(true);
     setError(null);
@@ -78,12 +95,23 @@ const Home: React.FC = () => {
     }
   };
 
+  // Bugünün yansıması var mı? Backend yoksa 404 döner → henüz yapılmamış demektir.
+  const loadTodayReflection = async () => {
+    try {
+      const res = await api.get('/reflections/today');
+      setTodayReflection(res.data);
+    } catch (err) {
+      setTodayReflection(null);
+    }
+  };
+
   useEffect(() => {
     loadDashboard();
+    loadTodayReflection();
   }, []);
 
   const handleRefresh = async (event: CustomEvent) => {
-    await loadDashboard();
+    await Promise.all([loadDashboard(), loadTodayReflection()]);
     event.detail.complete();
   };
 
@@ -236,10 +264,90 @@ const Home: React.FC = () => {
                     ))}
                   </IonList>
                 )}
+
+                {/* AI ile günü planla — görev olsun olmasın HER ZAMAN görünür */}
+                <IonButton
+                  expand="block"
+                  onClick={() => setShowPlan(true)}
+                  style={{ marginTop: '16px', '--border-radius': '25px', fontWeight: 'bold' }}
+                >
+                  <IonIcon slot="start" icon={sparklesOutline} />
+                  AI ile Günü Planla
+                </IonButton>
+              </IonCardContent>
+            </IonCard>
+
+            {/* Günlük Yansıma kartı — bugünün durumunu gösterir, modalı açar */}
+            <IonCard
+              button
+              onClick={() => setShowReflection(true)}
+              style={{ borderRadius: '16px', marginTop: '10px' }}
+            >
+              <IonCardContent>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <IonIcon
+                    icon={todayReflection ? checkmarkDoneOutline : journalOutline}
+                    style={{ fontSize: '28px', color: todayReflection ? 'var(--ion-color-tertiary)' : 'var(--ion-color-primary)' }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <h2 style={{ margin: 0, fontSize: '17px', fontWeight: 'bold' }}>
+                      {todayReflection ? 'Bugünü değerlendirdin ✓' : 'Günlük Yansıma'}
+                    </h2>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: 'var(--ion-color-medium)' }}>
+                      {todayReflection ? 'Görüntüle veya düzenle' : 'Günün nasıl geçti? Kısa bir değerlendirme yap.'}
+                    </p>
+                  </div>
+                  <IonIcon icon={chevronForwardOutline} style={{ color: 'var(--ion-color-medium)' }} />
+                </div>
+              </IonCardContent>
+            </IonCard>
+
+            {/* Alışkanlıklar kartı — günlük check-in modalını açar */}
+            <IonCard
+              button
+              onClick={() => setShowHabits(true)}
+              style={{ borderRadius: '16px', marginTop: '10px' }}
+            >
+              <IonCardContent>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <IonIcon icon={repeatOutline} style={{ fontSize: '28px', color: 'var(--ion-color-primary)' }} />
+                  <div style={{ flex: 1 }}>
+                    <h2 style={{ margin: 0, fontSize: '17px', fontWeight: 'bold' }}>Alışkanlıklar</h2>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: 'var(--ion-color-medium)' }}>
+                      Günlük alışkanlıklarını işaretle ve serini büyüt.
+                    </p>
+                  </div>
+                  <IonIcon icon={chevronForwardOutline} style={{ color: 'var(--ion-color-medium)' }} />
+                </div>
               </IonCardContent>
             </IonCard>
           </>
         )}
+
+        {/* Günlük yansıma modalı */}
+        <Reflection
+          isOpen={showReflection}
+          onClose={() => setShowReflection(false)}
+          existing={todayReflection}
+          onSaved={(r) => {
+            setTodayReflection(r);
+            loadDashboard(); // XP/veri güncellensin
+          }}
+        />
+
+        {/* AI günlük plan modalı */}
+        <DailyPlan
+          isOpen={showPlan}
+          onClose={() => setShowPlan(false)}
+          openTaskCount={remaining}
+        />
+
+        {/* Alışkanlıklar modalı */}
+        <Habits
+          isOpen={showHabits}
+          onClose={() => setShowHabits(false)}
+          onChanged={loadDashboard}
+        />
       </IonContent>
     </IonPage>
   );

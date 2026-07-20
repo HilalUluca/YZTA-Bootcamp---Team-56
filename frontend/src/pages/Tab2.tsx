@@ -12,11 +12,11 @@ import {
   IonIcon,
   IonList,
   IonText,
-  IonSpinner,
   IonToast,
 } from '@ionic/react';
 import { send } from 'ionicons/icons';
 import api from '../services/api';
+import parrotAvatar from '../assets/parrot-login.png';
 import './Tab2.css';
 
 interface Message {
@@ -33,6 +33,25 @@ const WELCOME_MESSAGE: Message = {
   text: 'Merhaba! Ben verimlilik koçun Forge. Bugün odaklanmana nasıl yardımcı olabilirim? Hedeflerin hakkında konuşabiliriz ya da ertelediğin işleri nasıl bölebileceğimizi planlayabiliriz.',
   timestamp: new Date(),
 };
+
+// Forge'un (AI) mesajlarının yanındaki küçük yuvarlak papağan avatarı.
+// Renkler tema değişkeninden geldiği için açık/koyu modda otomatik uyumlu.
+const ForgeAvatar: React.FC = () => (
+  <img
+    src={parrotAvatar}
+    alt="Forge"
+    style={{
+      width: '36px',
+      height: '36px',
+      borderRadius: '50%',
+      objectFit: 'contain',
+      padding: '3px',
+      background: 'rgba(var(--ion-color-primary-rgb), 0.15)',
+      flexShrink: 0,
+      alignSelf: 'flex-end',
+    }}
+  />
+);
 
 const Tab2: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
@@ -156,9 +175,14 @@ const Tab2: React.FC = () => {
               style={{
                 display: 'flex',
                 justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                alignItems: 'flex-end',
+                gap: '8px',
                 marginBottom: '16px',
               }}
             >
+              {/* Papağan avatarı sadece AI (Forge) mesajlarında */}
+              {msg.sender === 'forge' && <ForgeAvatar />}
+
               <div
                 style={{
                   maxWidth: '75%',
@@ -187,7 +211,8 @@ const Tab2: React.FC = () => {
           ))}
 
           {isSending && (
-            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-end', gap: '8px', marginBottom: '16px' }}>
+              <ForgeAvatar />
               <div
                 style={{
                   padding: '12px 16px',
@@ -198,10 +223,12 @@ const Tab2: React.FC = () => {
                   gap: '8px',
                 }}
               >
-                <IonSpinner name="dots" color="primary" />
-                <IonText style={{ fontSize: '13px', color: 'var(--ion-color-medium)' }}>
-                  Forge düşünüyor...
-                </IonText>
+                {/* Forge yazıyor: üç nokta sırayla zıplar (stil Tab2.css'te) */}
+                <div className="forge-typing" role="status" aria-label="Forge yazıyor">
+                  <span />
+                  <span />
+                  <span />
+                </div>
               </div>
             </div>
           )}

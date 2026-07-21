@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   IonContent,
   IonHeader,
@@ -29,8 +29,10 @@ import {
   closeOutline,
   alertCircleOutline,
   flameOutline,
+  arrowUndoOutline,
 } from 'ionicons/icons';
 import api from '../services/api';
+import HabitStats from './HabitStats';
 
 interface HabitToday {
   id: string;
@@ -52,6 +54,7 @@ const categoryInfo = (cat: string) =>
     : { label: 'Gelişim', color: 'tertiary' };
 
 const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
+  const [view, setView] = useState<'today' | 'stats'>('today'); // Bugün / İstatistik
   const [habits, setHabits] = useState<HabitToday[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,6 +68,11 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
   const [newTitle, setNewTitle] = useState('');
   const [newCategory, setNewCategory] = useState('growth');
   const [busy, setBusy] = useState(false); // ekle/kaydet/sil sırasında
+
+  // 5 saniyelik geri alma: habitId -> son teslim zamanı (ms). Bu süre içinde istek gitmez.
+  const [pending, setPending] = useState<Record<string, number>>({});
+  const timersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const [, setTick] = useState(0); // geri sayımı yeniden çizmek için
 
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
@@ -89,21 +97,63 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
   // Modal her açıldığında güncel veriyi çek
   useEffect(() => {
     if (isOpen) {
+      setView('today');
       setShowAdd(false);
       setEditingId(null);
       loadToday();
     }
   }, [isOpen]);
 
-  // Check-in: POST /habits/check-in (yalnızca işaretlenmemişler için; geri alma backend'de yok)
-  const checkIn = async (id: string) => {
+  // Geri sayım görünürken (pending doluyken) her yarım saniyede yeniden çiz
+  useEffect(() => {
+    if (Object.keys(pending).length === 0) return;
+    const iv = setInterval(() => setTick((t) => t + 1), 500);
+    return () => clearInterval(iv);
+  }, [pending]);
+
+  // Bileşen kaldırılırsa bekleyen timer'ları temizle
+  useEffect(() => {
+    return () => {
+      Object.values(timersRef.current).forEach(clearTimeout);
+    };
+  }, []);
+
+  // 1) İşaretle: hemen optimistic göster, 5 sn sonra gönderilecek şekilde zamanla (istek HENÜZ gitmez)
+  const startCheckIn = (id: string) => {
+    if (pending[id] !== undefined) return; // zaten bekliyorsa tekrar başlatma
+    setPending((prev) => ({ ...prev, [id]: Date.now() + 5000 }));
+    timersRef.current[id] = setTimeout(() => commitCheckIn(id), 5000);
+  };
+
+  // 2) Geri al: timer'ı iptal et, işareti kaldır — istek HİÇ gitmez
+  const undoCheckIn = (id: string) => {
+    const t = timersRef.current[id];
+    if (t) clearTimeout(t);
+    delete timersRef.current[id];
+    setPending((prev) => {
+      const n = { ...prev };
+      delete n[id];
+      return n;
+    });
+    notify('Geri alındı, istek gönderilmedi.');
+  };
+
+  // 3) Gönder (süre dolunca): POST /habits/check-in
+  const commitCheckIn = async (id: string) => {
+    delete timersRef.current[id];
     try {
       await api.post('/habits/check-in', { habit_id: id });
-      notify('Aferin! İşaretlendi 🎉 (+15 XP)');
       await loadToday();
       onChanged?.();
+      notify('Aferin! İşaretlendi 🎉 (+15 XP)');
     } catch (err) {
       notify('İşaretlenemedi. Lütfen tekrar dene.');
+    } finally {
+      setPending((prev) => {
+        const n = { ...prev };
+        delete n[id];
+        return n;
+      });
     }
   };
 
@@ -156,9 +206,9 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
     }
   };
 
-  // İlerleme
+  // İlerleme (bekleyen/optimistic işaretler de tamamlanmış sayılır)
   const total = habits?.length || 0;
-  const done = habits?.filter((h) => h.is_completed_today).length || 0;
+  const done = habits?.filter((h) => h.is_completed_today || pending[h.id] !== undefined).length || 0;
   const pct = total > 0 ? done / total : 0;
 
   return (
@@ -173,6 +223,16 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
       </IonHeader>
 
       <IonContent className="ion-padding" style={{ '--background': 'var(--ion-background-color)' }}>
+        {/* Bugün / İstatistik geçişi */}
+        <IonSegment value={view} onIonChange={(e) => setView(e.detail.value as 'today' | 'stats')} style={{ marginBottom: '16px' }}>
+          <IonSegmentButton value="today"><IonLabel>Bugün</IonLabel></IonSegmentButton>
+          <IonSegmentButton value="stats"><IonLabel>İstatistik</IonLabel></IonSegmentButton>
+        </IonSegment>
+
+        {view === 'stats' && <HabitStats />}
+
+        {view === 'today' && (
+        <>
         {/* Yükleniyor */}
         {loading && (
           <div style={{ textAlign: 'center', marginTop: '60px' }}>
@@ -238,17 +298,21 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
                     </IonItem>
                   );
                 }
+                const isPending = pending[h.id] !== undefined;
+                const isChecked = h.is_completed_today || isPending;
+                const remaining = isPending ? Math.max(0, Math.ceil((pending[h.id] - Date.now()) / 1000)) : 0;
                 return (
-                  <IonItem key={h.id} style={{ '--background': 'transparent' }}>
+                  <React.Fragment key={h.id}>
+                  <IonItem style={{ '--background': 'transparent' }}>
                     <IonCheckbox
                       slot="start"
-                      checked={h.is_completed_today}
-                      disabled={h.is_completed_today}
-                      onIonChange={() => checkIn(h.id)}
+                      checked={isChecked}
+                      disabled={h.is_completed_today || isPending}
+                      onIonChange={() => startCheckIn(h.id)}
                       style={{ marginRight: '12px' }}
                     />
-                    <IonLabel style={{ opacity: h.is_completed_today ? 0.6 : 1 }}>
-                      <h2 style={{ fontWeight: 600, textDecoration: h.is_completed_today ? 'line-through' : 'none' }}>
+                    <IonLabel style={{ opacity: isChecked ? 0.6 : 1 }}>
+                      <h2 style={{ fontWeight: 600, textDecoration: isChecked ? 'line-through' : 'none' }}>
                         {h.title}
                       </h2>
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px', flexWrap: 'wrap' }}>
@@ -270,6 +334,28 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
                       </IonButton>
                     </IonButtons>
                   </IonItem>
+
+                  {/* 5 saniyelik geri alma şeridi */}
+                  {isPending && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '4px 12px 10px 12px',
+                        marginTop: '-4px',
+                      }}
+                    >
+                      <span style={{ fontSize: '13px', color: 'var(--ion-color-medium)' }}>
+                        İşaretlendi · {remaining} sn içinde kaydedilecek
+                      </span>
+                      <IonButton size="small" fill="clear" onClick={() => undoCheckIn(h.id)}>
+                        <IonIcon slot="start" icon={arrowUndoOutline} />
+                        Geri al
+                      </IonButton>
+                    </div>
+                  )}
+                  </React.Fragment>
                 );
               })}
             </IonList>
@@ -312,9 +398,11 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
             )}
 
             <IonText color="medium" style={{ display: 'block', textAlign: 'center', fontSize: '12px', marginTop: '16px' }}>
-              İşaretlenen alışkanlık bugün için kaydedilir; gün içinde geri alınamaz.
+              İşaretledikten sonra 5 saniye içinde "Geri al"a basabilirsin; basmazsan kaydedilir. Kaydedildikten sonra gün içinde geri alınamaz.
             </IonText>
           </>
+        )}
+        </>
         )}
 
         <IonToast

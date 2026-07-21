@@ -24,6 +24,17 @@ class Settings(BaseSettings):
     app_name: str = "FocusForge"
     debug: bool = True
 
+    # Koç Uyarı Eşikleri
+    warning_negative_sentiment_ratio: float = 0.4
+    warning_energy_drop: float = 1.0
+    critical_mood_avg: float = 2.5
+    critical_energy_avg: float = 2.5
+    
+    # AI Hafıza Ayarları
+    memory_strategy: str = "summary_buffer" # "last_n" veya "summary_buffer"
+    recent_window_size: int = 4
+    summary_update_interval: int = 6
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

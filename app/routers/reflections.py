@@ -23,6 +23,7 @@ from app.schemas.reflection import (
     ReflectionListResponse,
 )
 from app.services.auth import get_current_user
+from app.agents.reflection_agent import analyze_sentiment
 
 router = APIRouter(prefix="/api/reflections", tags=["Gunluk Yansima"])
 
@@ -82,6 +83,13 @@ def create_reflection(
         .first()
     )
 
+    text_to_analyze = " ".join(filter(None, [
+        reflection_data.wins, 
+        reflection_data.improvements, 
+        reflection_data.gratitude
+    ]))
+    sentiment = analyze_sentiment(text_to_analyze)
+
     if not reflection:
         # Yeni kayıt oluşturuluyor
         reflection = Reflection(
@@ -92,7 +100,7 @@ def create_reflection(
             wins=reflection_data.wins,
             improvements=reflection_data.improvements,
             gratitude=reflection_data.gratitude,
-            ai_analysis={},
+            ai_analysis={"sentiment": sentiment},
         )
         # Yeni kayıt için XP ödülü
         xp_bonus = 25
@@ -109,6 +117,11 @@ def create_reflection(
             reflection.improvements = reflection_data.improvements
         if reflection_data.gratitude is not None:
             reflection.gratitude = reflection_data.gratitude
+        
+        # ai_analysis dictini SQLAlchemy de tespit edebilsin diye yeni bir kopyasını atıyoruz
+        current_ai = reflection.ai_analysis or {}
+        current_ai["sentiment"] = sentiment
+        reflection.ai_analysis = dict(current_ai)
 
     db.commit()
     db.refresh(reflection)

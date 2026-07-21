@@ -105,8 +105,14 @@
 - `GET /api/score` : Sorumluluk skoru
 - `POST /api/achievements/check` : Rozet ve başarım kontrolü (otomatik XP/Rozet ataması)
 
-**Yapay Zeka Sohbet**
-- `POST /api/chat/` : LangChain & Director Agent ile akıllı sohbet
+### AI Sohbet (Director & Coach)
+* `POST /api/chat/` - LangChain tabanlı yapay zeka ile sohbet edin. 
+  * *Hafıza (Memory):* Sistem varsayılan olarak **Summary Buffer Memory** kullanır. Bu sayede sadece son `N` mesaj değil, tüm sohbet geçmişinin dinamik bir özeti arka planda (`BackgroundTasks`) tutulur ve token tasarrufuyla birlikte uzun süreli bağlam korunur. Ayarlar `.env` veya `app/config.py` içerisinden `memory_strategy` (summary_buffer/last_n) ile değiştirilebilir.
+* `GET /api/chat/history` - Geçmiş sohbet kayıtlarını listeler.
+
+### AI Profiling (Uzun Süreli Hafıza)
+* `POST /api/profile/generate` - Kullanıcının geçmiş sohbet, görev ve yansımalarını analiz ederek kalıcı AI Profilini günceller (Manuel tetikleme).
+* `GET /api/profile/` - Kullanıcının AI Profilini (`UserProfileData` JSON şemasıyla) getirir.
 
 </details>
 

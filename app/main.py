@@ -4,23 +4,35 @@ FocusForge Backend — Ana Uygulama
 AI Destekli Kişisel Verimlilik & Odaklanma Asistanı
 
 Çalıştırmak için:
-    uvicorn app.main:app --reloadvb,,
+    uvicorn app.main:app --reload
 
 Swagger API dokümantasyonu:
     http://localhost:8000/docs
 """
 
+import logging
+import traceback
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.config import get_settings
 from app.database import engine, Base
-from app.routers import auth, tasks, focus, habits, chat, gamification, reflections, dashboard, reports, profile_router
+from app.routers import auth_router, tasks_router, chat_router, focus_router, reflections_router, habits_router
 from app.routers.achievements import router as achievements_router
 from app.routers.dashboard import router as dashboard_router
 from app.routers.planner import router as planner_router
+from app.routers.reports import router as reports_router
+from app.routers.profile import router as profile_router
+
+# Logging ayarı
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger("focusforge")
 
 settings = get_settings()
 
@@ -57,24 +69,48 @@ app = FastAPI(
 
 
 # CORS ayarları — Frontend'in backend'e erişebilmesi için
+# Production URL'leri .env'den FRONTEND_URL olarak okunabilir
+allowed_origins = [
+    "http://localhost:5173",    # Vite dev server
+    "http://localhost:3000",    # Alternatif frontend port
+    "http://localhost:8100",    # Ionic dev server port
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8100",
+]
+
+# Production frontend URL varsa ekle
+if settings.frontend_url:
+    allowed_origins.append(settings.frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",    # Vite dev server
-        "http://localhost:3000",    # Alternatif frontend port
-        "http://localhost:8100",    # Ionic dev server port
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:8100",    # Ionic dev server port
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-from app.routers.reports import router as reports_router
-from app.routers.profile import router as profile_router
+# Global Exception Handler — Beklenmeyen hataları yakala
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(
+        f"Unhandled error: {request.method} {request.url.path} -> {type(exc).__name__}: {exc}"
+    )
+    if settings.debug:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "detail": str(exc),
+                "type": type(exc).__name__,
+                "path": str(request.url.path),
+            },
+        )
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Sunucuda beklenmeyen bir hata oluştu."},
+    )
 
 # Router'ları kaydet
 app.include_router(auth_router)

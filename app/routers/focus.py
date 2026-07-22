@@ -4,6 +4,7 @@ Odaklanma Seansi API endpoint'leri.
 Endpoints:
     POST   /api/focus/start           -> Yeni seans baslat
     PATCH  /api/focus/{id}/end        -> Seansi bitir ve degerlendir
+    DELETE /api/focus/{id}            -> Yarim kalan seansi iptal et
     GET    /api/focus/                -> Kullanicinin seanslarini listele
     GET    /api/focus/{id}            -> Tek seans getir
     GET    /api/focus/stats/summary   -> Odaklanma istatistikleri
@@ -129,6 +130,39 @@ def end_focus_session(
     return session
 
 
+@router.delete("/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
+def cancel_focus_session(
+    session_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Yarim kalan bir seansi iptal eder (kullanici "Sifirla"ya bastiginda).
+
+    Bitirilmis seanslar silinemez; onlarin istatistikte kalmasi gerekiyor.
+    """
+    session = (
+        db.query(FocusSession)
+        .filter(FocusSession.id == session_id, FocusSession.user_id == current_user.id)
+        .first()
+    )
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Seans bulunamadi",
+        )
+
+    if session.end_time is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Bitirilmis seans iptal edilemez",
+        )
+
+    db.delete(session)
+    db.commit()
+
+
 @router.get("/", response_model=FocusSessionListResponse)
 def list_focus_sessions(
     limit: int = Query(default=20, ge=1, le=100),
@@ -170,6 +204,10 @@ def get_focus_stats(
     - Toplam odaklanma suresi (dakika)
     - Ortalama verimlilik puani
     - Mevcut streak
+
+    Yalnizca bitirilmis seanslar sayilir. Kullanici sekmeyi kapatirsa seans
+    yarim kalir; bunlari saymak "Seans" sayacini gercek odaklanmadan fazla
+    gosterirdi.
     """
     stats = (
         db.query(
@@ -177,7 +215,10 @@ def get_focus_stats(
             func.coalesce(func.sum(FocusSession.duration_minutes), 0).label("total_minutes"),
             func.coalesce(func.avg(FocusSession.productivity_rating), 0).label("avg_rating"),
         )
-        .filter(FocusSession.user_id == current_user.id)
+        .filter(
+            FocusSession.user_id == current_user.id,
+            FocusSession.end_time.isnot(None),
+        )
         .first()
     )
 

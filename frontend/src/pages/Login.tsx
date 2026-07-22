@@ -15,7 +15,7 @@ import {
   IonToast,
   IonLoading,
 } from '@ionic/react';
-import api from '../services/api';
+import api, { setToken } from '../services/api';
 import parrotImg from '../assets/parrot-login.png';
 
 interface LoginProps {
@@ -51,7 +51,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           password,
         });
         const { access_token } = response.data;
-        localStorage.setItem('token', access_token);
+        setToken(access_token);
         setToastMessage('Başarıyla giriş yapıldı!');
         setShowToast(true);
         onLoginSuccess();

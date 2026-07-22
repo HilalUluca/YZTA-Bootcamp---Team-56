@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     # Uygulama
     app_name: str = "FocusForge"
     debug: bool = True
+    port: int = 8000
+    frontend_url: str = ""  # Production: Vercel URL
 
     # Koç Uyarı Eşikleri
     warning_negative_sentiment_ratio: float = 0.4

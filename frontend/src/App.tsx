@@ -18,6 +18,7 @@ import Tab2 from './pages/Tab2';
 import Tab3 from './pages/Tab3';
 import Focus from './pages/Focus';
 import Login from './pages/Login';
+import Onboarding from './pages/Onboarding';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -48,6 +49,26 @@ import './theme/variables.css';
 
 setupIonicReact();
 
+// Token'ın (JWT) ortadaki parçasından kullanıcı kimliğini (sub) çıkar.
+// Backend /auth/me onboarding durumunu vermediği için bayrağı kullanıcıya göre saklıyoruz.
+const getUserId = (): string | null => {
+  const t = localStorage.getItem('token');
+  if (!t) return null;
+  try {
+    const payload = JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return payload.sub || null;
+  } catch {
+    return null;
+  }
+};
+
+// Bu kullanıcı onboarding'i (bu cihazda) tamamlamış mı?
+const onboardingDone = (): boolean => {
+  const id = getUserId();
+  if (!id) return true; // kimlik yoksa wizard'ı zorlamıyoruz
+  return localStorage.getItem('ff_onboarding_done_' + id) === '1';
+};
+
 const App: React.FC = () => {
   // "Kullanıcı giriş yapmış mı?" hafızası.
   // Başlangıçta localStorage'da token varsa true kabul ediyoruz
@@ -55,16 +76,29 @@ const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(
     () => !!localStorage.getItem('token')
   );
+  // Onboarding gerekiyor mu? (sadece ilk girişte gösterilecek)
+  const [needsOnboarding, setNeedsOnboarding] = useState<boolean>(
+    () => !!localStorage.getItem('token') && !onboardingDone()
+  );
 
   // Login başarılı olunca Login.tsx bu fonksiyonu çağırır.
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
+    setNeedsOnboarding(!onboardingDone());
   };
 
   // Tab3'teki "Çıkış Yap" butonu bu fonksiyonu çağırır.
   const handleLogout = () => {
     localStorage.removeItem('token'); // geçiş kartını sil
     setIsLoggedIn(false); // tekrar Login ekranına dön
+    setNeedsOnboarding(false);
+  };
+
+  // Onboarding tamamlanınca (veya atlanınca): bayrağı set et, uygulamaya gir.
+  const finishOnboarding = () => {
+    const id = getUserId();
+    if (id) localStorage.setItem('ff_onboarding_done_' + id, '1');
+    setNeedsOnboarding(false);
   };
 
   // Giriş yapılmamışsa: sadece Login ekranını göster.
@@ -72,6 +106,15 @@ const App: React.FC = () => {
     return (
       <IonApp>
         <Login onLoginSuccess={handleLoginSuccess} />
+      </IonApp>
+    );
+  }
+
+  // Giriş yapıldı ama onboarding tamamlanmadıysa: wizard'ı göster.
+  if (needsOnboarding) {
+    return (
+      <IonApp>
+        <Onboarding onComplete={finishOnboarding} />
       </IonApp>
     );
   }

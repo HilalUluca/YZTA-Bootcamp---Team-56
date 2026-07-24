@@ -123,20 +123,15 @@ def complete_onboarding(
     analizler (uyku, ekran süresi, zayıflıklar) yapabilmesi için gerekli 
     tüm biyolojik ve psikolojik verileri alır.
     """
-    # Gelen veriyi dict'e çevirip güvenli (defensive) atama yapıyoruz.
+    # Gelen veriyi dict'e çevirip tüm alanları ai_profile'a kaydet
     onboarding_dict = data.model_dump(exclude_unset=True)
     
-    current_user.ai_profile = {
-        "profession": onboarding_dict.get("profession", "Belirtilmemiş"),
-        "age": onboarding_dict.get("age", "Belirtilmemiş"),
-        "average_screen_time": onboarding_dict.get("average_screen_time", "Belirtilmemiş"),
-        "routine_hours_per_day": onboarding_dict.get("routine_hours_per_day", "Belirtilmemiş"),
-        "sleep_pattern": onboarding_dict.get("sleep_pattern", "Belirtilmemiş"),
-        "primary_goals": onboarding_dict.get("primary_goals", []),
-        "weaknesses": onboarding_dict.get("weaknesses", []),
-        "hobbies": onboarding_dict.get("hobbies", []),
-        "onboarding_completed": True,
-    }
+    # Mevcut ai_profile varsa koru, yoksa yeni oluştur
+    current_profile = current_user.ai_profile or {}
+    current_profile.update(onboarding_dict)
+    current_profile["onboarding_completed"] = True
+    
+    current_user.ai_profile = current_profile
 
     db.commit()
     db.refresh(current_user)

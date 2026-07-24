@@ -52,7 +52,17 @@ class UserResponse(BaseModel):
     level: int = 1
     streak_count: int = 0
     responsibility_score: float = 50.0
+    ai_profile: Optional[dict] = None
+    onboarding_completed: bool = False
     created_at: datetime
+
+    @classmethod
+    def model_validate(cls, obj, **kwargs):
+        """ai_profile içinden onboarding_completed çıkar."""
+        result = super().model_validate(obj, **kwargs)
+        if result.ai_profile and result.ai_profile.get("onboarding_completed"):
+            result.onboarding_completed = True
+        return result
 
     model_config = {"from_attributes": True}
 

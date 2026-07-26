@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, model_validator
 from typing import List, Optional
 
 # --- Kayıt ---
@@ -56,13 +56,18 @@ class UserResponse(BaseModel):
     onboarding_completed: bool = False
     created_at: datetime
 
-    @classmethod
-    def model_validate(cls, obj, **kwargs):
-        """ai_profile içinden onboarding_completed çıkar."""
-        result = super().model_validate(obj, **kwargs)
-        if result.ai_profile and result.ai_profile.get("onboarding_completed"):
-            result.onboarding_completed = True
-        return result
+    @model_validator(mode="after")
+    def _derive_onboarding_completed(self):
+        """
+        onboarding_completed bayrağını ai_profile içinden türet.
+
+        model_validator(mode="after") kullanıyoruz çünkü FastAPI yanıt
+        serileştirmesinde bir `model_validate` classmethod override'ı
+        çağrılmıyordu; bu validator tüm doğrulama yollarında çalışır.
+        """
+        if self.ai_profile and self.ai_profile.get("onboarding_completed"):
+            self.onboarding_completed = True
+        return self
 
     model_config = {"from_attributes": True}
 
@@ -87,14 +92,28 @@ class OnboardingData(BaseModel):
     # Kişisel ve Mesleki
     age: Optional[int] = Field(None, description="Yaş (Bilişsel kapasite analizi için)")
     profession: Optional[str] = Field(None, description="Odak alanı / Meslek")
-    
+    about_me: Optional[str] = Field(
+        None, description="Kullanıcı kendini kim olarak tanımlıyor (serbest metin)"
+    )
+    personality: Optional[str] = Field(
+        None, description="Kullanıcı genel olarak nasıl biri (kişilik tanımı)"
+    )
+    communication_style: Optional[str] = Field(
+        None,
+        description="Tercih ettiği üslup: 'samimi', 'resmi', 'esprili', 'sert ve net' vb."
+    )
+
     # Stratejik Hedefler ve Dirençler
     primary_goals: List[str] = Field(
-        default_factory=list, 
-        description="2026 odak hedefleri (max 5)"
+        default_factory=list,
+        description="Yıllık / 2026 odak hedefleri (max 5)"
+    )
+    daily_goals: List[str] = Field(
+        default_factory=list,
+        description="Günlük hedefler veya günlük yapılacaklar listesi"
     )
     weaknesses: List[str] = Field(
-        default_factory=list, 
+        default_factory=list,
         description="Gelişim ve direnç alanları"
     )
     

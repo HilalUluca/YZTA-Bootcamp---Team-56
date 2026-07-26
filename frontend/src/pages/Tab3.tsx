@@ -1,21 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
-  IonAvatar,
-  IonButton,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardSubtitle,
-  IonCardTitle,
+  IonButtons,
   IonContent,
   IonHeader,
   IonIcon,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonLoading,
   IonPage,
-  IonProgressBar,
+  IonSpinner,
   IonTitle,
   IonToast,
   IonToolbar,
@@ -27,9 +17,11 @@ import {
   flashOutline,
   logOutOutline,
   lockClosedOutline,
-  personCircleOutline,
+  mailOutline,
+  moonOutline,
   ribbonOutline,
   shieldCheckmarkOutline,
+  sunnyOutline,
   trophyOutline,
 } from 'ionicons/icons';
 import { getMe } from '../services/authService';
@@ -41,6 +33,7 @@ import type {
   User,
   WeeklyReport,
 } from '../services/types';
+import { getThemeMode, isDarkActive, setThemeMode, type ThemeMode } from '../theme/theme';
 import './Tab3.css';
 
 interface Tab3Props {
@@ -56,56 +49,37 @@ const BADGE_ICONS: Record<string, string> = {
   task_hunter: checkmarkDoneOutline,
 };
 
-/** Son 7 gün odak dakikası için basit CSS bar grafiği. */
+/** Son 7 gün odak dakikası için gradyan bar grafiği. */
 const WeeklyChart: React.FC<{ report: WeeklyReport }> = ({ report }) => {
   const max = Math.max(1, ...report.days.map((d) => d.focus_minutes));
   const hasFocus = report.totals.focus_minutes > 0;
 
   return (
     <div>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
-          gap: '6px',
-          height: '120px',
-          padding: '8px 0',
-        }}
-      >
+      <div className="profile-chart">
         {report.days.map((d) => {
           // Odak varsa yüksekliği dakikaya göre; yoksa aktif günlere ince bir iz.
           const ratio = d.focus_minutes / max;
           const heightPct = d.focus_minutes > 0 ? Math.max(8, ratio * 100) : d.active ? 6 : 3;
           return (
-            <div
-              key={d.date}
-              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', height: '100%' }}
-            >
-              <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', width: '100%' }}>
+            <div key={d.date} className="profile-chart-col">
+              <div className="profile-chart-track">
                 <div
+                  className={`profile-chart-bar ${d.active ? 'is-active' : ''}`}
                   title={`${d.focus_minutes} dk odak · ${d.tasks_completed} görev · ${d.reflections} yansıma`}
-                  style={{
-                    width: '100%',
-                    height: `${heightPct}%`,
-                    borderRadius: '6px 6px 0 0',
-                    background: d.active
-                      ? 'var(--ion-color-primary)'
-                      : 'rgba(var(--ion-color-primary-rgb), 0.18)',
-                    transition: 'height 0.3s ease',
-                  }}
+                  style={{ height: `${heightPct}%` }}
                 />
               </div>
-              <span style={{ fontSize: '11px', color: 'var(--ion-color-medium)' }}>{d.label}</span>
+              <span className="profile-chart-label">{d.label}</span>
             </div>
           );
         })}
       </div>
-      <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--ion-color-medium)', marginTop: '4px' }}>
+      <p className="ff-subtitle" style={{ fontSize: '13px', marginTop: '14px' }}>
         {hasFocus
           ? `Bu hafta toplam ${report.totals.focus_minutes} dk odaklanma · ${report.totals.active_days}/7 aktif gün`
           : `Bu hafta ${report.totals.active_days}/7 aktif gün — henüz odak seansı yok`}
-      </div>
+      </p>
     </div>
   );
 };
@@ -117,6 +91,16 @@ const Tab3: React.FC<Tab3Props> = ({ onLogout }) => {
   const [achievements, setAchievements] = useState<AchievementsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState('');
+
+  // Tema tercihi. Kaynak <html> sınıflarıdır; buradaki state sadece
+  // başlıktaki güneş/ay ikonunu tazelemek için tutuluyor (bkz. theme/theme.ts).
+  const [themeMode, setMode] = useState<ThemeMode>(getThemeMode);
+  const darkActive = isDarkActive(themeMode);
+
+  const changeTheme = (mode: ThemeMode) => {
+    setThemeMode(mode);
+    setMode(mode);
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -152,176 +136,243 @@ const Tab3: React.FC<Tab3Props> = ({ onLogout }) => {
   const streak = dashboard?.user.streak_count ?? 0;
   const score = dashboard?.score.value ?? 0;
 
+  const displayName = me ? me.full_name || me.username : '';
+  const initial = displayName.trim().charAt(0) || '?';
+
   return (
-    <IonPage>
+    <IonPage className="ff-page">
       <IonHeader>
-        <IonToolbar color="primary">
-          <IonTitle>Profilim</IonTitle>
+        <IonToolbar>
+          <IonTitle>Profil</IonTitle>
+          <IonButtons slot="end">
+            {/* Tek dokunuşla açık ↔ koyu. Hiç dokunulmadıysa tema cihazın
+                tercihini takip eder ('system' modu, bkz. theme/theme.ts). */}
+            <button
+              className="theme-toggle"
+              onClick={() => changeTheme(darkActive ? 'light' : 'dark')}
+              aria-label={darkActive ? 'Açık temaya geç' : 'Koyu temaya geç'}
+              title={darkActive ? 'Açık temaya geç' : 'Koyu temaya geç'}
+            >
+              <IonIcon icon={darkActive ? sunnyOutline : moonOutline} />
+            </button>
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent className="ion-padding">
-        <IonLoading isOpen={isLoading} message="Yükleniyor..." />
+      <IonContent>
+        {isLoading && !me && (
+          <div style={{ textAlign: 'center', marginTop: '80px' }}>
+            <IonSpinner name="crescent" color="primary" />
+            <p className="ff-subtitle">Yükleniyor...</p>
+          </div>
+        )}
 
         {me && dashboard && (
-          <div>
-            {/* Profil başlığı */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '16px 0 24px' }}>
-              <IonAvatar style={{ width: '96px', height: '96px', marginBottom: '12px' }}>
-                <IonIcon icon={personCircleOutline} style={{ width: '100%', height: '100%', color: 'var(--ion-color-primary)' }} />
-              </IonAvatar>
-              <h2 style={{ fontWeight: 'bold', margin: '0 0 4px 0' }}>{me.full_name || me.username}</h2>
-              <p style={{ color: 'var(--ion-color-medium)', margin: 0 }}>@{me.username}</p>
+          <div style={{ padding: '4px 18px 28px' }}>
+            {/* Kimlik */}
+            <div
+              className="ff-rise"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                margin: '12px 0 24px',
+              }}
+            >
+              <div className="profile-avatar">
+                <div className="profile-avatar-inner">{initial}</div>
+              </div>
+              <h1 className="ff-title" style={{ fontSize: '26px', marginTop: '14px' }}>
+                {displayName}
+              </h1>
+              <p className="ff-subtitle">@{me.username}</p>
             </div>
 
-            {/* Özet tiller: Streak · Seviye · Sorumluluk */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-              <div style={tileStyle}>
-                <IonIcon icon={flameOutline} style={{ fontSize: '26px', color: 'var(--ion-color-danger)' }} />
-                <div style={tileNum}>{streak}</div>
-                <div style={tileLabel}>Gün Seri</div>
+            {/* Özet istatistikler */}
+            <div
+              className="ff-stat-grid ff-rise"
+              style={{ '--ff-delay': '0.05s' } as React.CSSProperties}
+            >
+              <div className="ff-stat">
+                <span className="ff-stat-icon ff-icon-primary">
+                  <IonIcon icon={flameOutline} />
+                </span>
+                <span className="ff-stat-value">{streak}</span>
+                <span className="ff-stat-label">Günlük Seri</span>
               </div>
-              <div style={tileStyle}>
-                <IonIcon icon={trophyOutline} style={{ fontSize: '26px', color: 'var(--ion-color-warning)' }} />
-                <div style={tileNum}>{dashboard.user.level}</div>
-                <div style={tileLabel}>Seviye</div>
+              <div className="ff-stat">
+                <span className="ff-stat-icon ff-icon-gold">
+                  <IonIcon icon={trophyOutline} />
+                </span>
+                <span className="ff-stat-value">{dashboard.user.level}</span>
+                <span className="ff-stat-label">Seviye</span>
               </div>
-              <div style={tileStyle}>
-                <IonIcon icon={shieldCheckmarkOutline} style={{ fontSize: '26px', color: 'var(--ion-color-secondary)' }} />
-                <div style={tileNum}>%{score.toFixed(0)}</div>
-                <div style={tileLabel}>Sorumluluk</div>
+              <div className="ff-stat">
+                <span className="ff-stat-icon ff-icon-cool">
+                  <IonIcon icon={shieldCheckmarkOutline} />
+                </span>
+                <span className="ff-stat-value">%{score.toFixed(0)}</span>
+                <span className="ff-stat-label">Sorumluluk</span>
+              </div>
+              <div className="ff-stat">
+                <span className="ff-stat-icon ff-icon-mint">
+                  <IonIcon icon={ribbonOutline} />
+                </span>
+                <span className="ff-stat-value">
+                  {achievements ? achievements.total_earned : '—'}
+                </span>
+                <span className="ff-stat-label">
+                  {achievements ? `${achievements.total_badges} rozetten` : 'Rozet'}
+                </span>
               </div>
             </div>
 
             {/* Seviye & XP */}
-            <IonCard style={{ borderRadius: '12px', marginBottom: '16px' }}>
-              <IonCardHeader>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <IonIcon icon={trophyOutline} color="warning" style={{ fontSize: '24px' }} />
-                  <IonCardTitle style={{ fontSize: '20px' }}>Seviye & XP</IonCardTitle>
-                </div>
-                <IonCardSubtitle>Toplam {totalXp} XP · Görevleri tamamla, seviye atla!</IonCardSubtitle>
-              </IonCardHeader>
-              <IonCardContent>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontWeight: 'bold' }}>
-                  <span>Seviye {dashboard.user.level}</span>
-                  <span>{currentLevelXp} / {xpNeeded} XP</span>
-                </div>
-                <IonProgressBar value={xpProgress} color="warning" style={{ height: '8px', borderRadius: '4px' }} />
-              </IonCardContent>
-            </IonCard>
+            <div
+              className="ff-card ff-rise"
+              style={{ marginTop: '14px', '--ff-delay': '0.1s' } as React.CSSProperties}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'baseline',
+                  marginBottom: '12px',
+                }}
+              >
+                <span style={{ fontSize: '17px', fontWeight: 700, letterSpacing: '-0.02em' }}>
+                  Seviye {dashboard.user.level}
+                </span>
+                <span
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: 'var(--ff-text-muted)',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {currentLevelXp} / {xpNeeded} XP
+                </span>
+              </div>
+              <div className="ff-progress">
+                <div className="ff-progress-fill is-gold" style={{ width: `${xpProgress * 100}%` }} />
+              </div>
+              <p style={{ margin: '10px 0 0', fontSize: '13px', color: 'var(--ff-text-muted)' }}>
+                Sonraki seviyeye{' '}
+                <strong style={{ color: 'var(--ff-text-soft)' }}>
+                  {xpNeeded - currentLevelXp} XP
+                </strong>{' '}
+                kaldı · Toplam {totalXp} XP
+              </p>
+            </div>
 
             {/* Sorumluluk skoru */}
-            <IonCard style={{ borderRadius: '12px', marginBottom: '16px' }}>
-              <IonCardHeader>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <IonIcon icon={shieldCheckmarkOutline} color="secondary" style={{ fontSize: '24px' }} />
-                  <IonCardTitle style={{ fontSize: '20px' }}>Sorumluluk Skoru</IonCardTitle>
-                </div>
-                <IonCardSubtitle>Son 7 günün performansına göre AI koçunun kararlılık puanı.</IonCardSubtitle>
-              </IonCardHeader>
-              <IonCardContent>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontWeight: 'bold' }}>
-                  <span>Kararlılık Puanı</span>
-                  <span>%{score.toFixed(0)}</span>
-                </div>
-                <IonProgressBar value={score / 100} color="secondary" style={{ height: '8px', borderRadius: '4px' }} />
-              </IonCardContent>
-            </IonCard>
+            <div
+              className="ff-card ff-rise"
+              style={{ marginTop: '14px', '--ff-delay': '0.15s' } as React.CSSProperties}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'baseline',
+                  marginBottom: '12px',
+                }}
+              >
+                <span style={{ fontSize: '17px', fontWeight: 700, letterSpacing: '-0.02em' }}>
+                  Sorumluluk Skoru
+                </span>
+                <span
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: 'var(--ff-text-muted)',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  %{score.toFixed(0)}
+                </span>
+              </div>
+              <div className="ff-progress">
+                <div className="ff-progress-fill is-cool" style={{ width: `${score}%` }} />
+              </div>
+              <p style={{ margin: '10px 0 0', fontSize: '13px', color: 'var(--ff-text-muted)' }}>
+                Son 7 günün performansına göre AI koçunun kararlılık puanı.
+              </p>
+            </div>
 
-            {/* Son 7 gün grafiği */}
+            {/* Son 7 gün */}
             {weekly && (
-              <IonCard style={{ borderRadius: '12px', marginBottom: '16px' }}>
-                <IonCardHeader>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <IonIcon icon={flashOutline} color="primary" style={{ fontSize: '24px' }} />
-                    <IonCardTitle style={{ fontSize: '20px' }}>Son 7 Gün</IonCardTitle>
-                  </div>
-                  <IonCardSubtitle>Günlük odaklanma ve aktiflik.</IonCardSubtitle>
-                </IonCardHeader>
-                <IonCardContent>
+              <>
+                <h2 className="ff-section-title">Son 7 Gün</h2>
+                <div
+                  className="ff-card ff-rise"
+                  style={{ '--ff-delay': '0.2s' } as React.CSSProperties}
+                >
                   <WeeklyChart report={weekly} />
-                </IonCardContent>
-              </IonCard>
+                </div>
+              </>
             )}
 
             {/* Rozetler */}
             {achievements && (
-              <IonCard style={{ borderRadius: '12px', marginBottom: '16px' }}>
-                <IonCardHeader>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <IonIcon icon={ribbonOutline} color="warning" style={{ fontSize: '24px' }} />
-                    <IonCardTitle style={{ fontSize: '20px' }}>Rozetler</IonCardTitle>
-                  </div>
-                  <IonCardSubtitle>
-                    {achievements.total_earned} / {achievements.total_badges} rozet kazanıldı.
-                  </IonCardSubtitle>
-                </IonCardHeader>
-                <IonCardContent>
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
-                      gap: '12px',
-                    }}
+              <>
+                <h2 className="ff-section-title">
+                  Rozetler{' '}
+                  <span
+                    style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ff-text-muted)' }}
                   >
+                    {achievements.total_earned}/{achievements.total_badges}
+                  </span>
+                </h2>
+                <div
+                  className="ff-card ff-rise"
+                  style={{ '--ff-delay': '0.25s' } as React.CSSProperties}
+                >
+                  <div className="profile-badges">
                     {achievements.catalog.map((b) => (
                       <div
                         key={b.key}
                         title={b.description}
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          textAlign: 'center',
-                          gap: '6px',
-                          padding: '12px 6px',
-                          borderRadius: '12px',
-                          background: b.earned
-                            ? 'rgba(var(--ion-color-warning-rgb), 0.12)'
-                            : 'rgba(var(--ion-color-medium-rgb), 0.08)',
-                          opacity: b.earned ? 1 : 0.55,
-                        }}
+                        className={`profile-badge ${b.earned ? 'is-earned' : ''}`}
                       >
-                        <IonIcon
-                          icon={b.earned ? BADGE_ICONS[b.key] ?? ribbonOutline : lockClosedOutline}
-                          style={{
-                            fontSize: '30px',
-                            color: b.earned ? 'var(--ion-color-warning)' : 'var(--ion-color-medium)',
-                          }}
-                        />
-                        <span style={{ fontSize: '12px', fontWeight: 600, lineHeight: 1.2 }}>{b.name}</span>
-                        <span style={{ fontSize: '11px', color: 'var(--ion-color-medium)' }}>
+                        <span className="profile-badge-icon">
+                          <IonIcon
+                            icon={b.earned ? BADGE_ICONS[b.key] ?? ribbonOutline : lockClosedOutline}
+                          />
+                        </span>
+                        <span className="profile-badge-name">{b.name}</span>
+                        <span className="profile-badge-meta">
                           {b.earned ? `+${b.xp} XP` : 'Kilitli'}
                         </span>
                       </div>
                     ))}
                   </div>
-                </IonCardContent>
-              </IonCard>
+                </div>
+              </>
             )}
 
-            {/* Hesap bilgisi */}
-            <IonList inset style={{ borderRadius: '12px', marginBottom: '16px' }}>
-              <IonItem>
-                <IonLabel>
-                  <p>E-posta Adresi</p>
-                  <h3>{me.email}</h3>
-                </IonLabel>
-              </IonItem>
-            </IonList>
+            {/* Hesap */}
+            <h2 className="ff-section-title">Hesap</h2>
+            <div className="ff-row ff-rise" style={{ '--ff-delay': '0.3s' } as React.CSSProperties}>
+              <span className="ff-stat-icon ff-icon-cool">
+                <IonIcon icon={mailOutline} />
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p className="ff-row-sub" style={{ margin: 0 }}>E-posta Adresi</p>
+                <p className="ff-row-title" style={{ overflowWrap: 'anywhere' }}>{me.email}</p>
+              </div>
+            </div>
 
             {/* Çıkış */}
-            <IonButton
-              expand="block"
-              color="danger"
-              fill="outline"
+            <button
+              className="ff-btn ff-btn-ghost profile-logout"
               onClick={onLogout}
-              style={{ '--border-radius': '10px', fontWeight: 'bold', marginTop: '8px', marginBottom: '24px' }}
+              style={{ marginTop: '18px' }}
             >
-              <IonIcon slot="start" icon={logOutOutline} />
+              <IonIcon icon={logOutOutline} style={{ fontSize: '19px' }} />
               Çıkış Yap
-            </IonButton>
+            </button>
           </div>
         )}
 
@@ -330,18 +381,5 @@ const Tab3: React.FC<Tab3Props> = ({ onLogout }) => {
     </IonPage>
   );
 };
-
-const tileStyle: React.CSSProperties = {
-  flex: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: '4px',
-  padding: '16px 6px',
-  borderRadius: '14px',
-  background: 'var(--ion-color-step-50, rgba(127,127,127,0.08))',
-};
-const tileNum: React.CSSProperties = { fontSize: '24px', fontWeight: 800 };
-const tileLabel: React.CSSProperties = { fontSize: '12px', color: 'var(--ion-color-medium)' };
 
 export default Tab3;

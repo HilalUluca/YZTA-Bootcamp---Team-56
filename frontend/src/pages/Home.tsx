@@ -5,21 +5,10 @@ import {
   IonPage,
   IonTitle,
   IonToolbar,
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonCard,
-  IonCardContent,
   IonIcon,
-  IonProgressBar,
-  IonList,
-  IonItem,
-  IonLabel,
-  IonBadge,
   IonRefresher,
   IonRefresherContent,
   IonSpinner,
-  IonButton,
 } from '@ionic/react';
 import {
   checkmarkDoneOutline,
@@ -66,6 +55,14 @@ interface DashboardData {
 }
 
 const XP_PER_LEVEL = 500; // Backend formülü: level = total_xp // 500 + 1
+
+/** Saate göre selamlama — küçük bir kişiselleştirme dokunuşu. */
+const greetingFor = (hour: number) => {
+  if (hour < 6) return 'İyi geceler';
+  if (hour < 12) return 'Günaydın';
+  if (hour < 18) return 'İyi günler';
+  return 'İyi akşamlar';
+};
 
 const Home: React.FC = () => {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -130,199 +127,299 @@ const Home: React.FC = () => {
   const openTasks = data ? data.tasks.todays_list.filter((t) => t.status !== 'done') : [];
 
   return (
-    <IonPage>
+    <IonPage className="ff-page">
       <IonHeader>
-        <IonToolbar color="primary">
+        <IonToolbar>
           <IonTitle>Ana Sayfa</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent className="ion-padding" style={{ '--background': 'var(--ion-background-color)' }}>
+      <IonContent>
         <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
-          <IonRefresherContent></IonRefresherContent>
+          <IonRefresherContent />
         </IonRefresher>
 
-        {/* Yükleniyor */}
-        {isLoading && !data && (
-          <div style={{ textAlign: 'center', marginTop: '80px' }}>
-            <IonSpinner name="crescent" color="primary" />
-            <p style={{ color: 'var(--ion-color-medium)' }}>Yükleniyor...</p>
-          </div>
-        )}
+        <div style={{ padding: '4px 18px 28px' }}>
+          {/* Yükleniyor */}
+          {isLoading && !data && (
+            <div style={{ textAlign: 'center', marginTop: '80px' }}>
+              <IonSpinner name="crescent" color="primary" />
+              <p style={{ color: 'var(--ff-text-muted)' }}>Yükleniyor...</p>
+            </div>
+          )}
 
-        {/* Hata */}
-        {error && !data && (
-          <div style={{ textAlign: 'center', marginTop: '60px', color: 'var(--ion-color-danger)' }}>
-            <IonIcon icon={alertCircleOutline} style={{ fontSize: '64px' }} />
-            <h3>Bir sorun oluştu</h3>
-            <p style={{ color: 'var(--ion-color-medium)' }}>{error}</p>
-            <IonButton onClick={loadDashboard} fill="outline" color="danger">
-              Tekrar Dene
-            </IonButton>
-          </div>
-        )}
+          {/* Hata */}
+          {error && !data && (
+            <div className="ff-empty ff-rise">
+              <span className="ff-empty-icon">
+                <IonIcon icon={alertCircleOutline} />
+              </span>
+              <h3 className="ff-title" style={{ fontSize: '22px' }}>Bir sorun oluştu</h3>
+              <p className="ff-subtitle">{error}</p>
+              <button className="ff-btn ff-btn-ghost ff-btn-auto" onClick={loadDashboard}>
+                Tekrar Dene
+              </button>
+            </div>
+          )}
 
-        {data && (
-          <>
-            {/* Karşılama + papağan */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', margin: '8px 0 20px 0' }}>
-              <img
-                src={parrotImg}
-                alt="FocusForge papağanı"
-                style={{ width: '72px', height: '72px', objectFit: 'contain', flexShrink: 0 }}
-              />
-              <div>
-                <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 800, color: 'var(--ion-text-color)' }}>
-                  Merhaba, {name} 👋
-                </h1>
-                <p style={{ margin: '4px 0 0 0', color: 'var(--ion-color-medium)', fontSize: '14px' }}>
-                  Bugün odaklanmak için harika bir gün 🚀
+          {data && (
+            <>
+              {/* Karşılama */}
+              <div
+                className="ff-rise"
+                style={{ display: 'flex', alignItems: 'center', gap: '14px', margin: '6px 0 22px' }}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p className="ff-subtitle" style={{ fontSize: '14px', fontWeight: 600 }}>
+                    {greetingFor(new Date().getHours())}
+                  </p>
+                  <h1 className="ff-title" style={{ overflowWrap: 'anywhere' }}>
+                    {name} <span style={{ WebkitTextFillColor: 'initial' }}>👋</span>
+                  </h1>
+                </div>
+                <div
+                  style={{
+                    width: '62px',
+                    height: '62px',
+                    borderRadius: '22px',
+                    flexShrink: 0,
+                    display: 'grid',
+                    placeItems: 'center',
+                    background: 'var(--ff-glass-bg-strong)',
+                    border: '1px solid var(--ff-glass-border)',
+                    boxShadow: 'var(--ff-shadow-md)',
+                    backdropFilter: 'var(--ff-glass-blur)',
+                    WebkitBackdropFilter: 'var(--ff-glass-blur)',
+                  }}
+                >
+                  <img
+                    src={parrotImg}
+                    alt=""
+                    style={{ width: '46px', height: '46px', objectFit: 'contain' }}
+                  />
+                </div>
+              </div>
+
+              {/* HERO — bugünün planı, günün ana eylemi */}
+              <div className="ff-card-hero ff-rise" style={{ '--ff-delay': '0.05s' } as React.CSSProperties}>
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '14px',
+                    }}
+                  >
+                    <span style={{ fontSize: '14px', fontWeight: 600, opacity: 0.92 }}>
+                      Bugünün Planı
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        padding: '5px 11px',
+                        borderRadius: '999px',
+                        background: 'rgba(255,255,255,0.22)',
+                      }}
+                    >
+                      {remaining > 0 ? `${remaining} görev kaldı` : 'Hepsi tamam 🎉'}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                    <span style={{ fontSize: '44px', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      {doneToday}
+                    </span>
+                    <span style={{ fontSize: '18px', fontWeight: 600, opacity: 0.85 }}>
+                      / {totalToday} görev
+                    </span>
+                  </div>
+
+                  {/* Beyaz ilerleme çubuğu — gradyan zeminde okunur */}
+                  <div
+                    style={{
+                      height: '8px',
+                      borderRadius: '999px',
+                      background: 'rgba(255,255,255,0.28)',
+                      overflow: 'hidden',
+                      margin: '16px 0 6px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: '100%',
+                        width: `${planProgress * 100}%`,
+                        borderRadius: '999px',
+                        background: '#fff',
+                        transition: 'width 0.9s var(--ff-smooth)',
+                      }}
+                    />
+                  </div>
+
+                  {openTasks.length > 0 && (
+                    <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {openTasks.slice(0, 3).map((t) => (
+                        <div
+                          key={t.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '9px',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            opacity: 0.95,
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: '6px',
+                              height: '6px',
+                              borderRadius: '50%',
+                              background: '#fff',
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span
+                            style={{
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {t.title}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <button
+                    className="ff-btn"
+                    onClick={() => setShowPlan(true)}
+                    style={{
+                      marginTop: '18px',
+                      background: 'rgba(255,255,255,0.95)',
+                      color: '#d1481f',
+                      boxShadow: '0 6px 18px rgba(0,0,0,0.14)',
+                    }}
+                  >
+                    <IonIcon icon={sparklesOutline} style={{ fontSize: '19px' }} />
+                    AI ile Günü Planla
+                  </button>
+                </div>
+              </div>
+
+              {/* İstatistikler */}
+              <div
+                className="ff-stat-grid ff-rise"
+                style={{ marginTop: '14px', '--ff-delay': '0.1s' } as React.CSSProperties}
+              >
+                <div className="ff-stat">
+                  <span className="ff-stat-icon ff-icon-mint">
+                    <IonIcon icon={checkmarkDoneOutline} />
+                  </span>
+                  <span className="ff-stat-value">{data.tasks.completed_today}</span>
+                  <span className="ff-stat-label">Tamamlanan Görev</span>
+                </div>
+                <div className="ff-stat">
+                  <span className="ff-stat-icon ff-icon-cool">
+                    <IonIcon icon={flashOutline} />
+                  </span>
+                  <span className="ff-stat-value">{data.focus.minutes_today} dk</span>
+                  <span className="ff-stat-label">Bugün Odaklanma</span>
+                </div>
+                <div className="ff-stat">
+                  <span className="ff-stat-icon ff-icon-primary">
+                    <IonIcon icon={flameOutline} />
+                  </span>
+                  <span className="ff-stat-value">{data.user.streak_count}</span>
+                  <span className="ff-stat-label">Günlük Seri</span>
+                </div>
+                <div className="ff-stat">
+                  <span className="ff-stat-icon ff-icon-gold">
+                    <IonIcon icon={trophyOutline} />
+                  </span>
+                  <span className="ff-stat-value">{data.user.total_xp}</span>
+                  <span className="ff-stat-label">Toplam XP</span>
+                </div>
+              </div>
+
+              {/* Seviye ilerlemesi */}
+              <div
+                className="ff-card ff-rise"
+                style={{ marginTop: '14px', '--ff-delay': '0.15s' } as React.CSSProperties}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                    marginBottom: '12px',
+                  }}
+                >
+                  <span style={{ fontSize: '17px', fontWeight: 700, letterSpacing: '-0.02em' }}>
+                    Seviye {data.user.level}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: 'var(--ff-text-muted)',
+                      fontVariantNumeric: 'tabular-nums',
+                    }}
+                  >
+                    {xpIntoLevel} / {XP_PER_LEVEL} XP
+                  </span>
+                </div>
+                <div className="ff-progress">
+                  <div className="ff-progress-fill is-gold" style={{ width: `${levelProgress * 100}%` }} />
+                </div>
+                <p style={{ margin: '10px 0 0', fontSize: '13px', color: 'var(--ff-text-muted)' }}>
+                  Sonraki seviyeye <strong style={{ color: 'var(--ff-text-soft)' }}>
+                    {XP_PER_LEVEL - xpIntoLevel} XP
+                  </strong> kaldı
                 </p>
               </div>
-            </div>
 
-            {/* Günün özeti kartları */}
-            <IonGrid style={{ padding: 0 }}>
-              <IonRow>
-                <IonCol size="6">
-                  <IonCard style={{ borderRadius: '16px', margin: '6px' }}>
-                    <IonCardContent style={{ textAlign: 'center' }}>
-                      <IonIcon icon={checkmarkDoneOutline} style={{ fontSize: '28px', color: 'var(--ion-color-tertiary)' }} />
-                      <h1 style={{ margin: '4px 0', fontSize: '24px', fontWeight: 'bold' }}>{data.tasks.completed_today}</h1>
-                      <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>Tamamlanan Görev</p>
-                    </IonCardContent>
-                  </IonCard>
-                </IonCol>
-                <IonCol size="6">
-                  <IonCard style={{ borderRadius: '16px', margin: '6px' }}>
-                    <IonCardContent style={{ textAlign: 'center' }}>
-                      <IonIcon icon={flashOutline} style={{ fontSize: '28px', color: 'var(--ion-color-secondary)' }} />
-                      <h1 style={{ margin: '4px 0', fontSize: '24px', fontWeight: 'bold' }}>{data.focus.minutes_today}dk</h1>
-                      <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>Bugün Odaklanma</p>
-                    </IonCardContent>
-                  </IonCard>
-                </IonCol>
-              </IonRow>
-              <IonRow>
-                <IonCol size="6">
-                  <IonCard style={{ borderRadius: '16px', margin: '6px' }}>
-                    <IonCardContent style={{ textAlign: 'center' }}>
-                      <IonIcon icon={flameOutline} style={{ fontSize: '28px', color: 'var(--ion-color-danger)' }} />
-                      <h1 style={{ margin: '4px 0', fontSize: '24px', fontWeight: 'bold' }}>{data.user.streak_count}</h1>
-                      <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>Günlük Seri</p>
-                    </IonCardContent>
-                  </IonCard>
-                </IonCol>
-                <IonCol size="6">
-                  <IonCard style={{ borderRadius: '16px', margin: '6px' }}>
-                    <IonCardContent style={{ textAlign: 'center' }}>
-                      <IonIcon icon={trophyOutline} style={{ fontSize: '28px', color: 'var(--ion-color-warning)' }} />
-                      <h1 style={{ margin: '4px 0', fontSize: '24px', fontWeight: 'bold' }}>{data.user.total_xp}</h1>
-                      <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>Toplam XP</p>
-                    </IonCardContent>
-                  </IonCard>
-                </IonCol>
-              </IonRow>
-            </IonGrid>
-
-            {/* Seviye ilerleme çubuğu */}
-            <IonCard style={{ borderRadius: '16px', marginTop: '10px' }}>
-              <IonCardContent>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontWeight: 'bold' }}>
-                  <span>Seviye {data.user.level}</span>
-                  <span style={{ color: 'var(--ion-color-medium)' }}>{xpIntoLevel} / {XP_PER_LEVEL} XP</span>
-                </div>
-                <IonProgressBar value={levelProgress} color="warning" style={{ height: '10px', borderRadius: '5px' }} />
-                <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: 'var(--ion-color-medium)' }}>
-                  Sonraki seviyeye {XP_PER_LEVEL - xpIntoLevel} XP kaldı
-                </p>
-              </IonCardContent>
-            </IonCard>
-
-            {/* Bugünün planı */}
-            <IonCard style={{ borderRadius: '16px', marginTop: '10px' }}>
-              <IonCardContent>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ fontWeight: 'bold', fontSize: '18px' }}>Bugünün Planı</span>
-                  <IonBadge color={remaining > 0 ? 'primary' : 'success'}>
-                    {remaining > 0 ? `${remaining} görev kaldı` : 'Hepsi tamam 🎉'}
-                  </IonBadge>
-                </div>
-                <IonProgressBar value={planProgress} color="primary" style={{ height: '10px', borderRadius: '5px' }} />
-                <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: 'var(--ion-color-medium)' }}>
-                  {doneToday} / {totalToday} görev tamamlandı
-                </p>
-
-                {openTasks.length > 0 && (
-                  <IonList style={{ marginTop: '12px', background: 'transparent' }}>
-                    {openTasks.slice(0, 4).map((t) => (
-                      <IonItem key={t.id} lines="full" style={{ '--background': 'transparent', '--padding-start': '0px' }}>
-                        <IonLabel>
-                          <h3 style={{ fontWeight: 500 }}>{t.title}</h3>
-                        </IonLabel>
-                      </IonItem>
-                    ))}
-                  </IonList>
-                )}
-
-                {/* AI ile günü planla — görev olsun olmasın HER ZAMAN görünür */}
-                <IonButton
-                  expand="block"
-                  onClick={() => setShowPlan(true)}
-                  style={{ marginTop: '16px', '--border-radius': '25px', fontWeight: 'bold' }}
-                >
-                  <IonIcon slot="start" icon={sparklesOutline} />
-                  AI ile Günü Planla
-                </IonButton>
-              </IonCardContent>
-            </IonCard>
-
-            {/* Günlük Yansıma kartı — bugünün durumunu gösterir, modalı açar */}
-            <IonCard
-              button
-              onClick={() => setShowReflection(true)}
-              style={{ borderRadius: '16px', marginTop: '10px' }}
-            >
-              <IonCardContent>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <IonIcon
-                    icon={todayReflection ? checkmarkDoneOutline : journalOutline}
-                    style={{ fontSize: '28px', color: todayReflection ? 'var(--ion-color-tertiary)' : 'var(--ion-color-primary)' }}
-                  />
-                  <div style={{ flex: 1 }}>
-                    <h2 style={{ margin: 0, fontSize: '17px', fontWeight: 'bold' }}>
-                      {todayReflection ? 'Bugünü değerlendirdin ✓' : 'Günlük Yansıma'}
-                    </h2>
-                    <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: 'var(--ion-color-medium)' }}>
-                      {todayReflection ? 'Görüntüle veya düzenle' : 'Günün nasıl geçti? Kısa bir değerlendirme yap.'}
+              {/* Hızlı eylemler */}
+              <div
+                className="ff-rise"
+                style={{ marginTop: '14px', '--ff-delay': '0.2s' } as React.CSSProperties}
+              >
+                <div className="ff-row ff-pressable" onClick={() => setShowReflection(true)}>
+                  <span
+                    className={`ff-stat-icon ${todayReflection ? 'ff-icon-mint' : 'ff-icon-primary'}`}
+                  >
+                    <IonIcon icon={todayReflection ? checkmarkDoneOutline : journalOutline} />
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p className="ff-row-title">
+                      {todayReflection ? 'Bugünü değerlendirdin' : 'Günlük Yansıma'}
+                    </p>
+                    <p className="ff-row-sub">
+                      {todayReflection
+                        ? 'Görüntüle veya düzenle'
+                        : 'Günün nasıl geçti? Kısa bir değerlendirme yap.'}
                     </p>
                   </div>
-                  <IonIcon icon={chevronForwardOutline} style={{ color: 'var(--ion-color-medium)' }} />
+                  <IonIcon icon={chevronForwardOutline} style={{ color: 'var(--ff-text-muted)' }} />
                 </div>
-              </IonCardContent>
-            </IonCard>
 
-            {/* Alışkanlıklar kartı — günlük check-in modalını açar */}
-            <IonCard
-              button
-              onClick={() => setShowHabits(true)}
-              style={{ borderRadius: '16px', marginTop: '10px' }}
-            >
-              <IonCardContent>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <IonIcon icon={repeatOutline} style={{ fontSize: '28px', color: 'var(--ion-color-primary)' }} />
-                  <div style={{ flex: 1 }}>
-                    <h2 style={{ margin: 0, fontSize: '17px', fontWeight: 'bold' }}>Alışkanlıklar</h2>
-                    <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: 'var(--ion-color-medium)' }}>
-                      Günlük alışkanlıklarını işaretle ve serini büyüt.
-                    </p>
+                <div className="ff-row ff-pressable" onClick={() => setShowHabits(true)}>
+                  <span className="ff-stat-icon ff-icon-cool">
+                    <IonIcon icon={repeatOutline} />
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p className="ff-row-title">Alışkanlıklar</p>
+                    <p className="ff-row-sub">Günlük alışkanlıklarını işaretle ve serini büyüt.</p>
                   </div>
-                  <IonIcon icon={chevronForwardOutline} style={{ color: 'var(--ion-color-medium)' }} />
+                  <IonIcon icon={chevronForwardOutline} style={{ color: 'var(--ff-text-muted)' }} />
                 </div>
-              </IonCardContent>
-            </IonCard>
-          </>
-        )}
+              </div>
+            </>
+          )}
+        </div>
 
         {/* Günlük yansıma modalı */}
         <Reflection
@@ -336,18 +433,10 @@ const Home: React.FC = () => {
         />
 
         {/* AI günlük plan modalı */}
-        <DailyPlan
-          isOpen={showPlan}
-          onClose={() => setShowPlan(false)}
-          openTaskCount={remaining}
-        />
+        <DailyPlan isOpen={showPlan} onClose={() => setShowPlan(false)} openTaskCount={remaining} />
 
         {/* Alışkanlıklar modalı */}
-        <Habits
-          isOpen={showHabits}
-          onClose={() => setShowHabits(false)}
-          onChanged={loadDashboard}
-        />
+        <Habits isOpen={showHabits} onClose={() => setShowHabits(false)} onChanged={loadDashboard} />
       </IonContent>
     </IonPage>
   );

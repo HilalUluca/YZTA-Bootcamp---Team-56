@@ -144,7 +144,7 @@ def _get_llm():
         )
     
     return ChatGoogleGenerativeAI(
-        model="gemini-flash-latest",
+        model="gemini-1.5-flash",
         google_api_key=settings.gemini_api_key,
         temperature=0.7,
         convert_system_message_to_human=True

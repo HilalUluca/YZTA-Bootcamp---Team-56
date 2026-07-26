@@ -25,3 +25,4 @@ langchain-google-genai>=0.0.12
 # Utilities
 python-dotenv
 email-validator
+pytest

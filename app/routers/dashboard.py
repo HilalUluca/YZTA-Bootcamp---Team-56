@@ -198,3 +198,24 @@ def get_mood_habit_correlation_endpoint(
         )
         
     return run_mood_habit_analysis(user=current_user, db=db, days=days)
+
+
+@router.get("/weekly-reflection-summary")
+def get_weekly_reflection_summary(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Kullanıcının son haftalık (ve önceki haftalık) yansıma verilerini analiz ederek
+    mood ve enerji trendlerini döndürür. Ayrıca koç uyarılarını (triggers) içerir.
+    """
+    from app.agents.reflection_agent import get_weekly_summary, generate_coach_triggers
+
+    summary_data = get_weekly_summary(user_id=current_user.id, db=db)
+    triggers = generate_coach_triggers(summary_data)
+
+    return {
+        "summary": summary_data,
+        "triggers": triggers,
+        "generated_at": datetime.now(timezone.utc).isoformat()
+    }

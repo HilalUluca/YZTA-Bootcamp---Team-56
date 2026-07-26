@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Redirect, Route } from 'react-router-dom';
 import {
   IonApp,
   IonIcon,
   IonLabel,
+  IonLoading,
   IonRouterOutlet,
   IonTabBar,
   IonTabButton,
@@ -19,6 +20,7 @@ import Tab3 from './pages/Tab3';
 import Focus from './pages/Focus';
 import Login from './pages/Login';
 import Onboarding from './pages/Onboarding';
+import api, { AUTH_LOGOUT_EVENT, clearToken, getToken } from './services/api';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -52,7 +54,7 @@ setupIonicReact();
 // Token'ın (JWT) ortadaki parçasından kullanıcı kimliğini (sub) çıkar.
 // Backend /auth/me onboarding durumunu vermediği için bayrağı kullanıcıya göre saklıyoruz.
 const getUserId = (): string | null => {
-  const t = localStorage.getItem('token');
+  const t = getToken();
   if (!t) return null;
   try {
     const payload = JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
@@ -69,28 +71,65 @@ const onboardingDone = (): boolean => {
   return localStorage.getItem('ff_onboarding_done_' + id) === '1';
 };
 
+/**
+ * Oturum durumu:
+ *  - 'checking' : elimizde token var, backend'e geçerli mi diye soruyoruz
+ *  - 'in'       : token doğrulandı, uygulama açılabilir
+ *  - 'out'      : token yok veya geçersiz, Login ekranı gösterilir
+ */
+type AuthStatus = 'checking' | 'in' | 'out';
+
 const App: React.FC = () => {
-  // "Kullanıcı giriş yapmış mı?" hafızası.
-  // Başlangıçta localStorage'da token varsa true kabul ediyoruz
-  // (böylece sayfa yenilenince tekrar giriş istemiyor).
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(
-    () => !!localStorage.getItem('token')
+  // Token varsa hemen "giriş yapıldı" saymıyoruz; süresi dolmuş olabilir.
+  // Önce doğrulama (checking) aşamasına giriyoruz.
+  const [authStatus, setAuthStatus] = useState<AuthStatus>(
+    () => (getToken() ? 'checking' : 'out')
   );
   // Onboarding gerekiyor mu? (sadece ilk girişte gösterilecek)
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean>(
     () => !!localStorage.getItem('token') && !onboardingDone()
   );
 
+  // Guard: uygulama açılırken token'ı backend'e doğrulat.
+  useEffect(() => {
+    if (authStatus !== 'checking') return;
+
+    let cancelled = false;
+    api
+      .get('/auth/me')
+      .then(() => {
+        if (!cancelled) setAuthStatus('in');
+      })
+      .catch(() => {
+        // Geçersiz/süresi dolmuş token: temizle ve Login'e dön.
+        if (!cancelled) {
+          clearToken();
+          setAuthStatus('out');
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authStatus]);
+
+  // Uygulama çalışırken oturum düşerse (api.ts 401 yakalar) Login'e dön.
+  useEffect(() => {
+    const handleUnauthorized = () => setAuthStatus('out');
+    window.addEventListener(AUTH_LOGOUT_EVENT, handleUnauthorized);
+    return () => window.removeEventListener(AUTH_LOGOUT_EVENT, handleUnauthorized);
+  }, []);
+
   // Login başarılı olunca Login.tsx bu fonksiyonu çağırır.
   const handleLoginSuccess = () => {
-    setIsLoggedIn(true);
+    setAuthStatus('in');
     setNeedsOnboarding(!onboardingDone());
   };
 
   // Tab3'teki "Çıkış Yap" butonu bu fonksiyonu çağırır.
   const handleLogout = () => {
-    localStorage.removeItem('token'); // geçiş kartını sil
-    setIsLoggedIn(false); // tekrar Login ekranına dön
+    clearToken(); // geçiş kartını sil
+    setAuthStatus('out'); // tekrar Login ekranına dön
     setNeedsOnboarding(false);
   };
 
@@ -101,8 +140,17 @@ const App: React.FC = () => {
     setNeedsOnboarding(false);
   };
 
+  // Token doğrulanana kadar ne Login ne de uygulama gösterilir (ekran zıplamasın).
+  if (authStatus === 'checking') {
+    return (
+      <IonApp>
+        <IonLoading isOpen message={'Oturum kontrol ediliyor...'} />
+      </IonApp>
+    );
+  }
+
   // Giriş yapılmamışsa: sadece Login ekranını göster.
-  if (!isLoggedIn) {
+  if (authStatus === 'out') {
     return (
       <IonApp>
         <Login onLoginSuccess={handleLoginSuccess} />

@@ -5,7 +5,7 @@ Sprint 1: Basit chatbot (Tamamlandı)
 Sprint 2: LangChain multi-agent orkestrasyon ve Hafıza Yönetimi (Director Agent Entegrasyonu)
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
@@ -93,6 +93,7 @@ def get_chat_history(
 @router.post("/", response_model=ChatResponse)
 async def chat_with_ai(
     message: ChatMessage,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -167,12 +168,15 @@ async def chat_with_ai(
                 + planner_context
             )
 
-        # 6. Prompt Şablonunu Hazırla
-        # LangChain, "system" mesaj metnini bir şablon gibi parse eder ve içindeki
-        # { } karakterlerini değişken yer tutucusu sanır. planner_context içindeki
-        # gerçek JSON verisi de { } içerdiğinden, bunları literal karakter olarak
-        # korumak için kaçış (escape) yapıyoruz — aksi halde "nested replacement
-        # fields" hatası alınır.
+        # 6. Sistem Özetini Context'e Ekle (Eğer varsa)
+        from app.services.memory_manager import get_conversation_context, update_summary_if_needed
+        
+        summary_text, history_messages = get_conversation_context(db, current_user)
+        
+        if summary_text:
+            full_system_prompt += f"\n\n[SİSTEM VERİSİ - Önceki Konuşma Özeti]:\n{summary_text}"
+
+        # 7. Prompt Şablonunu Hazırla
         safe_system_prompt = full_system_prompt.replace("{", "{{").replace("}", "}}")
 
         prompt = ChatPromptTemplate.from_messages([
@@ -181,39 +185,13 @@ async def chat_with_ai(
             ("human", "{input}"),
         ])
 
-        # 7. Veritabanından geçmiş son 10 mesajı çek ve hafızaya yükle
-        past_db_messages = (
-            db.query(ChatMessageDB)
-            .filter(ChatMessageDB.user_id == current_user.id)
-            .order_by(desc(ChatMessageDB.created_at))
-            .limit(10)
-            .all()
-        )
-        past_db_messages.reverse()
-
-        history = InMemoryChatMessageHistory()
-        for msg in past_db_messages:
-            if msg.sender == "human":
-                history.add_user_message(msg.message)
-            elif msg.sender == "ai":
-                history.add_ai_message(msg.message)
-
-        def get_session_history(session_id: str) -> InMemoryChatMessageHistory:
-            return history
-
+        # 8. Modeli Tetikle (Geçmiş mesajları doğrudan veriyoruz, InMemoryChatMessageHistory yerine Runnable argümanı olarak)
+        # RunnableWithMessageHistory karmaşıklığı yerine doğrudan prompt'a geçiriyoruz:
         chain = prompt | llm
-        chain_with_history = RunnableWithMessageHistory(
-            chain,
-            get_session_history,
-            input_messages_key="input",
-            history_messages_key="history",
-        )
-
-        # 8. Modeli Tetikle
-        ai_message = chain_with_history.invoke(
-            {"input": message.message},
-            config={"configurable": {"session_id": str(current_user.id)}},
-        )
+        ai_message = chain.invoke({
+            "input": message.message,
+            "history": history_messages
+        })
         # Bazı Gemini modelleri content'i düz string yerine blok listesi
         # ([{"type": "text", "text": ...}]) olarak döndürür. Sadece metni al,
         # "extras" (base64 thought-signature vb.) alanlarını yok say.
@@ -245,6 +223,9 @@ async def chat_with_ai(
         db.add(user_db_message)
         db.add(ai_db_message)
         db.commit()
+        
+        # 10. Gerekirse özet güncelleyiciyi arka planda çalıştır
+        background_tasks.add_task(update_summary_if_needed, db, current_user.id)
 
         return ChatResponse(
             response=response_text,

@@ -19,8 +19,15 @@ import {
   IonCard,
   IonCardContent,
 } from '@ionic/react';
-import { play, pause, refresh, star, starOutline, add } from 'ionicons/icons';
+import { play, pause, refresh, star, starOutline, add, notificationsOffOutline } from 'ionicons/icons';
 import api from '../services/api';
+import {
+  getNotificationPermission,
+  notifySessionFinished,
+  primeAudio,
+  requestNotificationPermission,
+  type NotificationPermissionState,
+} from '../services/notifications';
 
 interface Task {
   id: string;
@@ -28,13 +35,26 @@ interface Task {
   status: string;
 }
 
+// Süreyi backend'in SessionType enum'una çevirir (pomodoro_25 / pomodoro_50 / custom).
+const sessionTypeFor = (min: number) =>
+  min === 25 ? 'pomodoro_25' : min === 50 ? 'pomodoro_50' : 'custom';
+
+// Aynı seçimin kullanıcıya gösterilen adı.
+const sessionTypeLabel = (min: number) =>
+  min === 25 ? 'Pomodoro 25' : min === 50 ? 'Pomodoro 50' : 'Özel seans';
+
+// Toplam odaklanmayı okunur biçimde yazar. Saate yuvarlamak 59 dakikalık
+// odaklanmayı "0s" gösterirdi, o yüzden 1 saatin altında dakika kullanıyoruz.
+const formatFocusTotal = (minutes: number) =>
+  minutes < 60 ? `${minutes}dk` : `${Math.round((minutes / 60) * 10) / 10}s`;
+
 const Focus: React.FC = () => {
   // Seçimler
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedTaskId, setSelectedTaskId] = useState<string>('');
   const [durationMin, setDurationMin] = useState<number>(25);
   const [customMode, setCustomMode] = useState<boolean>(false);
-  const DURATION_PRESETS = [15, 25, 45, 50];
+  const DURATION_PRESETS = [15, 25, 50];
 
   // Timer durumu
   const [secondsLeft, setSecondsLeft] = useState<number>(25 * 60);
@@ -55,7 +75,18 @@ const Focus: React.FC = () => {
   const [toastMessage, setToastMessage] = useState<string>('');
   const [showToast, setShowToast] = useState<boolean>(false);
 
+  // Sistem bildirimi izni ("granted" / "denied" / "default" / "unsupported")
+  const [notifPermission, setNotifPermission] = useState<NotificationPermissionState>(
+    () => getNotificationPermission()
+  );
+
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Seansın biteceği an (epoch ms). Kalan süreyi her tick'te buradan
+  // hesaplıyoruz; böylece sekme arka plana atılıp interval kısıtlansa bile
+  // sayaç gerçek saatten şaşmıyor.
+  const deadlineRef = useRef<number | null>(null);
+  // Bitiş bildirimini seans başına yalnızca bir kez göndermek için kilit.
+  const finishedRef = useRef<boolean>(false);
 
   const notify = (msg: string) => {
     setToastMessage(msg);
@@ -87,24 +118,39 @@ const Focus: React.FC = () => {
     }
   };
 
-  // Sayaç: isRunning true iken her saniye bir azalt
+  // Sayaç: kalan süreyi saniye saymak yerine bitiş anından hesapla.
+  // (Arka plandaki sekmede setInterval yavaşlatılır, bu yüzden "her tick'te
+  // 1 azalt" yaklaşımı seansı olduğundan uzun gösterirdi.)
   useEffect(() => {
     if (!isRunning) return;
-    intervalRef.current = setInterval(() => {
-      setSecondsLeft((prev) => (prev <= 1 ? 0 : prev - 1));
-    }, 1000);
+
+    const tick = () => {
+      if (deadlineRef.current === null) return;
+      setSecondsLeft(Math.max(0, Math.round((deadlineRef.current - Date.now()) / 1000)));
+    };
+
+    tick();
+    intervalRef.current = setInterval(tick, 500);
+    // Uygulamaya geri dönüldüğünde kısıtlanmış interval'i beklemeden güncelle.
+    document.addEventListener('visibilitychange', tick);
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      document.removeEventListener('visibilitychange', tick);
     };
   }, [isRunning]);
 
-  // Süre bittiğinde: sayacı durdur ve değerlendirme penceresini aç
+  // Süre bittiğinde: sayacı durdur, kullanıcıyı uyar, değerlendirmeyi aç
   useEffect(() => {
-    if (secondsLeft === 0 && isActive) {
-      setIsRunning(false);
-      setShowRating(true);
-    }
-  }, [secondsLeft, isActive]);
+    if (secondsLeft !== 0 || !isActive || finishedRef.current) return;
+
+    finishedRef.current = true;
+    deadlineRef.current = null;
+    setIsRunning(false);
+    setShowRating(true);
+    // Ses + titreşim + sistem bildirimi (uygulama arka plandaysa da duyulur).
+    void notifySessionFinished(durationMin);
+  }, [secondsLeft, isActive, durationMin]);
 
   // Yeni görev oluştur ve otomatik seç: POST /tasks/
   const createTask = async () => {
@@ -134,16 +180,17 @@ const Focus: React.FC = () => {
   // Seansı başlat: POST /focus/start
   const startSession = async () => {
     try {
-      // Süreye göre seans türü: 25/50 hazır tür, diğerleri "custom"
-      const sessionType =
-        durationMin === 25 ? 'pomodoro_25' : durationMin === 50 ? 'pomodoro_50' : 'custom';
       const res = await api.post('/focus/start', {
         task_id: selectedTaskId || undefined,
-        session_type: sessionType,
+        session_type: sessionTypeFor(durationMin),
         // planned_duration'ı gönderiyoruz; backend şu an saklamıyor ama zararsız.
         planned_duration: durationMin,
       });
       setSessionId(res.data.id);
+      // Bitiş anını şimdiden sabitle: sayaç bundan sonra gerçek saati takip eder.
+      deadlineRef.current = Date.now() + durationMin * 60 * 1000;
+      finishedRef.current = false;
+      setSecondsLeft(durationMin * 60);
       setIsActive(true);
       setIsRunning(true);
     } catch (err) {
@@ -151,22 +198,53 @@ const Focus: React.FC = () => {
     }
   };
 
-  // Başlat / Duraklat / Devam butonu
-  const handlePrimary = () => {
-    if (!isActive) {
-      startSession();
+  // Duraklat / Devam et: kalan süreyi koruyarak bitiş anını yeniden kur.
+  const toggleRunning = () => {
+    if (isRunning) {
+      deadlineRef.current = null; // kalan süre dondu
+      setIsRunning(false);
     } else {
-      setIsRunning((prev) => !prev);
+      deadlineRef.current = Date.now() + secondsLeft * 1000;
+      setIsRunning(true);
     }
   };
 
-  // Sıfırla: timer'ı baştan al (backend seansı yarım kalır)
+  // Başlat / Duraklat / Devam butonu
+  const handlePrimary = () => {
+    if (isActive) {
+      toggleRunning();
+      return;
+    }
+    // Bildirim izni ve ses hazırlığı kullanıcı tıklamasının içinde yapılmalı;
+    // tarayıcılar bunları etkileşim dışında engelliyor.
+    primeAudio();
+    void requestNotificationPermission().then(setNotifPermission);
+    startSession();
+  };
+
+  // Timer'ı baştan al (yalnızca yerel durum).
   const resetTimer = () => {
+    deadlineRef.current = null;
+    finishedRef.current = false;
     setIsRunning(false);
     setIsActive(false);
     setSessionId(null);
     setRatingValue(0);
     setSecondsLeft(durationMin * 60);
+  };
+
+  // Sıfırla butonu: yarım kalan seansı backend'den de sil, sonra timer'ı sıfırla.
+  // Aksi halde vazgeçilen her seans "Seans" sayacını şişirirdi.
+  const handleReset = async () => {
+    const abandonedId = sessionId;
+    resetTimer();
+    if (!abandonedId) return;
+    try {
+      await api.delete(`/focus/${abandonedId}`);
+    } catch (err) {
+      // Silinemezse istatistik biraz şişer ama kullanıcıyı burada rahatsız
+      // etmiyoruz; backend zaten yarım seansları saymıyor.
+    }
   };
 
   // Değerlendirmeyi gönder: PATCH /focus/{id}/end
@@ -289,6 +367,37 @@ const Focus: React.FC = () => {
               />
             </IonItem>
           )}
+
+          {/* Seçimin backend'e hangi seans türü olarak kaydedileceğini göster */}
+          <div
+            style={{
+              textAlign: 'center',
+              marginTop: '12px',
+              fontSize: '13px',
+              color: 'var(--ion-color-medium)',
+            }}
+          >
+            Seans türü: <strong>{sessionTypeLabel(durationMin)}</strong> · {durationMin} dk
+          </div>
+
+          {/* Bildirim izni reddedilmişse kullanıcı sesle/uyarıyla neden
+              karşılaşmadığını bilsin. */}
+          {notifPermission === 'denied' && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                marginTop: '8px',
+                fontSize: '12px',
+                color: 'var(--ion-color-medium)',
+              }}
+            >
+              <IonIcon icon={notificationsOffOutline} />
+              Bildirim izni kapalı — süre bitince yalnızca ses ve uygulama içi uyarı gelir.
+            </div>
+          )}
         </div>
 
         {/* Büyük daire timer */}
@@ -353,7 +462,7 @@ const Focus: React.FC = () => {
             {primaryLabel}
           </IonButton>
           <IonButton
-            onClick={resetTimer}
+            onClick={handleReset}
             fill="outline"
             color="medium"
             disabled={!isActive}
@@ -376,7 +485,7 @@ const Focus: React.FC = () => {
                 </div>
                 <div>
                   <div style={{ fontSize: '22px', fontWeight: 'bold', color: 'var(--ion-color-secondary)' }}>
-                    {stats.total_focus_hours}s
+                    {formatFocusTotal(stats.total_focus_minutes ?? 0)}
                   </div>
                   <div style={{ fontSize: '12px', color: 'var(--ion-color-medium)' }}>Toplam Odak</div>
                 </div>

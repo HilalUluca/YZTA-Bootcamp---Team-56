@@ -2,9 +2,10 @@
 Gunluk Yansima API endpoint'leri.
 
 Endpoints:
-    POST   /api/reflections/    -> Gunluk yansima ekle
-    GET    /api/reflections/    -> Yansimalari listele
-    GET    /api/reflections/{id} -> Tek yansima getir
+    POST   /api/reflections/         -> Gunluk yansima ekle
+    GET    /api/reflections/         -> Yansimalari listele
+    GET    /api/reflections/{id}     -> Tek yansima getir
+    POST   /api/reflections/analyze  -> Son 7 yansımanın duygu trendi analizi
 """
 
 import uuid
@@ -23,6 +24,7 @@ from app.schemas.reflection import (
     ReflectionListResponse,
 )
 from app.services.auth import get_current_user
+from app.agents.reflection_agent import analyze_sentiment
 
 router = APIRouter(prefix="/api/reflections", tags=["Gunluk Yansima"])
 
@@ -82,6 +84,13 @@ def create_reflection(
         .first()
     )
 
+    text_to_analyze = " ".join(filter(None, [
+        reflection_data.wins, 
+        reflection_data.improvements, 
+        reflection_data.gratitude
+    ]))
+    sentiment = analyze_sentiment(text_to_analyze)
+
     if not reflection:
         # Yeni kayıt oluşturuluyor
         reflection = Reflection(
@@ -92,7 +101,7 @@ def create_reflection(
             wins=reflection_data.wins,
             improvements=reflection_data.improvements,
             gratitude=reflection_data.gratitude,
-            ai_analysis={},
+            ai_analysis={"sentiment": sentiment},
         )
         # Yeni kayıt için XP ödülü
         xp_bonus = 25
@@ -109,6 +118,11 @@ def create_reflection(
             reflection.improvements = reflection_data.improvements
         if reflection_data.gratitude is not None:
             reflection.gratitude = reflection_data.gratitude
+        
+        # ai_analysis dictini SQLAlchemy de tespit edebilsin diye yeni bir kopyasını atıyoruz
+        current_ai = reflection.ai_analysis or {}
+        current_ai["sentiment"] = sentiment
+        reflection.ai_analysis = dict(current_ai)
 
     db.commit()
     db.refresh(reflection)
@@ -166,3 +180,94 @@ def get_reflection(
         )
 
     return reflection
+
+
+@router.post("/analyze")
+def analyze_reflections(
+    days: int = Query(default=7, ge=1, le=30, description="Kaç günlük yansıma analiz edilsin"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Son N günün yansımalarını AI'ya gönderip duygu trendi analizi döndürür.
+
+    Döndürdüğü veriler:
+    - mood_trend: Son günlerdeki ruh hali trendi
+    - energy_trend: Enerji seviyesi trendi  
+    - sentiment_summary: Genel duygu özeti
+    - insights: AI'ın tespit ettiği kalıplar
+    - recommendation: Kişisel öneri
+    """
+    from datetime import timedelta
+
+    since = datetime.now(timezone.utc) - timedelta(days=days)
+
+    reflections = (
+        db.query(Reflection)
+        .filter(Reflection.user_id == current_user.id, Reflection.date >= since)
+        .order_by(desc(Reflection.date))
+        .all()
+    )
+
+    if not reflections:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Son {days} günde yansıma bulunamadı. Önce günlük yansıma ekleyin.",
+        )
+
+    # Verileri topla
+    mood_data = []
+    energy_data = []
+    texts = []
+
+    for r in reflections:
+        mood_map = {"great": 5, "good": 4, "neutral": 3, "low": 2, "bad": 1}
+        mood_val = mood_map.get(r.mood.value if hasattr(r.mood, 'value') else r.mood, 3)
+        mood_data.append({"date": str(r.date.date() if r.date else ""), "value": mood_val, "label": r.mood.value if hasattr(r.mood, 'value') else r.mood})
+        energy_data.append({"date": str(r.date.date() if r.date else ""), "value": r.energy_level})
+
+        parts = [r.wins, r.improvements, r.gratitude]
+        text = " ".join([p for p in parts if p])
+        if text:
+            texts.append(text)
+
+    # Basit istatistikler
+    avg_mood = sum(d["value"] for d in mood_data) / len(mood_data) if mood_data else 3
+    avg_energy = sum(d["value"] for d in energy_data) / len(energy_data) if energy_data else 3
+
+    # Trend hesapla (ilk yarı vs ikinci yarı)
+    mid = len(mood_data) // 2
+    if mid > 0:
+        first_half_mood = sum(d["value"] for d in mood_data[mid:]) / len(mood_data[mid:])
+        second_half_mood = sum(d["value"] for d in mood_data[:mid]) / len(mood_data[:mid])
+        mood_direction = "yükseliyor" if second_half_mood > first_half_mood else ("düşüyor" if second_half_mood < first_half_mood else "sabit")
+    else:
+        mood_direction = "yetersiz veri"
+
+    # AI analizi (varsa)
+    ai_insight = None
+    try:
+        combined_text = f"Son {days} günlük yansımalar: " + " | ".join(texts[:5])
+        ai_insight = analyze_sentiment(combined_text)
+    except Exception:
+        ai_insight = "AI analizi şu an kullanılamıyor."
+
+    return {
+        "period": f"Son {days} gün",
+        "total_reflections": len(reflections),
+        "mood_trend": {
+            "average": round(avg_mood, 2),
+            "direction": mood_direction,
+            "data": mood_data,
+        },
+        "energy_trend": {
+            "average": round(avg_energy, 2),
+            "data": energy_data,
+        },
+        "sentiment_summary": ai_insight,
+        "recommendation": (
+            "Harika gidiyorsun! Bu tempoyu koru." if avg_mood >= 4
+            else "İyi bir seviyedesin, küçük iyileştirmelerle daha da yükselebilirsin." if avg_mood >= 3
+            else "Zor bir dönemden geçiyor olabilirsin. Küçük adımlarla başla, kendine zaman tanı."
+        ),
+    }

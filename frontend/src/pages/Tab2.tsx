@@ -61,25 +61,13 @@ const Tab2: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const contentRef = useRef<HTMLIonContentElement>(null);
 
-  // Sayfa yüklendiğinde geçmiş sohbet mesajlarını backend'den çek
+  // Sayfa yüklendiğinde geçmiş sohbet mesajlarını backend'den çek.
+  // ÖNEMLİ: Aşağıdaki loadHistory mesajları EKLEMEZ, komple DEĞİŞTİRİR.
+  // (Eskiden burada "prev + history" ile ekleyen bir kopya vardı; effect'in
+  // iki kez çalışması durumunda mesajları çiftliyordu. Kaldırıldı.)
   useEffect(() => {
-    const loadHistory = async () => {
-      try {
-        const res = await api.get('/chat/history', { params: { limit: 50 } });
-        if (res.data && res.data.length > 0) {
-          const historyMessages: Message[] = res.data.map((msg: any) => ({
-            id: msg.id,
-            sender: msg.sender === 'human' ? 'user' : 'forge',
-            text: msg.message,
-            timestamp: new Date(msg.created_at),
-          }));
-          setMessages((prev) => [...prev, ...historyMessages]);
-        }
-      } catch (err: any) {
-        console.log('Sohbet geçmişi yüklenemedi:', err.message);
-      }
-    };
     loadHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Yeni mesaj eklendiğinde en alta kaydır
@@ -106,7 +94,14 @@ const Tab2: React.FC = () => {
       }));
       // Geçmiş varsa onu göster; yoksa karşılama mesajı kalır.
       if (history.length > 0) {
-        setMessages(history);
+        // Aynı id'li mesaj birden fazla gelirse tekilleştir (tekrar önlemi)
+        const seen = new Set<string>();
+        const unique = history.filter((m) => {
+          if (seen.has(m.id)) return false;
+          seen.add(m.id);
+          return true;
+        });
+        setMessages(unique);
       }
     } catch (err) {
       // Geçmiş yüklenemezse sessizce karşılama mesajıyla devam et.

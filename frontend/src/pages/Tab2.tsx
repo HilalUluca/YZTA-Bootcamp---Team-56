@@ -101,6 +101,15 @@ const Tab2: React.FC = () => {
           seen.add(m.id);
           return true;
         });
+        // Kronolojik sırala: önce created_at'e göre ARTAN (en eski üstte).
+        // Aynı ana denk gelen (soru+cevap tek istekte kaydedildiği için created_at
+        // eşit olabilir) mesajlarda kullanıcı sorusu AI cevabından önce gelsin.
+        unique.sort((a, b) => {
+          const diff = a.timestamp.getTime() - b.timestamp.getTime();
+          if (diff !== 0) return diff;
+          if (a.sender === b.sender) return 0;
+          return a.sender === 'user' ? -1 : 1; // user (soru) önce, forge (cevap) sonra
+        });
         setMessages(unique);
       }
     } catch (err) {

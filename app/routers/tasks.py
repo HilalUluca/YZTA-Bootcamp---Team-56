@@ -199,6 +199,10 @@ def complete_task(
     db.commit()
     db.refresh(task)
 
+    # Tamamlama sonrası rozet değerlendirmesi (Görev Avcısı, streak vb.).
+    from app.services.achievements_service import try_evaluate
+    try_evaluate(db, current_user)
+
     return task
 
 

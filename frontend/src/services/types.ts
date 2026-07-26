@@ -89,3 +89,84 @@ export interface UserProfile {
   evidence: string;
   last_updated_from_range: string;
 }
+
+// --- İstatistik / Dashboard (YZTA-52) ---
+
+export interface DashboardStats {
+  user: {
+    username: string;
+    full_name?: string | null;
+    level: number;
+    total_xp: number;
+    streak_count: number;
+  };
+  tasks: {
+    total: number;
+    open: number;
+    completed_today: number;
+    overdue: number;
+  };
+  focus: {
+    minutes_today: number;
+    sessions_today: number;
+    total_minutes: number;
+    total_hours: number;
+  };
+  score: {
+    value: number;
+    level: string;
+    coach_tone: string;
+  };
+  generated_at: string;
+}
+
+export interface WeeklyDay {
+  date: string;
+  label: string;
+  focus_minutes: number;
+  tasks_completed: number;
+  reflections: number;
+  active: boolean;
+}
+
+export interface WeeklyReport {
+  days: WeeklyDay[];
+  totals: {
+    focus_minutes: number;
+    tasks_completed: number;
+    reflections: number;
+    active_days: number;
+  };
+  streak: number;
+  generated_at: string;
+}
+
+// --- Rozetler (YZTA-120) ---
+
+export interface BadgeCatalogItem {
+  key: string;
+  name: string;
+  description: string;
+  type: string;
+  xp: number;
+  earned: boolean;
+  earned_at?: string | null;
+}
+
+export interface AchievementsResponse {
+  earned: {
+    name: string;
+    description: string;
+    type: string;
+    xp: number;
+    earned_at?: string | null;
+  }[];
+  catalog: BadgeCatalogItem[];
+  total_earned: number;
+  total_badges: number;
+}
+
+export interface CheckAchievementsResponse {
+  message: string;
+  new_achievements: { name: string; description: string; xp: number }[];
+}

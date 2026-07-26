@@ -22,8 +22,12 @@ from app.models.task import Task, TaskStatus, TaskPriority
 from app.models.focus_session import FocusSession, Reflection
 from app.services.auth import get_current_user
 from app.services.gamification import calculate_responsibility_score
+from app.services.streak_service import calculate_streak
 
 router = APIRouter(prefix="/api/stats", tags=["Dashboard & Istatistik"])
+
+# Son 7 gün grafiğinde kullanılan Türkçe gün kısaltmaları (Pazartesi=0).
+_TR_WEEKDAYS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
 
 
 @router.get("/dashboard")
@@ -132,6 +136,10 @@ def get_dashboard(
     # --- SORUMLULUK SKORU ---
     score_data = calculate_responsibility_score(current_user, db)
 
+    # --- STREAK (üst üste hedef tutturulan gün) ---
+    # User.streak_count hiçbir yerde güncellenmediği için aktiviteden hesaplıyoruz.
+    streak = calculate_streak(db, current_user.id)
+
     # --- SON YANSIMA ---
     last_reflection = (
         db.query(Reflection)
@@ -154,7 +162,7 @@ def get_dashboard(
             "full_name": current_user.full_name,
             "level": current_user.level,
             "total_xp": current_user.total_xp,
-            "streak_count": current_user.streak_count,
+            "streak_count": streak,
         },
         "tasks": {
             "total": total_tasks,
@@ -176,6 +184,87 @@ def get_dashboard(
         },
         "last_reflection": last_reflection_data,
         "generated_at": now.isoformat(),
+    }
+
+
+@router.get("/weekly-report")
+def get_weekly_report(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Son 7 günün günlük kırılımını döner (profil sayfasındaki grafik için).
+
+    Her gün: odak dakikası, tamamlanan görev, yansıma sayısı ve aktif olup
+    olmadığı. LLM kullanmaz; hızlı ve deterministiktir.
+    """
+    today = datetime.now(timezone.utc).date()
+    days = []
+    total_focus = 0
+    total_tasks = 0
+    total_reflections = 0
+    active_days = 0
+
+    for offset in range(6, -1, -1):  # 6 gün önce -> bugün (eskiden yeniye)
+        day = today - timedelta(days=offset)
+        day_start = datetime.combine(day, datetime.min.time(), tzinfo=timezone.utc)
+        day_end = day_start + timedelta(days=1)
+
+        focus_minutes = (
+            db.query(func.coalesce(func.sum(FocusSession.duration_minutes), 0))
+            .filter(
+                FocusSession.user_id == current_user.id,
+                FocusSession.created_at >= day_start,
+                FocusSession.created_at < day_end,
+            )
+            .scalar()
+        )
+        tasks_completed = (
+            db.query(func.count(Task.id))
+            .filter(
+                Task.user_id == current_user.id,
+                Task.status == TaskStatus.DONE,
+                Task.completed_at >= day_start,
+                Task.completed_at < day_end,
+            )
+            .scalar()
+        )
+        reflections = (
+            db.query(func.count(Reflection.id))
+            .filter(
+                Reflection.user_id == current_user.id,
+                Reflection.date >= day_start,
+                Reflection.date < day_end,
+            )
+            .scalar()
+        )
+
+        is_active = bool(focus_minutes or tasks_completed or reflections)
+        total_focus += focus_minutes
+        total_tasks += tasks_completed
+        total_reflections += reflections
+        if is_active:
+            active_days += 1
+
+        days.append({
+            "date": day.isoformat(),
+            "label": _TR_WEEKDAYS[day.weekday()],
+            "focus_minutes": focus_minutes,
+            "tasks_completed": tasks_completed,
+            "reflections": reflections,
+            "active": is_active,
+        })
+
+    return {
+        "days": days,
+        "totals": {
+            "focus_minutes": total_focus,
+            "tasks_completed": total_tasks,
+            "reflections": total_reflections,
+            "active_days": active_days,
+        },
+        "streak": calculate_streak(db, current_user.id),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
     }
 
 

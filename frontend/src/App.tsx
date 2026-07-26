@@ -19,7 +19,10 @@ import Tab2 from './pages/Tab2';
 import Tab3 from './pages/Tab3';
 import Focus from './pages/Focus';
 import Login from './pages/Login';
-import api, { AUTH_LOGOUT_EVENT, clearToken, getToken } from './services/api';
+import Onboarding from './pages/Onboarding';
+import { AUTH_LOGOUT_EVENT, clearToken, getToken } from './services/api';
+import { getMe } from './services/authService';
+import type { User } from './services/types';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -65,15 +68,22 @@ const App: React.FC = () => {
     () => (getToken() ? 'checking' : 'out')
   );
 
-  // Guard: uygulama açılırken token'ı backend'e doğrulat.
+  // Onboarding tamamlandı mı? /auth/me yanıtından okunur.
+  // Tamamlanmamışsa uygulama yerine Onboarding ekranı gösterilir.
+  const [onboardingDone, setOnboardingDone] = useState(false);
+
+  // Guard: uygulama açılırken token'ı backend'e doğrulat ve onboarding
+  // durumunu öğren.
   useEffect(() => {
     if (authStatus !== 'checking') return;
 
     let cancelled = false;
-    api
-      .get('/auth/me')
-      .then(() => {
-        if (!cancelled) setAuthStatus('in');
+    getMe()
+      .then((user: User) => {
+        if (!cancelled) {
+          setOnboardingDone(user.onboarding_completed);
+          setAuthStatus('in');
+        }
       })
       .catch(() => {
         // Geçersiz/süresi dolmuş token: temizle ve Login'e dön.
@@ -96,8 +106,15 @@ const App: React.FC = () => {
   }, []);
 
   // Login başarılı olunca Login.tsx bu fonksiyonu çağırır.
+  // 'checking'e dönerek guard'ı yeniden çalıştırıyoruz; böylece onboarding
+  // durumu da /auth/me'den taze okunur (yeni kayıtlar onboarding'e düşer).
   const handleLoginSuccess = () => {
-    setAuthStatus('in');
+    setAuthStatus('checking');
+  };
+
+  // Onboarding tamamlanınca Onboarding.tsx bu fonksiyonu çağırır.
+  const handleOnboardingComplete = () => {
+    setOnboardingDone(true);
   };
 
   // Tab3'teki "Çıkış Yap" butonu bu fonksiyonu çağırır.
@@ -120,6 +137,15 @@ const App: React.FC = () => {
     return (
       <IonApp>
         <Login onLoginSuccess={handleLoginSuccess} />
+      </IonApp>
+    );
+  }
+
+  // Giriş yapıldı ama onboarding tamamlanmadıysa: önce profil oluşturma akışı.
+  if (!onboardingDone) {
+    return (
+      <IonApp>
+        <Onboarding onComplete={handleOnboardingComplete} />
       </IonApp>
     );
   }

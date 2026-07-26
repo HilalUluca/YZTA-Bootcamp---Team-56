@@ -8,6 +8,8 @@ Endpoints:
     PUT  /api/auth/onboarding → İlk kayıtta AI profili oluştur (cold-start)
 """
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -26,6 +28,9 @@ from app.services.auth import (
     create_access_token,
     get_current_user,
 )
+from app.services.cold_start_service import build_cold_start_profile
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/auth", tags=["Kimlik Doğrulama"])
 
@@ -119,19 +124,36 @@ def complete_onboarding(
     """
     İlk kayıt sonrası kullanıcı profilini oluşturur (cold-start çözümü).
 
-    Director Agent'ın 1. günden itibaren sert, rasyonel ve veriye dayalı 
-    analizler (uyku, ekran süresi, zayıflıklar) yapabilmesi için gerekli 
+    Director Agent'ın 1. günden itibaren sert, rasyonel ve veriye dayalı
+    analizler (uyku, ekran süresi, zayıflıklar) yapabilmesi için gerekli
     tüm biyolojik ve psikolojik verileri alır.
+
+    Ayrıca (YZTA-27) bu ham cevaplardan deterministik bir cold-start
+    `user_profile` üretir; böylece kullanıcının hiç davranış verisi olmadan da
+    AI koç ilk günden kişiselleştirilmiş bir profile sahip olur. Kullanıcı veri
+    biriktirdikçe `POST /api/profile/generate` bu profili günceller.
     """
-    # Gelen veriyi dict'e çevirip tüm alanları ai_profile'a kaydet
-    onboarding_dict = data.model_dump(exclude_unset=True)
-    
+    # Gelen veriyi dict'e çevirip tüm alanları ai_profile'a kaydet.
+    # exclude_unset kullanmıyoruz: cold-start üreticinin tüm alanları (boş
+    # listeler dahil) görmesi gerekiyor ki güven skorunu doğru hesaplasın.
+    onboarding_dict = data.model_dump()
+
     # Mevcut ai_profile varsa koru, yoksa yeni oluştur
     current_profile = current_user.ai_profile or {}
     current_profile.update(onboarding_dict)
     current_profile["onboarding_completed"] = True
-    
-    current_user.ai_profile = current_profile
+
+    # Cold-start: onboarding cevaplarından ilk yapılandırılmış profili üret.
+    # Hata olursa onboarding'in kendisini bozmuyoruz; profil sonradan
+    # generate endpoint'i ile de üretilebilir.
+    try:
+        cold_start = build_cold_start_profile(onboarding_dict)
+        current_profile["user_profile"] = cold_start.model_dump()
+    except Exception as exc:  # noqa: BLE001 - cold-start best-effort
+        logger.error("Cold-start profil üretilemedi (user=%s): %s", current_user.id, exc)
+
+    # dict(...) ile yeni referans: SQLAlchemy'nin JSON alanını "dirty" işaretlemesi için.
+    current_user.ai_profile = dict(current_profile)
 
     db.commit()
     db.refresh(current_user)

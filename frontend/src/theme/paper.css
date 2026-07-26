@@ -1,0 +1,384 @@
+/* ============================================================================
+   FocusForge — "Paper" tasarım dili (Notion tarzı)
+   ----------------------------------------------------------------------------
+   Aurora'nın (cam + gradyan) karşıt kutbu: sakin, monokrom, içerik odaklı.
+
+   İlkeler:
+     - Gölge yok, 1px çizgi var. Derinlik yerine hiyerarşi.
+     - Küçük yarıçap (6-8px), sıkı ve okunur tipografi.
+     - Renk yalnızca anlam taşıdığında (durum, uyarı) — süs değil.
+     - Bol beyaz alan; yoğunluk düşük ama düzenli.
+
+   .ff-paper sınıfı taşıyan sayfalarda geçerlidir. Zemin opak olduğu için
+   arkadaki aurora katmanını tamamen kapatır — iki dil birbirine karışmaz.
+   ========================================================================== */
+
+.ff-paper {
+  /* Yüzeyler */
+  --pp-bg: #ffffff;
+  --pp-surface: #ffffff;
+  --pp-hover: #f7f7f5;
+  --pp-sunken: #f7f7f5;
+  --pp-border: #e8e8e5;
+  --pp-border-strong: #dcdcd8;
+
+  /* Metin — Notion'ın sıcak koyu grisi */
+  --pp-text: #37352f;
+  --pp-text-soft: #5f5e5a;
+  --pp-text-muted: #918f8a;
+
+  /* Anlam renkleri (yumuşatılmış) */
+  --pp-accent: #d9730d;
+  --pp-accent-soft: #fdf3e8;
+  --pp-red: #c4554d;
+  --pp-red-soft: #fdebec;
+  --pp-blue: #487ca5;
+  --pp-blue-soft: #e7f3f8;
+  --pp-green: #448361;
+  --pp-green-soft: #edf3ec;
+
+  --pp-r: 6px;
+  --pp-r-lg: 10px;
+
+  --pp-font: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto,
+    'Helvetica Neue', sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ff-paper {
+    --pp-bg: #191919;
+    --pp-surface: #202020;
+    --pp-hover: #2a2a28;
+    --pp-sunken: #202020;
+    --pp-border: #2f2f2d;
+    --pp-border-strong: #3d3d3a;
+
+    --pp-text: #e4e4e2;
+    --pp-text-soft: #b4b3ae;
+    --pp-text-muted: #8a8985;
+
+    --pp-accent: #ffa344;
+    --pp-accent-soft: #3a2c1c;
+    --pp-red: #ff7369;
+    --pp-red-soft: #3a2422;
+    --pp-blue: #6fa8dc;
+    --pp-blue-soft: #1f2c36;
+    --pp-green: #6fbf8f;
+    --pp-green-soft: #1f2e25;
+  }
+}
+
+/* Opak zemin: arkadaki aurora'yı kapatır. */
+.ff-paper ion-content {
+  --background: var(--pp-bg);
+  --padding-bottom: 92px;
+  --color: var(--pp-text);
+  position: relative;
+  z-index: 1;
+}
+
+.ff-paper ion-header::after { display: none; }
+
+.ff-paper ion-toolbar {
+  --background: var(--pp-bg);
+  --color: var(--pp-text);
+  --border-width: 0 0 1px 0;
+  --border-color: var(--pp-border);
+  --min-height: 48px;
+}
+
+.ff-paper ion-toolbar ion-title {
+  font-family: var(--pp-font);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* --- Tipografi --- */
+
+.pp-title {
+  font-family: var(--pp-font);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: var(--pp-text);
+  margin: 0 0 6px;
+}
+
+.pp-lead {
+  font-family: var(--pp-font);
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--pp-text-muted);
+  margin: 0;
+}
+
+/* Bölüm başlığı — küçük, harf aralıklı, sessiz */
+.pp-eyebrow {
+  font-family: var(--pp-font);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pp-text-muted);
+  margin: 30px 0 10px;
+}
+
+.pp-h2 {
+  font-family: var(--pp-font);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--pp-text);
+  margin: 0;
+}
+
+/* --- Yüzey: çizgiyle tanımlı kutu --- */
+
+.pp-box {
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-r-lg);
+  background: var(--pp-surface);
+  overflow: hidden;
+}
+
+.pp-box-pad { padding: 16px; }
+
+/* --- İstatistik ızgarası: paylaşılan çizgiler --- */
+
+.pp-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-r-lg);
+  overflow: hidden;
+  background: var(--pp-surface);
+}
+
+.pp-stat {
+  padding: 15px 16px;
+  border-right: 1px solid var(--pp-border);
+  border-bottom: 1px solid var(--pp-border);
+}
+
+/* Sağ sütun ve son satırda dış çizgiyi tekrarlama */
+.pp-stat:nth-child(2n) { border-right: none; }
+.pp-stats > .pp-stat:nth-last-child(-n + 2):nth-child(2n + 1),
+.pp-stats > .pp-stat:nth-last-child(-n + 1) { border-bottom: none; }
+
+.pp-stat-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--pp-font);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--pp-text-muted);
+  margin-bottom: 6px;
+}
+
+.pp-stat-value {
+  font-family: var(--pp-font);
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  color: var(--pp-text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.pp-stat-hint {
+  font-size: 12px;
+  color: var(--pp-text-muted);
+  margin-top: 3px;
+}
+
+/* --- Satır (liste öğesi) --- */
+
+.pp-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: var(--pp-r);
+  transition: background 0.12s ease;
+  cursor: pointer;
+}
+
+.pp-row:hover { background: var(--pp-hover); }
+
+.pp-row-title {
+  font-family: var(--pp-font);
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--pp-text);
+  margin: 0;
+}
+
+.pp-row-sub {
+  font-size: 13px;
+  color: var(--pp-text-muted);
+  margin: 2px 0 0;
+  line-height: 1.4;
+}
+
+.pp-row.is-done .pp-row-title {
+  text-decoration: line-through;
+  color: var(--pp-text-muted);
+}
+
+/* İnce ayraç */
+.pp-divider {
+  height: 1px;
+  background: var(--pp-border);
+  margin: 0 12px;
+}
+
+/* --- Etiket --- */
+
+.pp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-family: var(--pp-font);
+  font-size: 11.5px;
+  font-weight: 500;
+  background: var(--pp-sunken);
+  color: var(--pp-text-soft);
+  white-space: nowrap;
+}
+
+.pp-tag-accent { background: var(--pp-accent-soft); color: var(--pp-accent); }
+.pp-tag-red { background: var(--pp-red-soft); color: var(--pp-red); }
+.pp-tag-blue { background: var(--pp-blue-soft); color: var(--pp-blue); }
+.pp-tag-green { background: var(--pp-green-soft); color: var(--pp-green); }
+
+/* --- Butonlar --- */
+
+.pp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--pp-border-strong);
+  border-radius: var(--pp-r);
+  background: var(--pp-surface);
+  font-family: var(--pp-font);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pp-text);
+  cursor: pointer;
+  transition: background 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pp-btn:hover { background: var(--pp-hover); }
+.pp-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.pp-btn-primary {
+  background: var(--pp-text);
+  border-color: var(--pp-text);
+  color: var(--pp-bg);
+}
+
+.pp-btn-primary:hover { opacity: 0.86; background: var(--pp-text); }
+
+.pp-btn-block { width: 100%; padding: 11px 16px; }
+
+.pp-btn-quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--pp-text-muted);
+}
+
+.pp-btn-danger { color: var(--pp-red); }
+
+/* --- Sekmeler (alt çizgili) --- */
+
+.pp-tabs {
+  display: flex;
+  gap: 20px;
+  border-bottom: 1px solid var(--pp-border);
+}
+
+.pp-tab {
+  padding: 9px 1px;
+  border: none;
+  background: none;
+  font-family: var(--pp-font);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pp-text-muted);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.14s ease;
+}
+
+.pp-tab.is-active { color: var(--pp-text); font-weight: 600; }
+
+.pp-tab.is-active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--pp-text);
+  border-radius: 2px;
+}
+
+/* --- İnce ilerleme çubuğu --- */
+
+.pp-bar {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--pp-sunken);
+  overflow: hidden;
+}
+
+.pp-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--pp-text);
+  transition: width 0.5s ease;
+}
+
+.pp-bar-fill.is-accent { background: var(--pp-accent); }
+.pp-bar-fill.is-green { background: var(--pp-green); }
+
+/* --- Boş durum --- */
+
+.pp-empty {
+  text-align: center;
+  padding: 52px 20px;
+  color: var(--pp-text-muted);
+}
+
+.pp-empty-icon {
+  font-size: 30px;
+  opacity: 0.4;
+  margin-bottom: 10px;
+}
+
+/* --- Onay kutusu (Notion'ınki gibi küçük ve keskin) --- */
+
+.ff-paper ion-checkbox {
+  --size: 17px;
+  --border-radius: 3px;
+  --border-width: 1.5px;
+  --border-color: var(--pp-border-strong);
+  --checkbox-background-checked: var(--pp-blue);
+  --border-color-checked: var(--pp-blue);
+  margin-top: 2px;
+}
+
+/* --- Notion'da öğeler arasında ayrım gölgeyle değil boşlukla kurulur --- */
+
+.pp-list { display: flex; flex-direction: column; }
+
+.pp-section { margin-top: 8px; }

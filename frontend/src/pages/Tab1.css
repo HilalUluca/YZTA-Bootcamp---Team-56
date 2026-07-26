@@ -1,0 +1,50 @@
+/* Görevler — Aurora dilinde yalnızca bu sayfaya özgü ayarlar.
+   Genel sınıflar theme/design-system.css içinde. Burada sadece kaydırmalı
+   (sliding) satırın Ionic kabuğunu görünmez yapıyoruz ki cam kart .ff-row
+   üstte kalsın. */
+
+.ff-page ion-item-sliding {
+  border-radius: var(--ff-r-md);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.ff-page .ff-item {
+  --background: transparent;
+  --background-hover: transparent;
+  --background-activated: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+  --inner-padding-end: 0;
+  --inner-border-width: 0;
+  --border-width: 0;
+  --min-height: 0;
+}
+
+.ff-page .ff-item::part(native) {
+  padding-left: 0;
+  padding-right: 0;
+  background: transparent;
+}
+
+/* Kart, sliding sarmalayıcının içindeyken kendi alt boşluğunu bırakmasın */
+.ff-page .ff-row-full {
+  width: 100%;
+  margin-bottom: 0;
+  align-items: flex-start;
+}
+
+/* ion-item içindeki checkbox varsayılan olarak kalan alanı kaplar (flex: 1);
+   burada kart içinde sadece kendi genişliği kadar yer kaplamalı. */
+.ff-page .ff-row ion-checkbox {
+  flex: 0 0 auto;
+  width: 24px;
+  min-width: 24px;
+  margin: 0;
+}
+
+/* Kaydırınca çıkan silme aksiyonu */
+.ff-page ion-item-option {
+  --background: linear-gradient(135deg, #ff5a6e 0%, #e0304f 100%);
+  --color: #fff;
+}

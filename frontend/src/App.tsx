@@ -43,15 +43,33 @@ import '@ionic/react/css/display.css';
 /**
  * Ionic Dark Mode
  * -----------------------------------------------------
- * For more info, please see:
+ * Sınıf tabanlı palet (.ion-palette-dark). Medya sorgusu tabanlı
+ * dark.system.css'i kullanmıyoruz çünkü kullanıcının Profil'den yaptığı
+ * seçim medya sorgusunu ezemez. Sınıfı theme/theme.ts yazar; 'system'
+ * modunda cihaz tercihini takip eder.
  * https://ionicframework.com/docs/theming/dark-mode
  */
-import '@ionic/react/css/palettes/dark.system.css';
+import '@ionic/react/css/palettes/dark.class.css';
 
 /* Theme variables */
 import './theme/variables.css';
 
-setupIonicReact();
+/* Tasarım sistemi (Aurora): cam yüzeyler, gradyanlar, .ff-* sınıfları.
+   variables.css'ten SONRA yüklenmeli — onun token'larını kullanıyor. */
+import './theme/design-system.css';
+
+import { initTheme } from './theme/theme';
+
+setupIonicReact({ mode: 'ios' });
+
+// Kayıtlı tema tercihini uygula ve cihaz temasını dinlemeye başla.
+initTheme();
+
+/**
+ * Sabit gradyan arka plan. Cam (glassmorphism) yüzeylerin bulanıklaştıracağı
+ * renk kaynağı budur; her ekranın arkasında durur.
+ */
+const Aurora: React.FC = () => <div className="ff-aurora" aria-hidden="true" />;
 
 /**
  * Oturum durumu:
@@ -136,6 +154,7 @@ const App: React.FC = () => {
   if (authStatus === 'out') {
     return (
       <IonApp>
+        <Aurora />
         <Login onLoginSuccess={handleLoginSuccess} />
       </IonApp>
     );
@@ -145,6 +164,7 @@ const App: React.FC = () => {
   if (!onboardingDone) {
     return (
       <IonApp>
+        <Aurora />
         <Onboarding onComplete={handleOnboardingComplete} />
       </IonApp>
     );
@@ -153,6 +173,7 @@ const App: React.FC = () => {
   // Giriş yapılmışsa: sekmeli uygulamayı göster.
   return (
     <IonApp>
+      <Aurora />
       <IonReactRouter>
         <IonTabs>
           <IonRouterOutlet>

@@ -29,9 +29,11 @@
   --ion-color-tertiary-shade: #219250;
   --ion-color-tertiary-tint: #3caf6b;
 
-  /* Açık modda krem/ferah zemin */
-  --ion-background-color: #fff8f2;
-  --ion-background-color-rgb: 255, 248, 242;
+  /* Açık modda krem/ferah zemin.
+     Bunun üstüne design-system.css'teki .ff-aurora gradyan bulutları biner;
+     cam yüzeyler de onu bulanıklaştırır. */
+  --ion-background-color: #fdf6f1;
+  --ion-background-color-rgb: 253, 246, 241;
 
   /* Açık modda yazı rengi (kreme yakışan sıcak koyu ton).
      Bunu tanımlamak ZORUNLU: aksi halde --ion-text-color boş kalır ve
@@ -45,29 +47,38 @@
    Ionic normalde koyu modda ana rengi maviye çevirir. Biz renk dilini
    turuncu tutmak için aksanları burada tekrar tanımlıyoruz. Zemin/metin
    renklerine dokunmuyoruz; onları Ionic'in koyu paleti hallediyor.
-   Bu dosya dark.system.css'ten SONRA yüklendiği için bizim değerlerimiz kazanır. */
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Koyu zeminde biraz daha parlak turuncu daha okunur olur */
-    --ion-color-primary: #ff7f4d;
-    --ion-color-primary-rgb: 255, 127, 77;
-    --ion-color-primary-contrast: #000000;
-    --ion-color-primary-contrast-rgb: 0, 0, 0;
-    --ion-color-primary-shade: #e07043;
-    --ion-color-primary-tint: #ff8c5e;
+   Medya sorgusu yerine .ff-dark sınıfı kullanıyoruz: kullanıcı Profil
+   sayfasından temayı elle seçebilsin diye (bkz. theme/theme.ts). Sınıfı
+   <html>'e theme.ts yazar; 'system' modunda cihaz tercihini takip eder.
 
-    --ion-color-secondary: #4aa3ff;
-    --ion-color-secondary-rgb: 74, 163, 255;
-    --ion-color-secondary-contrast: #000000;
-    --ion-color-secondary-contrast-rgb: 0, 0, 0;
-    --ion-color-secondary-shade: #418fe0;
-    --ion-color-secondary-tint: #5cacff;
+   Seçici neden bu kadar uzun: Ionic'in koyu paleti zemini `.ion-palette-dark.ios`
+   ile veriyor (iki sınıf). Sade bir `.ff-dark` ya da `html.ff-dark` bunu ezemez
+   ve zemin Ionic'in #000'ı olarak kalır — bizim sıcak siyahımız değil. theme.ts
+   iki sınıfı hep birlikte yazdığı için burada ikisini birden hedefliyoruz. */
+html.ff-dark.ion-palette-dark {
+  /* Derin, sıcak siyah — aurora bulutları bunun üstünde parlar. */
+  --ion-background-color: #100c0a;
+  --ion-background-color-rgb: 16, 12, 10;
 
-    --ion-color-tertiary: #37c46f;
-    --ion-color-tertiary-rgb: 55, 196, 111;
-    --ion-color-tertiary-contrast: #000000;
-    --ion-color-tertiary-contrast-rgb: 0, 0, 0;
-    --ion-color-tertiary-shade: #30ac62;
-    --ion-color-tertiary-tint: #4bca7d;
-  }
+  /* Koyu zeminde biraz daha parlak turuncu daha okunur olur */
+  --ion-color-primary: #ff7f4d;
+  --ion-color-primary-rgb: 255, 127, 77;
+  --ion-color-primary-contrast: #000000;
+  --ion-color-primary-contrast-rgb: 0, 0, 0;
+  --ion-color-primary-shade: #e07043;
+  --ion-color-primary-tint: #ff8c5e;
+
+  --ion-color-secondary: #4aa3ff;
+  --ion-color-secondary-rgb: 74, 163, 255;
+  --ion-color-secondary-contrast: #000000;
+  --ion-color-secondary-contrast-rgb: 0, 0, 0;
+  --ion-color-secondary-shade: #418fe0;
+  --ion-color-secondary-tint: #5cacff;
+
+  --ion-color-tertiary: #37c46f;
+  --ion-color-tertiary-rgb: 55, 196, 111;
+  --ion-color-tertiary-contrast: #000000;
+  --ion-color-tertiary-contrast-rgb: 0, 0, 0;
+  --ion-color-tertiary-shade: #30ac62;
+  --ion-color-tertiary-tint: #4bca7d;
 }

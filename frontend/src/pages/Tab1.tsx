@@ -5,9 +5,6 @@ import {
   IonPage,
   IonTitle,
   IonToolbar,
-  IonList,
-  IonSegment,
-  IonSegmentButton,
   IonItem,
   IonItemSliding,
   IonItemOptions,
@@ -26,17 +23,22 @@ import {
   IonSelectOption,
   IonRefresher,
   IonRefresherContent,
-  IonBadge,
   IonToast,
-  IonLoading,
-  IonCard,
-  IonCardContent,
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonChip,
+  IonSpinner,
 } from '@ionic/react';
-import { add, alertCircleOutline, hourglassOutline, flameOutline, trophyOutline, flashOutline, statsChartOutline, trashOutline, calendarOutline, gitBranchOutline } from 'ionicons/icons';
+import {
+  add,
+  alertCircleOutline,
+  hourglassOutline,
+  flameOutline,
+  trophyOutline,
+  flashOutline,
+  statsChartOutline,
+  trashOutline,
+  calendarOutline,
+  gitBranchOutline,
+  checkboxOutline,
+} from 'ionicons/icons';
 import api from '../services/api';
 import EisenhowerMatrix from './EisenhowerMatrix';
 import TaskDetail, { DetailTask } from './TaskDetail';
@@ -80,6 +82,14 @@ interface DashboardData {
     coach_tone: string;
   };
 }
+
+// Öncelik → etiket metni ve çip rengi.
+const PRIORITY_CHIP: Record<string, { label: string; cls: string }> = {
+  urgent_important: { label: 'Acil & Önemli', cls: 'ff-chip-danger' },
+  important: { label: 'Önemli', cls: 'ff-chip-warn' },
+  urgent: { label: 'Acil', cls: 'ff-chip-cool' },
+  low: { label: 'Düşük Öncelik', cls: '' },
+};
 
 const Tab1: React.FC = () => {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
@@ -197,20 +207,7 @@ const Tab1: React.FC = () => {
     }
   };
 
-  const getPriorityBadge = (prio: string) => {
-    switch (prio) {
-      case 'urgent_important':
-        return <IonBadge color="danger">Acil & Önemli</IonBadge>;
-      case 'important':
-        return <IonBadge color="warning">Önemli</IonBadge>;
-      case 'urgent':
-        return <IonBadge color="secondary">Acil</IonBadge>;
-      default:
-        return <IonBadge color="medium">Düşük Öncelik</IonBadge>;
-    }
-  };
-
-  // Deadline rozetini hazırlar: gecikmiş / bugün / yarın / tarih
+  // Deadline çipini hazırlar: gecikmiş / bugün / yarın / tarih
   const getDueInfo = (iso: string, isDone: boolean) => {
     const d = new Date(iso);
     if (isNaN(d.getTime())) return null;
@@ -219,17 +216,11 @@ const Tab1: React.FC = () => {
     const tarihYazi = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
 
     // Tamamlanmış görevde "gecikti" uyarısı göstermeye gerek yok
-    if (isDone) return { label: tarihYazi, color: 'medium' };
-    if (farkGun < 0) return { label: `${Math.abs(farkGun)} gün gecikti`, color: 'danger' };
-    if (farkGun === 0) return { label: 'Bugün', color: 'warning' };
-    if (farkGun === 1) return { label: 'Yarın', color: 'warning' };
-    return { label: tarihYazi, color: 'medium' };
-  };
-
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'success';
-    if (score >= 50) return 'warning';
-    return 'danger';
+    if (isDone) return { label: tarihYazi, cls: '' };
+    if (farkGun < 0) return { label: `${Math.abs(farkGun)} gün gecikti`, cls: 'ff-chip-danger' };
+    if (farkGun === 0) return { label: 'Bugün', cls: 'ff-chip-warn' };
+    if (farkGun === 1) return { label: 'Yarın', cls: 'ff-chip-warn' };
+    return { label: tarihYazi, cls: '' };
   };
 
   // Alt görev sayıları: hangi görevin kaç alt görevi var?
@@ -241,188 +232,227 @@ const Tab1: React.FC = () => {
     }
   });
 
+  const openCount = dashboard ? dashboard.tasks.open : tasks.filter((t) => t.status !== 'done').length;
+
   return (
-    <IonPage>
+    <IonPage className="ff-page">
       <IonHeader>
-        <IonToolbar color="primary">
-          <IonTitle>
-            {dashboard ? `Merhaba, ${dashboard.user.full_name || dashboard.user.username}` : 'Görevlerim'}
-          </IonTitle>
+        <IonToolbar>
+          <IonTitle>Görevler</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent className="ion-padding">
+      <IonContent>
         <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
-          <IonRefresherContent></IonRefresherContent>
+          <IonRefresherContent />
         </IonRefresher>
 
-        <IonLoading isOpen={isLoading} message="Yükleniyor..." />
+        <div style={{ padding: '4px 18px 28px' }}>
+          {/* Başlık */}
+          <div className="ff-rise" style={{ margin: '6px 0 20px' }}>
+            <h1 className="ff-title">Görevler</h1>
+            <p className="ff-subtitle">
+              {openCount > 0 ? `${openCount} açık görevin var` : 'Bütün görevlerin tamam 🎉'}
+            </p>
+          </div>
 
-        {/* Dashboard Kartları */}
-        {dashboard && (
-          <IonGrid>
-            <IonRow>
-              <IonCol size="6">
-                <IonCard>
-                  <IonCardContent style={{ textAlign: 'center' }}>
-                    <IonIcon icon={trophyOutline} style={{ fontSize: '28px', color: 'var(--ion-color-warning)' }} />
-                    <h1 style={{ margin: '4px 0', fontSize: '24px', fontWeight: 'bold' }}>Lvl {dashboard.user.level}</h1>
-                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>{dashboard.user.total_xp} XP</p>
-                  </IonCardContent>
-                </IonCard>
-              </IonCol>
-              <IonCol size="6">
-                <IonCard>
-                  <IonCardContent style={{ textAlign: 'center' }}>
-                    <IonIcon icon={flameOutline} style={{ fontSize: '28px', color: 'var(--ion-color-danger)' }} />
-                    <h1 style={{ margin: '4px 0', fontSize: '24px', fontWeight: 'bold' }}>{dashboard.user.streak_count}</h1>
-                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>Gün Streak</p>
-                  </IonCardContent>
-                </IonCard>
-              </IonCol>
-            </IonRow>
-            <IonRow>
-              <IonCol size="6">
-                <IonCard>
-                  <IonCardContent style={{ textAlign: 'center' }}>
-                    <IonIcon icon={flashOutline} style={{ fontSize: '28px', color: 'var(--ion-color-tertiary)' }} />
-                    <h1 style={{ margin: '4px 0', fontSize: '24px', fontWeight: 'bold' }}>{dashboard.focus.minutes_today}dk</h1>
-                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>Bugün Odaklanma</p>
-                  </IonCardContent>
-                </IonCard>
-              </IonCol>
-              <IonCol size="6">
-                <IonCard>
-                  <IonCardContent style={{ textAlign: 'center' }}>
-                    <IonIcon icon={statsChartOutline} style={{ fontSize: '28px', color: `var(--ion-color-${getScoreColor(dashboard.score.value)})` }} />
-                    <h1 style={{ margin: '4px 0', fontSize: '24px', fontWeight: 'bold' }}>{dashboard.score.value}</h1>
-                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--ion-color-medium)' }}>Skor /100</p>
-                  </IonCardContent>
-                </IonCard>
-              </IonCol>
-            </IonRow>
-          </IonGrid>
-        )}
+          {/* İstatistikler */}
+          {dashboard && (
+            <div
+              className="ff-stat-grid ff-rise"
+              style={{ '--ff-delay': '0.05s' } as React.CSSProperties}
+            >
+              <div className="ff-stat">
+                <span className="ff-stat-icon ff-icon-gold">
+                  <IonIcon icon={trophyOutline} />
+                </span>
+                <span className="ff-stat-value">Lvl {dashboard.user.level}</span>
+                <span className="ff-stat-label">{dashboard.user.total_xp} XP</span>
+              </div>
+              <div className="ff-stat">
+                <span className="ff-stat-icon ff-icon-primary">
+                  <IonIcon icon={flameOutline} />
+                </span>
+                <span className="ff-stat-value">{dashboard.user.streak_count}</span>
+                <span className="ff-stat-label">Günlük Seri</span>
+              </div>
+              <div className="ff-stat">
+                <span className="ff-stat-icon ff-icon-cool">
+                  <IonIcon icon={flashOutline} />
+                </span>
+                <span className="ff-stat-value">{dashboard.focus.minutes_today} dk</span>
+                <span className="ff-stat-label">Bugün Odaklanma</span>
+              </div>
+              <div className="ff-stat">
+                <span className="ff-stat-icon ff-icon-mint">
+                  <IonIcon icon={statsChartOutline} />
+                </span>
+                <span className="ff-stat-value">{dashboard.score.value}</span>
+                <span className="ff-stat-label">Skor / 100</span>
+              </div>
+            </div>
+          )}
 
-        {/* Görev Özeti */}
-        {dashboard && (
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-            <IonChip color="primary">
-              <IonLabel>Açık: {dashboard.tasks.open}</IonLabel>
-            </IonChip>
-            <IonChip color="success">
-              <IonLabel>Bugün: {dashboard.tasks.completed_today} ✓</IonLabel>
-            </IonChip>
-            {dashboard.tasks.overdue > 0 && (
-              <IonChip color="danger">
-                <IonLabel>Gecikmiş: {dashboard.tasks.overdue}</IonLabel>
-              </IonChip>
+          {/* Durum çipleri */}
+          {dashboard && (
+            <div
+              className="ff-rise"
+              style={{
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap',
+                marginTop: '14px',
+                '--ff-delay': '0.1s',
+              } as React.CSSProperties}
+            >
+              <span className="ff-chip ff-chip-primary">Açık {dashboard.tasks.open}</span>
+              <span className="ff-chip ff-chip-mint">
+                Bugün {dashboard.tasks.completed_today} ✓
+              </span>
+              {dashboard.tasks.overdue > 0 && (
+                <span className="ff-chip ff-chip-danger">
+                  Gecikmiş {dashboard.tasks.overdue}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Görünüm değiştirme: Liste / Eisenhower matrisi */}
+          <div
+            className="ff-segment ff-rise"
+            style={{ marginTop: '20px', '--ff-delay': '0.15s' } as React.CSSProperties}
+          >
+            <button
+              type="button"
+              className={`ff-segment-btn ${viewMode === 'list' ? 'is-active' : ''}`}
+              onClick={() => setViewMode('list')}
+            >
+              Liste
+            </button>
+            <button
+              type="button"
+              className={`ff-segment-btn ${viewMode === 'matrix' ? 'is-active' : ''}`}
+              onClick={() => setViewMode('matrix')}
+            >
+              Matris
+            </button>
+          </div>
+
+          <div style={{ marginTop: '16px' }}>
+            {viewMode === 'matrix' ? (
+              <EisenhowerMatrix />
+            ) : isLoading && tasks.length === 0 ? (
+              <div style={{ textAlign: 'center', marginTop: '48px' }}>
+                <IonSpinner name="crescent" color="primary" />
+                <p className="ff-subtitle">Yükleniyor...</p>
+              </div>
+            ) : error ? (
+              <div className="ff-empty ff-rise">
+                <span className="ff-empty-icon">
+                  <IonIcon icon={alertCircleOutline} />
+                </span>
+                <h3 className="ff-title" style={{ fontSize: '22px' }}>Bir sorun oluştu</h3>
+                <p className="ff-subtitle">{error}</p>
+                <button className="ff-btn ff-btn-ghost ff-btn-auto" onClick={loadTasks}>
+                  Tekrar Dene
+                </button>
+              </div>
+            ) : tasks.length === 0 ? (
+              <div className="ff-empty ff-rise">
+                <span className="ff-empty-icon">
+                  <IonIcon icon={checkboxOutline} />
+                </span>
+                <h3 className="ff-title" style={{ fontSize: '22px' }}>Henüz görevin yok</h3>
+                <p className="ff-subtitle">
+                  Sağ alttaki “+” butonuyla ilk görevini ekleyebilirsin.
+                </p>
+              </div>
+            ) : (
+              tasks.map((task, i) => {
+                const isDone = task.status === 'done';
+                const prio = PRIORITY_CHIP[task.priority] ?? PRIORITY_CHIP.low;
+                const due = task.due_date ? getDueInfo(task.due_date, isDone) : null;
+                const subCount = subtaskCounts[task.id] || 0;
+
+                return (
+                  <IonItemSliding key={task.id}>
+                    <IonItem className="ff-item" lines="none">
+                      <div
+                        className={`ff-row ff-row-full ff-rise ${isDone ? 'is-done' : ''}`}
+                        style={{ '--ff-delay': `${0.2 + i * 0.04}s` } as React.CSSProperties}
+                      >
+                        <IonCheckbox
+                          checked={isDone}
+                          onIonChange={() => handleToggleComplete(task.id, task.status)}
+                          style={{ marginTop: '2px', flexShrink: 0 }}
+                        />
+
+                        <div
+                          style={{ flex: 1, minWidth: 0 }}
+                          onClick={() => {
+                            setDetailTask(task);
+                            setShowDetail(true);
+                          }}
+                        >
+                          {/* Bu görev bir alt görevse belli olsun */}
+                          {task.parent_task_id && (
+                            <p className="ff-row-sub" style={{ margin: '0 0 3px' }}>
+                              ↳ alt görev
+                            </p>
+                          )}
+
+                          <p className="ff-row-title">{task.title}</p>
+
+                          {task.description && (
+                            <p className="ff-row-sub">{task.description}</p>
+                          )}
+
+                          <div
+                            style={{
+                              display: 'flex',
+                              gap: '6px',
+                              flexWrap: 'wrap',
+                              marginTop: '10px',
+                            }}
+                          >
+                            <span className={`ff-chip ${prio.cls}`}>{prio.label}</span>
+
+                            {due && (
+                              <span className={`ff-chip ${due.cls}`}>
+                                <IonIcon icon={calendarOutline} />
+                                {due.label}
+                              </span>
+                            )}
+
+                            {subCount > 0 && (
+                              <span className="ff-chip ff-chip-cool">
+                                <IonIcon icon={gitBranchOutline} />
+                                {subCount} alt görev
+                              </span>
+                            )}
+
+                            {task.estimated_minutes && (
+                              <span className="ff-chip">
+                                <IonIcon icon={hourglassOutline} />
+                                {task.estimated_minutes} dk
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </IonItem>
+
+                    <IonItemOptions side="end">
+                      <IonItemOption onClick={() => handleDeleteTask(task.id)}>
+                        <IonIcon slot="icon-only" icon={trashOutline} />
+                      </IonItemOption>
+                    </IonItemOptions>
+                  </IonItemSliding>
+                );
+              })
             )}
           </div>
-        )}
-
-        {/* Görev Listesi */}
-        <h3 style={{ fontWeight: 'bold', marginBottom: '8px' }}>Görevlerim</h3>
-
-        {/* Görünüm değiştirme: Liste / Eisenhower matrisi */}
-        <IonSegment
-          value={viewMode}
-          onIonChange={(e) => setViewMode(e.detail.value as 'list' | 'matrix')}
-          style={{ marginBottom: '12px' }}
-        >
-          <IonSegmentButton value="list">
-            <IonLabel>Liste</IonLabel>
-          </IonSegmentButton>
-          <IonSegmentButton value="matrix">
-            <IonLabel>Matris</IonLabel>
-          </IonSegmentButton>
-        </IonSegment>
-
-        {viewMode === 'matrix' ? (
-          <EisenhowerMatrix />
-        ) : error ? (
-          <div style={{ textAlign: 'center', marginTop: '40px', color: 'var(--ion-color-danger)' }}>
-            <IonIcon icon={alertCircleOutline} style={{ fontSize: '64px' }} />
-            <h3>Bir sorun oluştu</h3>
-            <p style={{ color: 'var(--ion-color-medium)' }}>{error}</p>
-            <IonButton onClick={loadTasks} fill="outline" color="danger" style={{ marginTop: '8px' }}>
-              Tekrar Dene
-            </IonButton>
-          </div>
-        ) : tasks.length === 0 && !isLoading ? (
-          <div style={{ textAlign: 'center', marginTop: '40px', color: 'var(--ion-color-medium)' }}>
-            <IonIcon icon={alertCircleOutline} style={{ fontSize: '64px' }} />
-            <h3>Henüz bir görevin yok!</h3>
-            <p>Aşağıdaki "+" butonuna basarak ilk görevini ekleyebilirsin.</p>
-          </div>
-        ) : (
-          <IonList>
-            {tasks.map((task) => (
-              <IonItemSliding key={task.id}>
-                <IonItem style={{ '--padding-start': '0px', marginBottom: '8px', borderRadius: '8px' }}>
-                  <IonCheckbox
-                    slot="start"
-                    checked={task.status === 'done'}
-                    onIonChange={() => handleToggleComplete(task.id, task.status)}
-                    style={{ marginRight: '16px' }}
-                  />
-                  <IonLabel
-                    onClick={() => {
-                      setDetailTask(task);
-                      setShowDetail(true);
-                    }}
-                    style={{ opacity: task.status === 'done' ? 0.6 : 1, cursor: 'pointer' }}
-                  >
-                    {/* Bu görev bir alt görevse belli olsun */}
-                    {task.parent_task_id && (
-                      <p style={{ margin: '0 0 2px 0', fontSize: '12px', color: 'var(--ion-color-medium)' }}>
-                        ↳ alt görev
-                      </p>
-                    )}
-                    <h2 style={{ textDecoration: task.status === 'done' ? 'line-through' : 'none', fontWeight: 'bold' }}>
-                      {task.title}
-                    </h2>
-                    <p>{task.description || 'Açıklama yok'}</p>
-                    <div style={{ marginTop: '8px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                      {getPriorityBadge(task.priority)}
-
-                      {/* Deadline / tarih */}
-                      {task.due_date && (() => {
-                        const due = getDueInfo(task.due_date, task.status === 'done');
-                        return due ? (
-                          <IonBadge color={due.color} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <IonIcon icon={calendarOutline} />
-                            {due.label}
-                          </IonBadge>
-                        ) : null;
-                      })()}
-
-                      {/* Alt görev sayısı */}
-                      {subtaskCounts[task.id] > 0 && (
-                        <IonBadge color="tertiary" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <IonIcon icon={gitBranchOutline} />
-                          {subtaskCounts[task.id]} alt görev
-                        </IonBadge>
-                      )}
-
-                      {task.estimated_minutes && (
-                        <IonBadge color="light" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <IonIcon icon={hourglassOutline} />
-                          {task.estimated_minutes} dk
-                        </IonBadge>
-                      )}
-                    </div>
-                  </IonLabel>
-                </IonItem>
-                <IonItemOptions side="end">
-                  <IonItemOption color="danger" onClick={() => handleDeleteTask(task.id)}>
-                    <IonIcon slot="icon-only" icon={trashOutline} />
-                  </IonItemOption>
-                </IonItemOptions>
-              </IonItemSliding>
-            ))}
-          </IonList>
-        )}
+        </div>
 
         {/* Görev Ekleme Floating Butonu */}
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
@@ -444,7 +474,7 @@ const Tab1: React.FC = () => {
 
           <IonContent className="ion-padding">
             <form onSubmit={handleAddTask}>
-              <IonItem style={{ marginBottom: '16px' }}>
+              <IonItem className="ff-field" lines="none">
                 <IonLabel position="stacked">Görev Başlığı *</IonLabel>
                 <IonInput
                   required
@@ -454,16 +484,17 @@ const Tab1: React.FC = () => {
                 />
               </IonItem>
 
-              <IonItem style={{ marginBottom: '16px' }}>
+              <IonItem className="ff-field" lines="none">
                 <IonLabel position="stacked">Açıklama</IonLabel>
                 <IonTextarea
                   value={description}
                   placeholder="Göreve dair detaylar..."
+                  autoGrow
                   onIonInput={(e) => setDescription(e.detail.value!)}
                 />
               </IonItem>
 
-              <IonItem style={{ marginBottom: '16px' }}>
+              <IonItem className="ff-field" lines="none">
                 <IonLabel position="stacked">Öncelik</IonLabel>
                 <IonSelect value={priority} onIonChange={(e) => setPriority(e.detail.value)}>
                   <IonSelectOption value="urgent_important">Acil & Önemli (Hemen Yap)</IonSelectOption>
@@ -473,19 +504,21 @@ const Tab1: React.FC = () => {
                 </IonSelect>
               </IonItem>
 
-              <IonItem style={{ marginBottom: '24px' }}>
+              <IonItem className="ff-field" lines="none" style={{ marginBottom: '24px' }}>
                 <IonLabel position="stacked">Tahmini Süre (Dakika)</IonLabel>
                 <IonInput
                   type="number"
                   value={estMinutes}
                   placeholder="Örn: 45"
-                  onIonInput={(e) => setEstMinutes(e.detail.value ? parseInt(e.detail.value) : undefined)}
+                  onIonInput={(e) =>
+                    setEstMinutes(e.detail.value ? parseInt(e.detail.value) : undefined)
+                  }
                 />
               </IonItem>
 
-              <IonButton expand="block" type="submit" style={{ '--border-radius': '10px', fontWeight: 'bold' }}>
+              <button className="ff-btn" type="submit">
                 Görevi Kaydet
-              </IonButton>
+              </button>
             </form>
           </IonContent>
         </IonModal>

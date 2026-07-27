@@ -69,7 +69,6 @@ app = FastAPI(
 
 
 # CORS ayarları — Frontend'in backend'e erişebilmesi için
-# Production URL'leri .env'den FRONTEND_URL olarak okunabilir
 allowed_origins = [
     "http://localhost:5173",    # Vite dev server
     "http://localhost:3000",    # Alternatif frontend port
@@ -77,6 +76,7 @@ allowed_origins = [
     "http://127.0.0.1:5173",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8100",
+    "https://focusforge-api.vercel.app",  # Vercel Canlı Frontend Adresi
 ]
 
 # Production frontend URL varsa ekle

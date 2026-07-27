@@ -34,6 +34,7 @@ import type {
   WeeklyReport,
 } from '../services/types';
 import { getThemeMode, isDarkActive, setThemeMode, type ThemeMode } from '../theme/theme';
+import { SettingsDeviceConnectSection } from '../components/SettingsDeviceConnectSection';
 import './Tab3.css';
 
 interface Tab3Props {
@@ -363,6 +364,9 @@ const Tab3: React.FC<Tab3Props> = ({ onLogout }) => {
                 <p className="ff-row-title" style={{ overflowWrap: 'anywhere' }}>{me.email}</p>
               </div>
             </div>
+
+            {/* AI Cihaz Verileri Simülasyonu */}
+            <SettingsDeviceConnectSection />
 
             {/* Çıkış */}
             <button

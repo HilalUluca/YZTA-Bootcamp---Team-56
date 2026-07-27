@@ -1,0 +1,177 @@
+/* Profil — Aurora dilinde yalnızca bu sayfaya özgü ayarlar.
+   Genel sınıflar theme/design-system.css içinde. */
+
+/* Gradyan avatar: baş harf doğrudan marka gradyanının üstünde.
+   Cam bir iç daire denendi ama açık modda gradyanı örtüp halkayı
+   inceltiyordu; dolu gradyan iki temada da aynı ağırlıkta duruyor. */
+.profile-avatar {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: var(--ff-grad-primary);
+  box-shadow: var(--ff-shadow-glow);
+  flex-shrink: 0;
+}
+
+.profile-avatar-inner {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-family: var(--ff-font);
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+/* --- Son 7 gün grafiği --- */
+
+.profile-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 124px;
+}
+
+.profile-chart-col {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-chart-track {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.profile-chart-bar {
+  width: 100%;
+  border-radius: var(--ff-r-pill);
+  background: var(--ff-fill-soft);
+  transition: height 0.7s var(--ff-smooth);
+}
+
+.profile-chart-bar.is-active {
+  background: var(--ff-grad-primary);
+  box-shadow: 0 3px 10px rgba(255, 90, 60, 0.28);
+}
+
+.profile-chart-label {
+  font-family: var(--ff-font);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ff-text-muted);
+}
+
+/* --- Rozet ızgarası --- */
+
+.profile-badges {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 10px;
+}
+
+.profile-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 7px;
+  padding: 14px 8px;
+  border-radius: var(--ff-r-md);
+  background: var(--ff-fill-softer);
+  border: 1px solid transparent;
+}
+
+.profile-badge.is-earned {
+  background: var(--ff-glass-bg-subtle);
+  border-color: var(--ff-glass-border);
+  box-shadow: var(--ff-shadow-sm);
+}
+
+.profile-badge-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  font-size: 21px;
+  color: var(--ff-text-muted);
+  background: var(--ff-fill-soft);
+}
+
+.profile-badge.is-earned .profile-badge-icon {
+  color: #fff;
+  background: var(--ff-grad-gold);
+  box-shadow: var(--ff-shadow-sm);
+}
+
+.profile-badge-name {
+  font-family: var(--ff-font);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.25;
+  color: var(--ff-text);
+}
+
+.profile-badge:not(.is-earned) .profile-badge-name {
+  color: var(--ff-text-muted);
+}
+
+.profile-badge-meta {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ff-text-muted);
+}
+
+/* --- Tema --- */
+
+/* Başlıktaki güneş/ay düğmesi: cam daire */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-right: 4px;
+  border: 1px solid var(--ff-glass-border);
+  border-radius: 50%;
+  background: var(--ff-glass-bg-strong);
+  backdrop-filter: var(--ff-glass-blur);
+  -webkit-backdrop-filter: var(--ff-glass-blur);
+  box-shadow: var(--ff-shadow-sm);
+  color: var(--ff-text);
+  font-size: 18px;
+  cursor: pointer;
+  transition: transform 0.34s var(--ff-spring);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.theme-toggle:active {
+  transform: scale(0.88);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle {
+    transition: none;
+  }
+}
+
+/* Çıkış butonu: cam yüzey ama kırmızı yazı.
+   .ff-btn ile birlikte yazıyoruz; design-system.css bu dosyadan sonra
+   yüklendiği için tek sınıflık seçici geçersiz kalırdı. */
+.ff-btn.profile-logout {
+  color: #d32741;
+}
+
+.ff-dark .ff-btn.profile-logout {
+  color: #ff8c9d;
+}

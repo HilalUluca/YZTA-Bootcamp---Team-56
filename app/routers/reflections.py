@@ -126,6 +126,11 @@ def create_reflection(
 
     db.commit()
     db.refresh(reflection)
+
+    # İlk yansıma / seri rozetleri için otomatik değerlendirme.
+    from app.services.achievements_service import try_evaluate
+    try_evaluate(db, current_user)
+
     return reflection
 
 

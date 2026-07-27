@@ -42,6 +42,9 @@ import {
 import api from '../services/api';
 import EisenhowerMatrix from './EisenhowerMatrix';
 import TaskDetail, { DetailTask } from './TaskDetail';
+import { GunSonuOzetiCard } from '../components/GunSonuOzetiCard';
+import { AiPhoneDataCard } from '../components/AiPhoneDataCard';
+import { AiPlanPreviewList } from '../components/AiPlanPreviewList';
 import './Tab1.css';
 
 interface Task {
@@ -248,6 +251,13 @@ const Tab1: React.FC = () => {
         </IonRefresher>
 
         <div style={{ padding: '4px 18px 28px' }}>
+          {/* Gün Sonu Özeti Kartı / Modalı */}
+          <GunSonuOzetiCard />
+          
+          {/* AI Telefon Verileri (SİMÜLASYON) */}
+          <AiPhoneDataCard />
+          <AiPlanPreviewList />
+
           {/* Başlık */}
           <div className="ff-rise" style={{ margin: '6px 0 20px' }}>
             <h1 className="ff-title">Görevler</h1>

@@ -7,6 +7,7 @@ Endpoints:
     GET    /api/focus/                -> Kullanicinin seanslarini listele
     GET    /api/focus/{id}            -> Tek seans getir
     GET    /api/focus/stats/summary   -> Odaklanma istatistikleri
+    GET    /api/focus/stats/insights  -> Saat bazlı verimlilik analizi
 """
 
 import uuid
@@ -189,6 +190,142 @@ def get_focus_stats(
         "current_level": current_user.level,
         "total_xp": current_user.total_xp,
     }
+
+
+@router.get("/stats/insights")
+def get_focus_insights(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Saat bazlı verimlilik analizi.
+
+    Focus session verilerinden:
+    - En verimli saat dilimi
+    - En verimsiz saat dilimi
+    - Saat bazlı dağılım (her saat için ortalama verimlilik)
+    - AI yorumu ve önerisi
+    """
+    from collections import defaultdict
+    from datetime import timedelta
+
+    # Tamamlanmış seansları al (verimlilik puanı olanlar)
+    sessions = (
+        db.query(FocusSession)
+        .filter(
+            FocusSession.user_id == current_user.id,
+            FocusSession.end_time.isnot(None),
+            FocusSession.productivity_rating.isnot(None),
+        )
+        .all()
+    )
+
+    if not sessions:
+        return {
+            "status": "insufficient_data",
+            "message": "Henüz tamamlanmış odaklanma seansın yok. Birkaç seans tamamladıktan sonra verimlilik analizi yapılabilir.",
+            "total_analyzed": 0,
+        }
+
+    # Saat bazlı verimlilik hesapla
+    hourly_data = defaultdict(lambda: {"ratings": [], "durations": [], "count": 0})
+
+    for s in sessions:
+        if s.start_time:
+            hour = s.start_time.hour
+            hourly_data[hour]["ratings"].append(s.productivity_rating or 3)
+            hourly_data[hour]["durations"].append(s.duration_minutes or 0)
+            hourly_data[hour]["count"] += 1
+
+    # Her saat için ortalama hesapla
+    hourly_stats = {}
+    for hour, data in sorted(hourly_data.items()):
+        avg_rating = sum(data["ratings"]) / len(data["ratings"])
+        avg_duration = sum(data["durations"]) / len(data["durations"])
+        hourly_stats[f"{hour:02d}:00"] = {
+            "avg_rating": round(avg_rating, 2),
+            "avg_duration_min": round(avg_duration, 1),
+            "session_count": data["count"],
+        }
+
+    # En verimli ve en verimsiz saatler
+    if hourly_stats:
+        best_hour = max(hourly_stats.items(), key=lambda x: x[1]["avg_rating"])
+        worst_hour = min(hourly_stats.items(), key=lambda x: x[1]["avg_rating"])
+    else:
+        best_hour = ("N/A", {"avg_rating": 0})
+        worst_hour = ("N/A", {"avg_rating": 0})
+
+    # Haftalık trend (son 7 gün vs önceki 7 gün)
+    now = datetime.now(timezone.utc)
+    week_ago = now - timedelta(days=7)
+    two_weeks_ago = now - timedelta(days=14)
+
+    this_week = [s for s in sessions if s.start_time and s.start_time >= week_ago]
+    last_week = [s for s in sessions if s.start_time and two_weeks_ago <= s.start_time < week_ago]
+
+    this_week_avg = sum(s.productivity_rating or 0 for s in this_week) / len(this_week) if this_week else 0
+    last_week_avg = sum(s.productivity_rating or 0 for s in last_week) / len(last_week) if last_week else 0
+
+    if last_week_avg > 0:
+        trend_pct = round(((this_week_avg - last_week_avg) / last_week_avg) * 100, 1)
+        trend_text = f"%{abs(trend_pct)} {'artış' if trend_pct > 0 else 'düşüş'}" if trend_pct != 0 else "Değişim yok"
+    else:
+        trend_pct = 0
+        trend_text = "Karşılaştırma için yeterli veri yok"
+
+    # AI önerisi oluştur
+    recommendation = _generate_focus_recommendation(
+        best_hour[0], best_hour[1]["avg_rating"],
+        worst_hour[0], worst_hour[1]["avg_rating"],
+        len(sessions), this_week_avg
+    )
+
+    return {
+        "total_analyzed": len(sessions),
+        "best_hour": {
+            "time": best_hour[0],
+            "avg_rating": best_hour[1]["avg_rating"],
+            "label": f"{best_hour[0]} - En verimli saatin"
+        },
+        "worst_hour": {
+            "time": worst_hour[0],
+            "avg_rating": worst_hour[1]["avg_rating"],
+            "label": f"{worst_hour[0]} - En az verimli saatin"
+        },
+        "hourly_breakdown": hourly_stats,
+        "weekly_trend": {
+            "this_week_avg": round(this_week_avg, 2),
+            "last_week_avg": round(last_week_avg, 2),
+            "change_percent": trend_pct,
+            "trend_text": trend_text,
+        },
+        "recommendation": recommendation,
+    }
+
+
+def _generate_focus_recommendation(best_time, best_rating, worst_time, worst_rating, total_sessions, weekly_avg):
+    """Focus verilerine göre kişiselleştirilmiş öneri üretir."""
+    tips = []
+
+    if best_rating >= 4:
+        tips.append(f"🎯 {best_time} civarı en verimli saatin ({best_rating}/5). Zor görevlerini bu saate planla.")
+    elif best_rating >= 3:
+        tips.append(f"📊 {best_time} en iyi saatin ama verimlilik henüz yüksek değil ({best_rating}/5). Dikkat dağıtıcıları azalt.")
+
+    if worst_rating < 3 and worst_time != "N/A":
+        tips.append(f"⚠️ {worst_time} saatinde verimlilik düşük ({worst_rating}/5). Bu saatte mola ver veya hafif iş yap.")
+
+    if total_sessions < 5:
+        tips.append("📈 Daha fazla seans tamamla ki daha doğru analiz yapabileyim. Hedef: günde en az 1 Pomodoro.")
+    elif weekly_avg >= 4:
+        tips.append("🔥 Bu hafta harika gidiyorsun! Tempoyu koru.")
+    elif weekly_avg >= 3:
+        tips.append("💪 İyi bir seviyedesin. Telefonu uzağa koyarak ve sessiz bir ortamda çalışarak daha da artırabilirsin.")
+    elif weekly_avg > 0:
+        tips.append("🌱 Verimlilik düşük görünüyor. Daha kısa seanslarla (25dk Pomodoro) başla, zamanla artır.")
+
+    return " | ".join(tips) if tips else "Yeterli veri toplandıkça sana özel öneriler burada görünecek."
 
 
 @router.get("/{session_id}", response_model=FocusSessionResponse)

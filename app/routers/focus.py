@@ -127,6 +127,10 @@ def end_focus_session(
     db.commit()
     db.refresh(session)
 
+    # Seans bitişi sonrası rozet değerlendirmesi (İlk Odak, Derin Odaklanma, streak).
+    from app.services.achievements_service import try_evaluate
+    try_evaluate(db, current_user)
+
     return session
 
 

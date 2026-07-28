@@ -20,7 +20,13 @@ import Tab3 from './pages/Tab3';
 import Focus from './pages/Focus';
 import Login from './pages/Login';
 import Onboarding from './pages/Onboarding';
+<<<<<<< HEAD
 import api, { AUTH_LOGOUT_EVENT, clearToken, getToken } from './services/api';
+=======
+import { AUTH_LOGOUT_EVENT, clearToken, getToken } from './services/api';
+import { getMe } from './services/authService';
+import type { User } from './services/types';
+>>>>>>> origin/main
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -41,15 +47,33 @@ import '@ionic/react/css/display.css';
 /**
  * Ionic Dark Mode
  * -----------------------------------------------------
- * For more info, please see:
+ * Sınıf tabanlı palet (.ion-palette-dark). Medya sorgusu tabanlı
+ * dark.system.css'i kullanmıyoruz çünkü kullanıcının Profil'den yaptığı
+ * seçim medya sorgusunu ezemez. Sınıfı theme/theme.ts yazar; 'system'
+ * modunda cihaz tercihini takip eder.
  * https://ionicframework.com/docs/theming/dark-mode
  */
-import '@ionic/react/css/palettes/dark.system.css';
+import '@ionic/react/css/palettes/dark.class.css';
 
 /* Theme variables */
 import './theme/variables.css';
 
-setupIonicReact();
+/* Tasarım sistemi (Aurora): cam yüzeyler, gradyanlar, .ff-* sınıfları.
+   variables.css'ten SONRA yüklenmeli — onun token'larını kullanıyor. */
+import './theme/design-system.css';
+
+import { initTheme } from './theme/theme';
+
+setupIonicReact({ mode: 'ios' });
+
+// Kayıtlı tema tercihini uygula ve cihaz temasını dinlemeye başla.
+initTheme();
+
+/**
+ * Sabit gradyan arka plan. Cam (glassmorphism) yüzeylerin bulanıklaştıracağı
+ * renk kaynağı budur; her ekranın arkasında durur.
+ */
+const Aurora: React.FC = () => <div className="ff-aurora" aria-hidden="true" />;
 
 // Token'ın (JWT) ortadaki parçasından kullanıcı kimliğini (sub) çıkar.
 // Backend /auth/me onboarding durumunu vermediği için bayrağı kullanıcıya göre saklıyoruz.
@@ -90,15 +114,22 @@ const App: React.FC = () => {
     () => !!localStorage.getItem('token') && !onboardingDone()
   );
 
-  // Guard: uygulama açılırken token'ı backend'e doğrulat.
+  // Onboarding tamamlandı mı? /auth/me yanıtından okunur.
+  // Tamamlanmamışsa uygulama yerine Onboarding ekranı gösterilir.
+  const [onboardingDone, setOnboardingDone] = useState(false);
+
+  // Guard: uygulama açılırken token'ı backend'e doğrulat ve onboarding
+  // durumunu öğren.
   useEffect(() => {
     if (authStatus !== 'checking') return;
 
     let cancelled = false;
-    api
-      .get('/auth/me')
-      .then(() => {
-        if (!cancelled) setAuthStatus('in');
+    getMe()
+      .then((user: User) => {
+        if (!cancelled) {
+          setOnboardingDone(user.onboarding_completed);
+          setAuthStatus('in');
+        }
       })
       .catch(() => {
         // Geçersiz/süresi dolmuş token: temizle ve Login'e dön.
@@ -121,9 +152,20 @@ const App: React.FC = () => {
   }, []);
 
   // Login başarılı olunca Login.tsx bu fonksiyonu çağırır.
+  // 'checking'e dönerek guard'ı yeniden çalıştırıyoruz; böylece onboarding
+  // durumu da /auth/me'den taze okunur (yeni kayıtlar onboarding'e düşer).
   const handleLoginSuccess = () => {
+<<<<<<< HEAD
     setAuthStatus('in');
     setNeedsOnboarding(!onboardingDone());
+=======
+    setAuthStatus('checking');
+  };
+
+  // Onboarding tamamlanınca Onboarding.tsx bu fonksiyonu çağırır.
+  const handleOnboardingComplete = () => {
+    setOnboardingDone(true);
+>>>>>>> origin/main
   };
 
   // Tab3'teki "Çıkış Yap" butonu bu fonksiyonu çağırır.
@@ -153,16 +195,26 @@ const App: React.FC = () => {
   if (authStatus === 'out') {
     return (
       <IonApp>
+        <Aurora />
         <Login onLoginSuccess={handleLoginSuccess} />
       </IonApp>
     );
   }
 
+<<<<<<< HEAD
   // Giriş yapıldı ama onboarding tamamlanmadıysa: wizard'ı göster.
   if (needsOnboarding) {
     return (
       <IonApp>
         <Onboarding onComplete={finishOnboarding} />
+=======
+  // Giriş yapıldı ama onboarding tamamlanmadıysa: önce profil oluşturma akışı.
+  if (!onboardingDone) {
+    return (
+      <IonApp>
+        <Aurora />
+        <Onboarding onComplete={handleOnboardingComplete} />
+>>>>>>> origin/main
       </IonApp>
     );
   }
@@ -170,6 +222,7 @@ const App: React.FC = () => {
   // Giriş yapılmışsa: sekmeli uygulamayı göster.
   return (
     <IonApp>
+      <Aurora />
       <IonReactRouter>
         <IonTabs>
           <IonRouterOutlet>

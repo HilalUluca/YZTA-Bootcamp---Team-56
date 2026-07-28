@@ -1,0 +1,103 @@
+.gun-sonu-ozeti-card {
+  margin-bottom: 24px;
+}
+
+.gun-sonu-ozeti-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gso-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gso-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ion-color-primary);
+}
+
+.gso-score {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background-color: var(--ion-color-light);
+  color: var(--ion-text-color);
+}
+
+.gso-score span {
+  color: var(--ion-color-success);
+}
+
+.gso-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gso-section-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ion-text-color);
+}
+
+.gso-list {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--ion-color-step-600, #666);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.gso-list li {
+  margin-bottom: 4px;
+}
+
+.gso-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.gso-modal-content {
+  padding: 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gso-modal-icon {
+  font-size: 48px;
+  color: var(--ion-color-warning);
+  margin-bottom: 8px;
+}
+
+.gso-modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--ion-color-primary);
+}
+
+.gso-modal-text {
+  font-size: 1rem;
+  color: var(--ion-color-step-600, #666);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.gso-modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}

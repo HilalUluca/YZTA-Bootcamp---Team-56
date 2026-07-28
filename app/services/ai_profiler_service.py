@@ -18,9 +18,9 @@ from langchain_core.prompts import ChatPromptTemplate
 
 logger = logging.getLogger(__name__)
 
-# Profilleme Promptu (Kullanıcı Niyeti + Profil Güvenliği)
+# Profilleme Promptu (profil segmentasyonu)
 PROFILER_SYSTEM_PROMPT = """
-Sen usta bir Psikolog ve Verimlilik Uzmanısın. Kullanıcının son dönem davranışlarını (Sohbetleri, Görevleri, Günlük Yansımaları) analiz ederek "Uzun Süreli Yapay Zeka Profili" (Long-Term Memory Profile) oluşturuyorsun.
+Sen dünya çapında bir Psikolog ve Verimlilik Uzmanısın. Kullanıcının son dönem davranışlarını (Sohbetleri, Görevleri, Günlük Yansımaları) analiz ederek "Uzun Süreli Yapay Zeka Profili" (Long-Term Memory Profile) oluşturuyorsun.
 
 KURALLAR:
 1. Sadece sana verilen "Sinyaller" (Signals) verisinden çıkarım yap.
@@ -28,6 +28,12 @@ KURALLAR:
 3. Uydurma, hayali veya varsayımsal kişisel bilgi üretme.
 4. "Kullanıcı çok tembel", "İşe yaramaz" gibi negatif ve yargılayıcı ifadeler KULLANMA; bunun yerine "Tükenmişlik riski taşıyor", "Erteleme eğilimi var" gibi profesyonel/analitik dil kullan.
 5. Kullanıcı sana daha önce bir hedef söylemişse, ancak verilerde yeni hedefler varsa eski ile yeniyi harmanla veya güncelle.
+
+ÖNEMLİ KURAL KİTABI - Kullanıcının özelliklerini (traits) belirlerken kullanıcıyı aşağıdaki 4 ana başlıkta incele ve SADECE şu etiketleri kullanmaya çalış:
+1. Zaman/Enerj'ye göre değerlendirme: sabah_insani, gece_kusu, ogleden_sonra_dususcusu, dalgali_enerjili
+2. Erteleme Sebebi'ne göre değerlendirme: mukemmeliyetci_erteleyici, baski_bagimlisi, kapsam_fobiki, dikkati_daganik
+3. Motivasyon Tonu'na göre değerlendirme: disiplin_arayan, empati_arayan, veri_ve_mantik_odakli, oyunlastirma_tutkunu
+4. Çalışma Tarzı'na göre değerlendirme: derin_odakci, multitasker_sicrayici, yapilacaklar_delisi
 
 Cevabın kesinlikle ve sadece senden istenen JSON (Pydantic şeması) yapısına tam olarak uymalıdır. Format dışına çıkma, markdown ekleme.
 """
@@ -46,7 +52,7 @@ def gather_user_signals(db: Session, user_id: str, days: int = 14) -> str:
         db.query(ChatMessageDB)
         .filter(ChatMessageDB.user_id == user_id, ChatMessageDB.created_at >= target_date)
         .order_by(desc(ChatMessageDB.created_at))
-        .limit(30) # Sadece en son 30 mesaja (maks) bakalım ki token çok şişmesin
+        .limit(30)
         .all()
     )
     recent_chats.reverse()
@@ -108,10 +114,9 @@ def generate_ai_profile(db: Session, user: User) -> UserProfileData:
     
     signals = gather_user_signals(db, user.id, days=days_to_look_back)
     
-    # LLM Modeli (Structured Output destekleyen model kullanıyoruz - gemini-flash-latest v1 compact)
-    # Token maliyeti ve hız (latency) trade-off'u için flash model ideal.
+    # LLM Modeli
     llm = ChatGoogleGenerativeAI(
-        model="gemini-flash-latest",
+        model="gemini-flash-latest", # Daha stabil versiyon ile güncellendi
         google_api_key=settings.gemini_api_key or os.getenv("GEMINI_API_KEY", "dummy"),
         temperature=0.1
     )
@@ -134,7 +139,6 @@ def generate_ai_profile(db: Session, user: User) -> UserProfileData:
         
         # Kullanıcının profilini güncelle
         profile = user.ai_profile or {}
-        # Sadece "user_profile" alt field'ini güncelliyoruz ki diğer memory (conversation_summary) silinmesin.
         profile["user_profile"] = result.model_dump()
         
         user.ai_profile = dict(profile)

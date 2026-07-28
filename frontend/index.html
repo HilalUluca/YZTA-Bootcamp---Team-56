@@ -22,6 +22,25 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Ionic App" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+    <!-- Tema sınıflarını JS paketi yüklenmeden ÖNCE yaz; aksi halde koyu
+         temada ilk kare beyaz yanıp söner. Mantığın aslı src/theme/theme.ts. -->
+    <script>
+      (function () {
+        try {
+          var m = localStorage.getItem('ff-theme');
+          var dark =
+            m === 'dark' ||
+            ((m === 'system' || !m) &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) {
+            document.documentElement.classList.add('ion-palette-dark', 'ff-dark');
+          }
+        } catch (e) {
+          /* localStorage kapalıysa açık temayla başla */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -6,12 +6,8 @@ import {
   IonTitle,
   IonToolbar,
   IonFooter,
-  IonItem,
   IonInput,
-  IonButton,
   IonIcon,
-  IonList,
-  IonText,
   IonToast,
 } from '@ionic/react';
 import { send } from 'ionicons/icons';
@@ -34,23 +30,9 @@ const WELCOME_MESSAGE: Message = {
   timestamp: new Date(),
 };
 
-// Forge'un (AI) mesajlarının yanındaki küçük yuvarlak papağan avatarı.
-// Renkler tema değişkeninden geldiği için açık/koyu modda otomatik uyumlu.
+// Forge'un (AI) mesajlarının yanındaki küçük cam çerçeveli papağan avatarı.
 const ForgeAvatar: React.FC = () => (
-  <img
-    src={parrotAvatar}
-    alt="Forge"
-    style={{
-      width: '36px',
-      height: '36px',
-      borderRadius: '50%',
-      objectFit: 'contain',
-      padding: '3px',
-      background: 'rgba(var(--ion-color-primary-rgb), 0.15)',
-      flexShrink: 0,
-      alignSelf: 'flex-end',
-    }}
-  />
+  <img src={parrotAvatar} alt="Forge" className="chat-avatar" />
 );
 
 const Tab2: React.FC = () => {
@@ -164,69 +146,42 @@ const Tab2: React.FC = () => {
   };
 
   return (
-    <IonPage>
+    <IonPage className="ff-page chat-page">
       <IonHeader>
-        <IonToolbar color="primary">
-          <IonTitle>AI Koç (Forge)</IonTitle>
+        <IonToolbar>
+          <IonTitle>AI Koç</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent className="ion-padding" ref={contentRef}>
-        <IonList style={{ background: 'transparent' }}>
+      <IonContent ref={contentRef}>
+        <div style={{ padding: '10px 16px 4px' }}>
+          {/* Başlık */}
+          <div className="ff-rise" style={{ marginBottom: '18px' }}>
+            <h1 className="ff-title">Forge</h1>
+            <p className="ff-subtitle">Verimlilik koçun — takıldığın yeri anlat, birlikte çözelim.</p>
+          </div>
+
           {messages.map((msg) => (
             <div
               key={msg.id}
-              style={{
-                display: 'flex',
-                justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                alignItems: 'flex-end',
-                gap: '8px',
-                marginBottom: '16px',
-              }}
+              className={`chat-msg ff-rise ${msg.sender === 'user' ? 'is-user' : ''}`}
             >
               {/* Papağan avatarı sadece AI (Forge) mesajlarında */}
               {msg.sender === 'forge' && <ForgeAvatar />}
 
-              <div
-                style={{
-                  maxWidth: '75%',
-                  padding: '12px 16px',
-                  borderRadius: msg.sender === 'user' ? '18px 18px 2px 18px' : '18px 18px 18px 2px',
-                  background: msg.sender === 'user' ? 'var(--ion-color-primary)' : 'var(--ion-color-light, #2b2b2b)',
-                  color: msg.sender === 'user' ? '#fff' : 'var(--ion-text-color, #fff)',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                }}
-              >
-                <IonText style={{ fontSize: '15px', lineHeight: '1.4' }}>
-                  {msg.text}
-                </IonText>
-                <div
-                  style={{
-                    textAlign: 'right',
-                    fontSize: '10px',
-                    opacity: 0.6,
-                    marginTop: '4px',
-                  }}
-                >
+              <div className={`chat-bubble ${msg.sender === 'user' ? 'is-user' : 'is-forge'}`}>
+                {msg.text}
+                <span className="chat-time">
                   {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
+                </span>
               </div>
             </div>
           ))}
 
           {isSending && (
-            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-end', gap: '8px', marginBottom: '16px' }}>
+            <div className="chat-msg">
               <ForgeAvatar />
-              <div
-                style={{
-                  padding: '12px 16px',
-                  borderRadius: '18px 18px 18px 2px',
-                  background: 'var(--ion-color-light, #2b2b2b)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                }}
-              >
+              <div className="chat-bubble is-forge">
                 {/* Forge yazıyor: üç nokta sırayla zıplar (stil Tab2.css'te) */}
                 <div className="forge-typing" role="status" aria-label="Forge yazıyor">
                   <span />
@@ -236,33 +191,27 @@ const Tab2: React.FC = () => {
               </div>
             </div>
           )}
-        </IonList>
+        </div>
       </IonContent>
 
-      <IonFooter>
+      <IonFooter className="chat-footer">
         <IonToolbar>
-          <form onSubmit={handleSendMessage} style={{ display: 'flex', padding: '4px' }}>
-            <IonItem style={{ flex: 1, '--background': 'transparent' }}>
-              <IonInput
-                value={inputVal}
-                placeholder="Forge'a bir mesaj yazın..."
-                onIonInput={(e) => setInputVal(e.detail.value!)}
-                disabled={isSending}
-                style={{
-                  '--padding-start': '8px',
-                  '--color': 'var(--ion-text-color)',
-                  '--placeholder-color': 'var(--ion-color-medium)',
-                }}
-              />
-            </IonItem>
-            <IonButton
-              fill="clear"
+          <form onSubmit={handleSendMessage} className="chat-composer">
+            <IonInput
+              className="chat-input"
+              value={inputVal}
+              placeholder="Forge'a bir mesaj yaz..."
+              onIonInput={(e) => setInputVal(e.detail.value!)}
+              disabled={isSending}
+            />
+            <button
+              className="chat-send"
               type="submit"
               disabled={!inputVal.trim() || isSending}
-              style={{ margin: 0 }}
+              aria-label="Gönder"
             >
-              <IonIcon slot="icon-only" icon={send} color="primary" />
-            </IonButton>
+              <IonIcon icon={send} />
+            </button>
           </form>
         </IonToolbar>
       </IonFooter>
@@ -279,4 +228,3 @@ const Tab2: React.FC = () => {
 };
 
 export default Tab2;
-

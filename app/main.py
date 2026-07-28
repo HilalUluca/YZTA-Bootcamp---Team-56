@@ -26,6 +26,7 @@ from app.routers.dashboard import router as dashboard_router
 from app.routers.planner import router as planner_router
 from app.routers.reports import router as reports_router
 from app.routers.profile import router as profile_router
+from app.routers.ai_summary import router as ai_summary_router
 
 # Logging ayarı
 logging.basicConfig(
@@ -124,6 +125,7 @@ app.include_router(planner_router)
 app.include_router(achievements_router)
 app.include_router(reports_router)
 app.include_router(profile_router)
+app.include_router(ai_summary_router)
 
 
 @app.get("/", tags=["Genel"])

@@ -20,13 +20,9 @@ import Tab3 from './pages/Tab3';
 import Focus from './pages/Focus';
 import Login from './pages/Login';
 import Onboarding from './pages/Onboarding';
-<<<<<<< HEAD
-import api, { AUTH_LOGOUT_EVENT, clearToken, getToken } from './services/api';
-=======
 import { AUTH_LOGOUT_EVENT, clearToken, getToken } from './services/api';
 import { getMe } from './services/authService';
 import type { User } from './services/types';
->>>>>>> origin/main
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -75,26 +71,6 @@ initTheme();
  */
 const Aurora: React.FC = () => <div className="ff-aurora" aria-hidden="true" />;
 
-// Token'ın (JWT) ortadaki parçasından kullanıcı kimliğini (sub) çıkar.
-// Backend /auth/me onboarding durumunu vermediği için bayrağı kullanıcıya göre saklıyoruz.
-const getUserId = (): string | null => {
-  const t = getToken();
-  if (!t) return null;
-  try {
-    const payload = JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-    return payload.sub || null;
-  } catch {
-    return null;
-  }
-};
-
-// Bu kullanıcı onboarding'i (bu cihazda) tamamlamış mı?
-const onboardingDone = (): boolean => {
-  const id = getUserId();
-  if (!id) return true; // kimlik yoksa wizard'ı zorlamıyoruz
-  return localStorage.getItem('ff_onboarding_done_' + id) === '1';
-};
-
 /**
  * Oturum durumu:
  *  - 'checking' : elimizde token var, backend'e geçerli mi diye soruyoruz
@@ -108,10 +84,6 @@ const App: React.FC = () => {
   // Önce doğrulama (checking) aşamasına giriyoruz.
   const [authStatus, setAuthStatus] = useState<AuthStatus>(
     () => (getToken() ? 'checking' : 'out')
-  );
-  // Onboarding gerekiyor mu? (sadece ilk girişte gösterilecek)
-  const [needsOnboarding, setNeedsOnboarding] = useState<boolean>(
-    () => !!localStorage.getItem('token') && !onboardingDone()
   );
 
   // Onboarding tamamlandı mı? /auth/me yanıtından okunur.
@@ -155,31 +127,18 @@ const App: React.FC = () => {
   // 'checking'e dönerek guard'ı yeniden çalıştırıyoruz; böylece onboarding
   // durumu da /auth/me'den taze okunur (yeni kayıtlar onboarding'e düşer).
   const handleLoginSuccess = () => {
-<<<<<<< HEAD
-    setAuthStatus('in');
-    setNeedsOnboarding(!onboardingDone());
-=======
     setAuthStatus('checking');
   };
 
   // Onboarding tamamlanınca Onboarding.tsx bu fonksiyonu çağırır.
   const handleOnboardingComplete = () => {
     setOnboardingDone(true);
->>>>>>> origin/main
   };
 
   // Tab3'teki "Çıkış Yap" butonu bu fonksiyonu çağırır.
   const handleLogout = () => {
     clearToken(); // geçiş kartını sil
     setAuthStatus('out'); // tekrar Login ekranına dön
-    setNeedsOnboarding(false);
-  };
-
-  // Onboarding tamamlanınca (veya atlanınca): bayrağı set et, uygulamaya gir.
-  const finishOnboarding = () => {
-    const id = getUserId();
-    if (id) localStorage.setItem('ff_onboarding_done_' + id, '1');
-    setNeedsOnboarding(false);
   };
 
   // Token doğrulanana kadar ne Login ne de uygulama gösterilir (ekran zıplamasın).
@@ -201,20 +160,12 @@ const App: React.FC = () => {
     );
   }
 
-<<<<<<< HEAD
-  // Giriş yapıldı ama onboarding tamamlanmadıysa: wizard'ı göster.
-  if (needsOnboarding) {
-    return (
-      <IonApp>
-        <Onboarding onComplete={finishOnboarding} />
-=======
   // Giriş yapıldı ama onboarding tamamlanmadıysa: önce profil oluşturma akışı.
   if (!onboardingDone) {
     return (
       <IonApp>
         <Aurora />
         <Onboarding onComplete={handleOnboardingComplete} />
->>>>>>> origin/main
       </IonApp>
     );
   }

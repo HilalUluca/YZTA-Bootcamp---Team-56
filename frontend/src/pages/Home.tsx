@@ -227,39 +227,52 @@ const Home: React.FC = () => {
                         background: 'rgba(255,255,255,0.22)',
                       }}
                     >
-                      {remaining > 0 ? `${remaining} görev kaldı` : 'Hepsi tamam 🎉'}
+                      {totalToday === 0
+                        ? 'Görev yok'
+                        : remaining > 0
+                        ? `${remaining} görev kaldı`
+                        : 'Hepsi tamam 🎉'}
                     </span>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                    <span style={{ fontSize: '44px', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                      {doneToday}
-                    </span>
-                    <span style={{ fontSize: '18px', fontWeight: 600, opacity: 0.85 }}>
-                      / {totalToday} görev
-                    </span>
-                  </div>
+                  {totalToday === 0 ? (
+                    /* Hiç görev yok: sayı/çubuk yerine boş durum mesajı */
+                    <div style={{ marginTop: '6px', fontSize: '15px', fontWeight: 600, opacity: 0.95, lineHeight: 1.45 }}>
+                      Henüz görev eklemedin — önce bir görev ekle. 📝
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                        <span style={{ fontSize: '44px', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                          {doneToday}
+                        </span>
+                        <span style={{ fontSize: '18px', fontWeight: 600, opacity: 0.85 }}>
+                          / {totalToday} görev
+                        </span>
+                      </div>
 
-                  {/* Beyaz ilerleme çubuğu — gradyan zeminde okunur */}
-                  <div
-                    style={{
-                      height: '8px',
-                      borderRadius: '999px',
-                      background: 'rgba(255,255,255,0.28)',
-                      overflow: 'hidden',
-                      margin: '16px 0 6px',
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: '100%',
-                        width: `${planProgress * 100}%`,
-                        borderRadius: '999px',
-                        background: '#fff',
-                        transition: 'width 0.9s var(--ff-smooth)',
-                      }}
-                    />
-                  </div>
+                      {/* Beyaz ilerleme çubuğu — gradyan zeminde okunur */}
+                      <div
+                        style={{
+                          height: '8px',
+                          borderRadius: '999px',
+                          background: 'rgba(255,255,255,0.28)',
+                          overflow: 'hidden',
+                          margin: '16px 0 6px',
+                        }}
+                      >
+                        <div
+                          style={{
+                            height: '100%',
+                            width: `${planProgress * 100}%`,
+                            borderRadius: '999px',
+                            background: '#fff',
+                            transition: 'width 0.9s var(--ff-smooth)',
+                          }}
+                        />
+                      </div>
+                    </>
+                  )}
 
                   {openTasks.length > 0 && (
                     <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>

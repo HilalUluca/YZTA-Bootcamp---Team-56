@@ -112,7 +112,11 @@ const Home: React.FC = () => {
     event.detail.complete();
   };
 
-  const name = data ? data.user.full_name || data.user.username : '';
+  // Karşılamada yalnızca ilk ismi göster (örn. "Aynur Gers" -> "Aynur").
+  // İsim boşsa kullanıcı adına düşer.
+  const name = data
+    ? (data.user.full_name || '').trim().split(' ')[0] || data.user.username
+    : '';
 
   // Seviye ilerlemesi
   const xpIntoLevel = data ? data.user.total_xp % XP_PER_LEVEL : 0;

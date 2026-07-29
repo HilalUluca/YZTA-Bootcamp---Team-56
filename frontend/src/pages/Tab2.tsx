@@ -30,18 +30,26 @@ const WELCOME_MESSAGE: Message = {
   timestamp: new Date(),
 };
 
+type ForgeAvatarState = 'static' | 'idle' | 'talking' | 'celebrating';
+
 // Forge'un (AI) mesajlarının yanındaki küçük cam çerçeveli papağan avatarı.
-const ForgeAvatar: React.FC = () => (
-  <img src={parrotAvatar} alt="Forge" className="chat-avatar" />
+const ForgeAvatar: React.FC<{ state?: ForgeAvatarState }> = ({ state = 'idle' }) => (
+  <img
+    src={parrotAvatar}
+    alt="Forge"
+    className={`chat-avatar chat-avatar--${state}`}
+  />
 );
 
 const Tab2: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [inputVal, setInputVal] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [celebratingMessageId, setCelebratingMessageId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
   const contentRef = useRef<HTMLIonContentElement>(null);
+  const celebrationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sayfa yüklendiğinde geçmiş sohbet mesajlarını backend'den çek.
   // ÖNEMLİ: Aşağıdaki loadHistory mesajları EKLEMEZ, komple DEĞİŞTİRİR.
@@ -56,6 +64,14 @@ const Tab2: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    return () => {
+      if (celebrationTimerRef.current) {
+        clearTimeout(celebrationTimerRef.current);
+      }
+    };
+  }, []);
 
   const scrollToBottom = () => {
     if (contentRef.current) {
@@ -114,6 +130,10 @@ const Tab2: React.FC = () => {
     };
 
     setMessages((prev) => [...prev, newUserMessage]);
+    setCelebratingMessageId(null);
+    if (celebrationTimerRef.current) {
+      clearTimeout(celebrationTimerRef.current);
+    }
     setIsSending(true);
 
     try {
@@ -127,6 +147,10 @@ const Tab2: React.FC = () => {
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, forgeResponse]);
+      setCelebratingMessageId(forgeResponse.id);
+      celebrationTimerRef.current = setTimeout(() => {
+        setCelebratingMessageId(null);
+      }, 900);
     } catch (err: any) {
       const errorText =
         err.response?.status === 401
@@ -144,6 +168,10 @@ const Tab2: React.FC = () => {
       setIsSending(false);
     }
   };
+
+  const latestForgeMessageId = [...messages]
+    .reverse()
+    .find((message) => message.sender === 'forge')?.id;
 
   return (
     <IonPage className="ff-page chat-page">
@@ -167,7 +195,17 @@ const Tab2: React.FC = () => {
               className={`chat-msg ff-rise ${msg.sender === 'user' ? 'is-user' : ''}`}
             >
               {/* Papağan avatarı sadece AI (Forge) mesajlarında */}
-              {msg.sender === 'forge' && <ForgeAvatar />}
+              {msg.sender === 'forge' && (
+                <ForgeAvatar
+                  state={
+                    msg.id === celebratingMessageId
+                      ? 'celebrating'
+                      : msg.id === latestForgeMessageId
+                        ? 'idle'
+                        : 'static'
+                  }
+                />
+              )}
 
               <div className={`chat-bubble ${msg.sender === 'user' ? 'is-user' : 'is-forge'}`}>
                 {msg.text}
@@ -180,7 +218,7 @@ const Tab2: React.FC = () => {
 
           {isSending && (
             <div className="chat-msg">
-              <ForgeAvatar />
+              <ForgeAvatar state="talking" />
               <div className="chat-bubble is-forge">
                 {/* Forge yazıyor: üç nokta sırayla zıplar (stil Tab2.css'te) */}
                 <div className="forge-typing" role="status" aria-label="Forge yazıyor">

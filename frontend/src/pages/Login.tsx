@@ -22,6 +22,32 @@ interface LoginProps {
   onLoginSuccess: () => void;
 }
 
+// Backend kuralları (app/schemas/user.py ile birebir):
+// şifre en az 6, kullanıcı adı en az 3 karakter.
+const MIN_PASSWORD = 6;
+const MIN_USERNAME = 3;
+
+// Backend / doğrulama hatalarını kullanıcı dostu Türkçe mesaja çevirir.
+const friendlyError = (error: any): string => {
+  const detail = error?.response?.data?.detail;
+
+  // FastAPI/Pydantic doğrulama hatası: detail bir dizidir (ham/teknik mesaj burada).
+  if (Array.isArray(detail)) {
+    const first = detail[0];
+    const field = Array.isArray(first?.loc) ? String(first.loc[first.loc.length - 1]) : '';
+    const min = first?.ctx?.min_length;
+    if (field === 'password') return `Şifre en az ${min ?? MIN_PASSWORD} karakter olmalı.`;
+    if (field === 'username') return `Kullanıcı adı en az ${min ?? MIN_USERNAME} karakter olmalı.`;
+    if (field === 'email') return 'Lütfen geçerli bir e-posta adresi gir.';
+    return 'Girdiğin bilgileri kontrol et.';
+  }
+
+  // Backend zaten Türkçe bir mesaj döndürdüyse (ör. "Bu kullanıcı adı zaten alınmış") onu göster.
+  if (typeof detail === 'string' && detail.trim()) return detail;
+
+  return 'Bir sorun oluştu. Lütfen tekrar dene.';
+};
+
 const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [username, setUsername] = useState('');
@@ -33,45 +59,57 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
 
+  const notify = (m: string) => {
+    setToastMessage(m);
+    setShowToast(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username || !password) {
-      setToastMessage('Lütfen kullanıcı adı ve şifrenizi girin.');
-      setShowToast(true);
+
+    const trimmedUser = username.trim();
+
+    // --- İstemci tarafı doğrulama (backend'e gitmeden dostça uyar) ---
+    if (!trimmedUser || !password) {
+      notify('Lütfen kullanıcı adı ve şifreni gir.');
       return;
     }
 
-    setIsLoading(true);
+    if (!isLoginMode) {
+      if (!email.trim()) {
+        notify('Lütfen e-posta adresini gir.');
+        return;
+      }
+      if (trimmedUser.length < MIN_USERNAME) {
+        notify(`Kullanıcı adı en az ${MIN_USERNAME} karakter olmalı.`);
+        return;
+      }
+      if (password.length < MIN_PASSWORD) {
+        notify(`Şifre en az ${MIN_PASSWORD} karakter olmalı.`);
+        return;
+      }
+    }
 
+    setIsLoading(true);
     try {
       if (isLoginMode) {
         // Giriş Yap — servis token'ı localStorage'a yazar.
-        await loginRequest({ username, password });
-        setToastMessage('Başarıyla giriş yapıldı!');
-        setShowToast(true);
+        await loginRequest({ username: trimmedUser, password });
         onLoginSuccess();
       } else {
         // Kayıt Ol
-        if (!email) {
-          setToastMessage('Lütfen email adresinizi girin.');
-          setShowToast(true);
-          setIsLoading(false);
-          return;
-        }
         await registerRequest({
-          email,
-          username,
+          email: email.trim(),
+          username: trimmedUser,
           password,
-          full_name: fullName || null,
+          full_name: fullName.trim() || null,
         });
-        setToastMessage('Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
-        setShowToast(true);
+        notify('Kaydın oluşturuldu. Şimdi giriş yapabilirsin.');
         setIsLoginMode(true);
+        setPassword('');
       }
-    } catch (error: any) {
-      const detail = error.response?.data?.detail || 'Bir hata oluştu. Lütfen tekrar deneyin.';
-      setToastMessage(typeof detail === 'string' ? detail : JSON.stringify(detail));
-      setShowToast(true);
+    } catch (error) {
+      notify(friendlyError(error));
     } finally {
       setIsLoading(false);
     }
@@ -149,7 +187,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                       <IonLabel position="stacked">Ad Soyad</IonLabel>
                       <IonInput
                         value={fullName}
-                        placeholder="Adınızı ve soyadınızı girin"
+                        placeholder="Adını ve soyadını gir"
                         onIonInput={(e) => setFullName(e.detail.value!)}
                       />
                     </IonItem>
@@ -159,7 +197,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                       <IonInput
                         type="email"
                         value={email}
-                        placeholder="E-posta adresinizi girin"
+                        placeholder="ornek@posta.com"
                         onIonInput={(e) => setEmail(e.detail.value!)}
                       />
                     </IonItem>
@@ -170,20 +208,28 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   <IonLabel position="stacked">Kullanıcı Adı *</IonLabel>
                   <IonInput
                     value={username}
-                    placeholder="Kullanıcı adınızı girin"
+                    placeholder="Kullanıcı adını gir"
                     onIonInput={(e) => setUsername(e.detail.value!)}
                   />
                 </IonItem>
 
-                <IonItem style={{ marginBottom: '16px' }}>
+                <IonItem style={{ marginBottom: !isLoginMode ? '6px' : '16px' }}>
                   <IonLabel position="stacked">Şifre *</IonLabel>
                   <IonInput
                     type="password"
                     value={password}
-                    placeholder="Şifrenizi girin"
+                    placeholder={isLoginMode ? 'Şifreni gir' : 'En az 6 karakter'}
                     onIonInput={(e) => setPassword(e.detail.value!)}
                   />
                 </IonItem>
+                {!isLoginMode && (
+                  <IonText
+                    color="medium"
+                    style={{ display: 'block', fontSize: '12px', margin: '0 0 16px 4px' }}
+                  >
+                    Şifre en az {MIN_PASSWORD} karakter olmalı.
+                  </IonText>
+                )}
 
                 <IonButton
                   expand="block"

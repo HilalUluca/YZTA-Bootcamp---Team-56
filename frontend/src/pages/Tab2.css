@@ -23,8 +23,8 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  padding: 3px;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: top;
   flex-shrink: 0;
   background: var(--ff-glass-bg-strong);
   border: 1px solid var(--ff-glass-border);

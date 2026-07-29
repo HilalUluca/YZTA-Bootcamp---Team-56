@@ -12,7 +12,7 @@ import {
 } from '@ionic/react';
 import { send } from 'ionicons/icons';
 import api from '../services/api';
-import parrotAvatar from '../assets/parrot-login.png';
+import parrotAvatar from '../assets/forge-avatar.png';
 import './Tab2.css';
 
 interface Message {

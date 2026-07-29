@@ -7,6 +7,7 @@ Alembic migration'ları bu dosyayı referans alacak.
 
 from app.models.user import User
 from app.models.task import Task, TaskPriority, TaskStatus
+from app.models.device import DeviceUsage
 from app.models.focus_session import (
     FocusSession,
     SessionType,
@@ -22,6 +23,7 @@ __all__ = [
     "Task",
     "TaskPriority",
     "TaskStatus",
+    "DeviceUsage",
     "FocusSession",
     "SessionType",
     "Reflection",

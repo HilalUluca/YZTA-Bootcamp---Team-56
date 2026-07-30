@@ -18,8 +18,11 @@ import Tab1 from './pages/Tab1';
 import Tab2 from './pages/Tab2';
 import Tab3 from './pages/Tab3';
 import Focus from './pages/Focus';
+import Analytics from './pages/Analytics';
 import Login from './pages/Login';
 import Onboarding from './pages/Onboarding';
+import forgeNeutral from './assets/forge-neutral.png';
+import forgeHappy from './assets/forge-happy.png';
 import { AUTH_LOGOUT_EVENT, clearToken, getToken } from './services/api';
 import { getMe } from './services/authService';
 import type { User } from './services/types';
@@ -186,6 +189,9 @@ const App: React.FC = () => {
             <Route exact path="/focus">
               <Focus />
             </Route>
+            <Route exact path="/analytics">
+              <Analytics />
+            </Route>
             <Route exact path="/tab2">
               <Tab2 />
             </Route>
@@ -209,8 +215,24 @@ const App: React.FC = () => {
               <IonIcon aria-hidden="true" icon={timerOutline} />
               <IonLabel>Odaklan</IonLabel>
             </IonTabButton>
-            <IonTabButton tab="tab2" href="/tab2">
-              <IonIcon aria-hidden="true" icon={chatbubblesOutline} />
+            <IonTabButton tab="tab2" href="/tab2" className="forge-tab-button">
+              <IonIcon
+                aria-hidden="true"
+                icon={chatbubblesOutline}
+                className="forge-tab-layout-icon"
+              />
+              <span className="forge-tab-mascot" aria-hidden="true">
+                <img
+                  src={forgeNeutral}
+                  alt=""
+                  className="forge-tab-image forge-tab-image--neutral"
+                />
+                <img
+                  src={forgeHappy}
+                  alt=""
+                  className="forge-tab-image forge-tab-image--happy"
+                />
+              </span>
               <IonLabel>AI Koç</IonLabel>
             </IonTabButton>
             <IonTabButton tab="tab3" href="/tab3">

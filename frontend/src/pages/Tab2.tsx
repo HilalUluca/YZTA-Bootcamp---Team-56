@@ -46,7 +46,7 @@ const Tab2: React.FC = () => {
   const [inputVal, setInputVal] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [celebratingMessageId, setCelebratingMessageId] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState('');
+  const [toastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
   const contentRef = useRef<HTMLIonContentElement>(null);
   const celebrationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);

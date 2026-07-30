@@ -1,0 +1,297 @@
+.onboarding-header ion-toolbar {
+  --background: transparent;
+  --border-width: 0;
+  --color: var(--ff-text);
+}
+
+.onboarding-header ion-progress-bar {
+  --background: rgba(255, 122, 61, 0.12);
+  --progress-background: var(--ion-color-primary);
+  height: 4px;
+}
+
+.onboarding-content {
+  --background: transparent;
+  --padding-top: 22px;
+  --padding-end: 18px;
+  --padding-bottom: 28px;
+  --padding-start: 18px;
+}
+
+.onboarding-shell {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 560px);
+  align-items: start;
+  justify-content: center;
+  gap: 24px;
+  width: min(100%, 900px);
+  margin: 0 auto;
+}
+
+.onboarding-forge-card {
+  position: sticky;
+  top: 16px;
+  overflow: hidden;
+  padding: 24px 22px 22px;
+  border: 1px solid var(--ff-glass-border);
+  border-radius: var(--ff-r-xl);
+  background:
+    radial-gradient(circle at 75% 18%, rgba(255, 202, 88, 0.28), transparent 35%),
+    var(--ff-glass-bg-strong);
+  box-shadow: var(--ff-shadow-lg);
+  text-align: center;
+}
+
+.onboarding-forge-card::after {
+  position: absolute;
+  right: -34px;
+  bottom: -48px;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: rgba(255, 91, 77, 0.1);
+  content: "";
+  pointer-events: none;
+}
+
+.onboarding-forge-card.is-happy {
+  background:
+    radial-gradient(circle at 75% 18%, rgba(255, 202, 88, 0.42), transparent 38%),
+    linear-gradient(145deg, rgba(255, 122, 61, 0.13), rgba(255, 77, 109, 0.08)),
+    var(--ff-glass-bg-strong);
+}
+
+.onboarding-mascot-frame {
+  position: relative;
+  width: 156px;
+  height: 156px;
+  margin: 0 auto 18px;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.82);
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(255, 196, 113, 0.35), rgba(255, 103, 91, 0.18));
+  box-shadow: var(--ff-shadow-glow);
+}
+
+.onboarding-mascot {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform-origin: center bottom;
+  transition: transform 0.45s var(--ff-spring);
+}
+
+.onboarding-mascot.is-neutral {
+  object-position: center bottom;
+  transform: scale(1.18) translateY(10px);
+}
+
+.onboarding-mascot.is-thinking {
+  object-position: center center;
+  transform: scale(1.04);
+}
+
+.onboarding-mascot.is-happy {
+  object-position: center center;
+  transform: scale(1.02);
+}
+
+.onboarding-forge-name {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--ion-color-primary);
+  text-transform: uppercase;
+}
+
+.onboarding-forge-copy p {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: var(--ff-text);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.55;
+}
+
+.onboarding-form-card {
+  padding: 26px;
+}
+
+.onboarding-step-heading {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.onboarding-step-heading h2 {
+  margin: 5px 0 4px;
+  color: var(--ion-color-primary);
+  font-size: clamp(22px, 4vw, 28px);
+  font-weight: 850;
+}
+
+.onboarding-field {
+  --background: var(--ff-glass-bg-subtle);
+  --border-color: var(--ff-glass-border);
+  --border-radius: var(--ff-r-sm);
+  --padding-start: 14px;
+  margin-bottom: 16px;
+  border: 1px solid var(--ff-glass-border);
+  border-radius: var(--ff-r-sm);
+  overflow: hidden;
+}
+
+.onboarding-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.onboarding-back,
+.onboarding-next {
+  --border-radius: var(--ff-r-pill);
+  min-height: 50px;
+  font-weight: 750;
+}
+
+.onboarding-next {
+  flex: 1;
+}
+
+.onboarding-skip {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.forge-tab-button {
+  position: relative;
+}
+
+.forge-tab-layout-icon {
+  display: none !important;
+}
+
+.forge-tab-mascot {
+  position: relative;
+  order: -1;
+  display: block;
+  width: 27px;
+  height: 27px;
+  margin: 1px auto;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 122, 61, 0.3);
+  border-radius: 50%;
+  background: rgba(255, 122, 61, 0.1);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.forge-tab-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: opacity 0.22s ease, transform 0.3s var(--ff-spring);
+}
+
+.forge-tab-image--neutral {
+  object-position: center bottom;
+  opacity: 1;
+  transform: scale(1.32) translateY(2px);
+}
+
+.forge-tab-image--happy {
+  object-position: center center;
+  opacity: 0;
+  transform: scale(0.94);
+}
+
+.forge-tab-button.tab-selected .forge-tab-mascot {
+  border-color: rgba(255, 122, 61, 0.8);
+  box-shadow: 0 3px 10px rgba(255, 90, 60, 0.28);
+  transform: translateY(-1px);
+}
+
+.forge-tab-button.tab-selected .forge-tab-image--neutral {
+  opacity: 0;
+}
+
+.forge-tab-button.tab-selected .forge-tab-image--happy {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@media (max-width: 720px) {
+  .onboarding-content {
+    --padding-top: 14px;
+    --padding-end: 14px;
+    --padding-start: 14px;
+  }
+
+  .onboarding-shell {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    max-width: 560px;
+  }
+
+  .onboarding-forge-card {
+    position: relative;
+    top: auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    text-align: left;
+  }
+
+  .onboarding-mascot-frame {
+    width: 88px;
+    height: 88px;
+    flex: 0 0 88px;
+    margin: 0;
+  }
+
+  .onboarding-forge-name {
+    margin-bottom: 5px;
+  }
+
+  .onboarding-forge-copy p {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .onboarding-form-card {
+    padding: 20px 16px;
+  }
+}
+
+@media (max-width: 380px) {
+  .onboarding-forge-card {
+    gap: 12px;
+  }
+
+  .onboarding-mascot-frame {
+    width: 72px;
+    height: 72px;
+    flex-basis: 72px;
+  }
+
+  .onboarding-actions {
+    gap: 8px;
+  }
+
+  .onboarding-back {
+    --padding-start: 12px;
+    --padding-end: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-mascot,
+  .forge-tab-mascot,
+  .forge-tab-image {
+    transition: none;
+  }
+}

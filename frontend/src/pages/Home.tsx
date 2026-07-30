@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 import {
   IonContent,
   IonHeader,
@@ -20,6 +21,7 @@ import {
   chevronForwardOutline,
   sparklesOutline,
   repeatOutline,
+  statsChartOutline,
 } from 'ionicons/icons';
 import api from '../services/api';
 import parrotImg from '../assets/parrot-login.png';
@@ -65,6 +67,7 @@ const greetingFor = (hour: number) => {
 };
 
 const Home: React.FC = () => {
+  const history = useHistory();
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -404,6 +407,19 @@ const Home: React.FC = () => {
                 className="ff-rise"
                 style={{ marginTop: '14px', '--ff-delay': '0.2s' } as React.CSSProperties}
               >
+                <div className="ff-row ff-pressable" onClick={() => history.push('/analytics')}>
+                  <span className="ff-stat-icon ff-icon-gold">
+                    <IonIcon icon={statsChartOutline} />
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p className="ff-row-title">Detaylı İstatistikler</p>
+                    <p className="ff-row-sub">
+                      Ruh hali, odaklanma ve alışkanlık gelişimini incele.
+                    </p>
+                  </div>
+                  <IonIcon icon={chevronForwardOutline} style={{ color: 'var(--ff-text-muted)' }} />
+                </div>
+
                 <div className="ff-row ff-pressable" onClick={() => setShowReflection(true)}>
                   <span
                     className={`ff-stat-icon ${todayReflection ? 'ff-icon-mint' : 'ff-icon-primary'}`}

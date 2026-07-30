@@ -271,7 +271,10 @@ Asenkron ve yazılı iletişimin kriz anlarında yavaş kalması ve takım içi 
 ```
 
 </details>
-
+---
+<p align="center">
+  <img src="Project%20Management/Daily%20Scrum/GitHub_banner_geometric_shapes_t…_202607300354.jpeg" alt="FocusForge Corporate Header" width="100%" />
+</p> 
 ---
 <p align="center">
   <b>Team 56 @2026 — FocusForge.</b>

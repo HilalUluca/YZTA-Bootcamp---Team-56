@@ -271,8 +271,6 @@ Asenkron ve yazılı iletişimin kriz anlarında yavaş kalması ve takım içi 
 ```
 
 </details>
----
-<img width="2752" height="1536" alt="GitHub_banner_geometric_shapes_t…_202607300352" src="https://github.com/user-attachments/assets/816d31be-2ef3-4a57-93cb-f051ce0ca17c" />
 
 ---
 <p align="center">

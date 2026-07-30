@@ -193,6 +193,7 @@ Backlog'umuz projenin öncelikli çalışan iskeletini (MVP) ayağa kaldıracak 
 Hibrit ve asenkron iletişim modelinin, takım içi senkronizasyonu yavaşlattığı ve geliştirme süreçlerinde kopukluklara yol açtığı tespit edilmiştir. Bu verimsizliği kırmak ve takvimi daha sıkı yönetmek adına Sprint 2 itibarıyla **asenkron modelin yanında** haftada 2 kez zorunlu, canlı ve odaklanmış **Meet toplantıları** düzenlenmesine ve tüm teknik krizlerin anlık aksiyonlarla çözülmesine karar verilmiştir.
 
 Sprint 2 boyunca gerçekleştirdiğimiz durum değerlendirmeleri, planlama diyalogları ve akran öğrenimi süreçlerinin tüm ekran görüntüsü kanıtlarına aşağıdaki bağlantıdan tek bir klasör altında şeffafça ulaşabilirsiniz:![Daily Scrum](Project%20Management/Daily%20Scrum,%20Sprint%202)
+
 ### 📊 Sprint Board Update & Ürün Durumu
 
 | 🔄 JIRA Sprint Board | 📱 Product Screenshot |
@@ -204,7 +205,8 @@ Sprint 2 boyunca gerçekleştirdiğimiz durum değerlendirmeleri, planlama diyal
 
 *   **Sprint Hedefi:** Projenin öncelikli olarak hedeflenen "basit bir şekilde çalışan uygulama (MVP)" iskeletinin ayağa kaldırılması, backend ve yapay zeka (AI) servislerinin entegrasyonudur.
 *   **Mevcut Durum:** Hedef büyük oranda tamamlanmıştır. Backend ve AI servisleri katmanında kararlı ve entegre bir sistem çıktısı elde edilmiş; arayüz entegrasyonları planlanan takvime uygun şekilde yürütülmüştür.
-
+*   **Katılımcılar:** Hilal Uluca, Furkan Türker, Doğukan Kaya, Asya Aynur Gers, Mete Ülken.
+  
 ### 🛠️ 2. Tamamlanan ve Demo Edilecek İşler (Done & Ready for Demo)
 *   **Mimari Optimizasyon ve Bug Çözümü:** Sistemin ayağa kalkmasını engelleyen router/agent yönlendirmelerindeki `HTTP 500` (Internal Server Error) hataları, AI chat entegrasyonu ve mock data sorunları analitik yöntemlerle çözülmüş, mimari kararlı hale getirilmiştir.
 *   **Backend & AI Entegrasyonu:** Planlanan tüm backend servisleri ve yapay zeka modülleri başarıyla birleştirilmiş, API uçları (endpoints) çalışır şekilde teslim edilmiştir.
@@ -228,7 +230,45 @@ Sprint 2 boyunca gerçekleştirdiğimiz durum değerlendirmeleri, planlama diyal
 <summary><b> Sprint 3 </b></summary>
 <br>
 
-*   
+# 📑 Sprint 3: Backlog Düzeni ve Görev Bazlı Yönetim (Task-Based Execution)
+
+Backlog'umuz projenin öncelikli çalışan iskeletini (MVP) ayağa kaldıracak kullanıcı hikayelerine göre dizilmiştir. Sprint 1 ve Sprint 2'de yaşanan kapasite aşımı (over-commitment) ve teorik puanlama yanılgılarından ders çıkarılarak, Sprint 3 itibarıyla soyut "Story Point" sisteminden tamamen vazgeçilmiş; işler atomik task'lere (alt görevler) bölünerek JIRA panosuna işlenmiştir. Bu rasyonel hamle, geliştirme hızını katlamış ve her ekip üyesinin günlük eforunu şeffaf bir şekilde netleştirmiştir.
+
+## 💬 Daily Scrum & İletişim Mimarisi
+
+Asenkron ve yazılı iletişimin kriz anlarında yavaş kalması ve takım içi senkronizasyonu zayıflatması sorunu kökten çözülmüştür. Bu verimsizliği kırmak adına Sprint 3 boyunca biri hafta içi, diğeri hafta sonu olmak üzere haftada 2 kez zorunlu, canlı ve odaklanmış Google Meet seansları düzenlenmiştir. Tüm teknik krizler bu canlı oturumlarda anlık aksiyonlarla çözülmüş, akran öğrenimi en üst seviyeye çıkarılmıştır: ![Daily Scrum](Project%20Management/Daily%20Scrum,%20Sprint%202)
+
+
+## 📊 Sprint Board Update & Ürün Durumu
+
+| 🔄 JIRA Sprint Board | 📱 Product Screenshot |
+| :--- | :--- |
+| [🔗 JIRA Sprint Board Görünümü](Project%20Management/Jira%20Board,%20Sprint2) | [🔗 UI Ürün Görünümü](UI%20Gallery/Sprint%202) |
+
+## 🔎 Sprint Review
+
+- **Sprint Hedefi:** Sistemin kararlı MVP iskeletinin tamamlanması, AI bağlam ve söz takibi modüllerinin entegrasyonu ve erken dağıtımın gerçekleştirilmesi.
+- **Mevcut Durum:** Hedef eksiksiz tamamlanmıştır. Backend ve yapay zeka servisleri katmanında kararlı bir sistem çıktısı elde edilmiş; kullanıcı deneyimini üst seviyeye taşıyan ek özellikler sisteme kazandırılmıştır.
+- **Erken Dağıtım:** Deployment'ı en son dakikaya bırakma tuzağına düşülmemiştir. Son haftaya girilirken sistem erken aşamada canlıya (deploy) alınmış; olası CORS, yönlendirme ve veritabanı migrasyon krizleri son güne bırakılmadan çözülmüştür.
+- **Frontend Kaynak Optimizasyonu:** Arayüz geliştirme eforunun tek bir noktada yığılmasını engellemek adına Frontend ekibine 2 tam zamanlı geliştirici özel olarak atanmış ve iş yükü dengelenmiştir.
+*   **Katılımcılar:** Hilal Uluca, Furkan Türker, Doğukan Kaya, Asya Aynur Gers, Mete Ülken.
+  
+## 🛠️ Tamamlanan ve Demo Edilecek İşler 
+
+1. **Frontend Kaynak Dengelemesi:** 2 kişilik özel frontend yardım ekibiyle arayüz bileşenlerinin backend API'leriyle kusursuz senkronizasyonu.
+2. **AI Söz ve Bağlam Takibi (Commitment Tracking):** Director ajanının geçmiş sohbetlerde kullanıcının verdiği sözleri (Örn: "Yarın şu modülü bitireceğim") takip etmesi ve sonraki oturumlarda sorgulaması altyapısı.
+3. **Günlük Özet ve Akıllı Raporlama:** Kullanıcının gün içi eylemlerinin ve mod dalgalanmalarının özetlenmesi.
+4. **Bilinçli Kapsam Daraltılması (Scope Pruning):** Planlanan özellikler arasında yer alan *AI sesli konuşma özelliği*, zaman kısıtını ve mimari kararlılığı riske atacağı (vakti aşırı zorlayacağı) gerekçesiyle bilinçli olarak kapsam dışı bırakılmış ve projenin odağı korunmuştur.
+5. **Jüri demosu için uçtan uca senaryoların test edilmesi ve final sunum provası odaklı son disiplinin işletilmesi.**
+
+## ⚠️ Karşılaşılan Zorluklar ve Tespitler
+
+- **Zaman Baskısı ve Kapsam Yönetimi:** Son haftaya girerken eklenen bonus özelliklerin entegrasyonu sıkı bir zaman yönetimi gerektirmiştir. Ancak erken deploy stratejisi ve task-based execution sayesinde bu risk başarıyla yönetilmiş, hatta hataları tespit edip yeni özellikler eklememizi sağlamıştır.
+
+## 🔎 Sprint 3 Retrospective
+
+- **Neleri Geliştirdik / Başardık?:** Asenkron iletişimin yarattığı kör noktaları canlı toplantı disipliniyle tamamen kapattık. Frontend darboğazını kaynak atamasıyla çözdük ve proaktif deployment stratejisiyle sistemimizi güvence altına aldık.
+```
 
 </details>
 

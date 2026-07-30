@@ -1,7 +1,7 @@
 # 🚀 FocusForge App
 
 <p align="center">
-  <img src="Project%20Management/Daily%20Scrum/header.png" alt="FocusForge Corporate Header" width="100%" />
+  <img src="Project%20Management/Daily%20Scrum/GitHub_repository_header_banner_2K_202607300359.jpeg" alt="FocusForge Corporate Header" width="100%" />
 </p>
 
 ---
@@ -129,21 +129,6 @@
 ---
 
 ## 🔗 Product Backlog URL
-FocusForge takımının Çevik (Agile) yönetim süreçleri, maliyet/efor analizleri ve kapasite ölçümleri şeffaf bir şekilde yönetilmektedir. Takım kapasitesi, Fibonacci sayıları kullanılarak hesaplanmış ve görevler "Story" ile "Task" olarak rasyonel bir hiyerarşiye oturtulmuştur.
-
-### 📌 Sprint 1 Kapasite Raporu
-* **Toplam İş Yükü (Total Story Points):** 82 Puan
-* **Tamamlanan (Completed):** 43 Puan
-* **Kalan (Remaining):** 39 Puan
-
-### 📌 Sprint 2 Kapasite Raporu
-* **Toplam İş Yükü (Total Story Points):** 283 Puan
-* **Tamamlanan (Completed):** 174 Puan
-* **Kalan (Remaining):** 109 Puan
-
-
-### 🔗 Canlı Yönetim Panosu
-Ekibimizin güncel Product Backlog'una, görev atamalarına ve 1. ve 2. Sprint Burndown (Erime) grafiğine aşağıdaki bağlantıdan ulaşabilirsiniz:
 
 👉 **[FocusForge Miro Sprint Board & Burndown Chart](https://miro.com/welcomeonboard/U3BtZmFtcDgzYm1GdmlXUlUrZDNDU08vSFhwYmpZd01VcnlXeCtrRmhkQVZQSG5xbkxKeHZJaEkrd2d6WHNKVms5b01PVzVlR1JFRlN0a3VHYnNFOEtyd0wwMlhKTU0rSjhuUjRlUjhSVUlVQW9PckRwemF4M0dtK1hhZFFQaWlNakdSWkpBejJWRjJhRnhhb1UwcS9BPT0hdjE=?share_link_id=809806536559)**
 
@@ -275,7 +260,7 @@ Asenkron ve yazılı iletişimin kriz anlarında yavaş kalması ve takım içi 
 <p align="center">
   <img src="Project%20Management/Daily%20Scrum/GitHub_banner_geometric_shapes_t…_202607300354.jpeg" alt="FocusForge Corporate Header" width="100%" />
 </p> 
----
+
 <p align="center">
   <b>Team 56 @2026 — FocusForge.</b>
 </p>

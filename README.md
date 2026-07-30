@@ -1,7 +1,7 @@
 # FocusForge 
 
 <p align="center">
-  <img src="Project%20Management/Daily%20Scrum/newbanner.jpeg" alt="FocusForge Corporate Header" width="100%" />
+  <img src="Project%20Management/Daily%20Scrum/newbanner3.jpeg" alt="FocusForge Corporate Header" width="100%" />
 </p>
 
 ---

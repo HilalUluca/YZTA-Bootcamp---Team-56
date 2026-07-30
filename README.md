@@ -1,4 +1,4 @@
-# 🚀 FocusForge App
+# FocusForge App
 
 <p align="center">
   <img src="Project%20Management/Daily%20Scrum/GitHub_repository_header_banner_2K_202607300359.jpeg" alt="FocusForge Corporate Header" width="100%" />

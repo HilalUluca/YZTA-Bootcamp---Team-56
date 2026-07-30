@@ -268,9 +268,9 @@ Asenkron ve yazılı iletişimin kriz anlarında yavaş kalması ve takım içi 
 ## 🔎 Sprint 3 Retrospective
 
 - **Neleri Geliştirdik / Başardık?:** Asenkron iletişimin yarattığı kör noktaları canlı toplantı disipliniyle tamamen kapattık. Frontend darboğazını kaynak atamasıyla çözdük ve proaktif deployment stratejisiyle sistemimizi güvence altına aldık.
-```
 
 </details>
+
 ---
 <p align="center">
   <img src="Project%20Management/Daily%20Scrum/GitHub_banner_geometric_shapes_t…_202607300354.jpeg" alt="FocusForge Corporate Header" width="100%" />

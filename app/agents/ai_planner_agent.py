@@ -75,6 +75,10 @@ class PrioritizedTask(BaseModel):
         ...,
         description="Eisenhower matrisi kategorisi: urgent_important, important, urgent, low"
     )
+    recommended_duration_minutes: int = Field(
+        ...,
+        description="Bu görev için ayrılması önerilen süre (dakika cinsinden). Kullanıcının toplam süresine ve görevin büyüklüğüne göre gerçekçi bir tahmin yap."
+    )
 
 
 class PrioritizedTasksOutput(BaseModel):
@@ -193,7 +197,8 @@ def _parse_json_with_fallback(
 
 async def prioritize_tasks(
     tasks: List[dict],
-    user_context: Optional[str] = None
+    user_context: Optional[str] = None,
+    available_time_minutes: int = 240
 ) -> PrioritizedTasksOutput:
     """
     Kullanıcının görevlerini Eisenhower matrisine göre analiz ederek 
@@ -221,15 +226,14 @@ async def prioritize_tasks(
     
     # Task'leri string formatına çevir
     tasks_str = "\n".join(
-        [f"{i+1}. {t.get('title', 'Başlıksız')} (Açıklama: {t.get('description', 'Yok')}, Deadline: {t.get('deadline', 'Yok')})"
+        [f"{i+1}. {t.get('title', 'Başlıksız')} (Tahmini: {t.get('estimated_duration', 'Yok')}dk, Deadline: {t.get('deadline', 'Yok')})"
          for i, t in enumerate(tasks)]
     )
     
     # Prompt Template
     prompt_template = PromptTemplate.from_template(
-        """Sen bir kişisel verimlilik danışmanısın. Kullanıcının görevlerini 
-Eisenhower Matrisi (Acil & Önemli, Önemli, Acil, Düşük) kategorilerine 
-göre sınıflandırıp önceliklendirmen gerekiyor.
+        """Sen bir kişisel verimlilik danışmanısın. Kullanıcının toplam {available_time_minutes} dakika vakti var.
+Görevlerini Eisenhower Matrisi kategorilerine göre sınıflandırıp önceliklendir ve her birine bu toplam süreyi aşmayacak şekilde 'recommended_duration_minutes' (önerilen süre) ata. Molalar için de toplam süreden bir miktar pay (boşluk) bırakmayı unutma.
 
 GÖREVLER:
 {tasks_text}
@@ -249,6 +253,7 @@ Lütfen her görev için şu JSON formatında analiz yap:
         context_note = f"\nKULLANICI CONTEXT: {user_context}"
     
     prompt = prompt_template.format(
+        available_time_minutes=available_time_minutes,
         tasks_text=tasks_str,
         context_note=context_note,
         format_instructions=parser.get_format_instructions()
@@ -463,7 +468,11 @@ def _create_schedule(
         if assigned_time >= available_time:
             break
 
-        block_duration = min(config["work_minutes"], available_time - assigned_time)
+        ai_duration = task.recommended_duration_minutes or config["work_minutes"]
+        block_duration = min(ai_duration, available_time - assigned_time)
+
+        if block_duration <= 0:
+            continue
 
         schedule.append({
             "block_type": "task",
@@ -519,7 +528,8 @@ async def get_ai_recommendations(
         
         prioritized = await prioritize_tasks(
             user_tasks,
-            user_context=context
+            user_context=context,
+            available_time_minutes=available_time_minutes
         )
         
         schedule = _create_schedule(

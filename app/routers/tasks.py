@@ -262,7 +262,7 @@ async def prioritize_user_tasks(
         {
             "title": task.title,
             "description": task.description or "Aciklama yok",
-            "deadline": task.due_date.isoformat() if task.due_date else "Belirlenmemis",
+            "priority": task.priority.value,
             "estimated_duration": task.estimated_minutes or 30,
         }
         for task in tasks

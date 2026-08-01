@@ -23,12 +23,60 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  padding: 3px;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: top;
+  transform-origin: center bottom;
   flex-shrink: 0;
   background: var(--ff-glass-bg-strong);
   border: 1px solid var(--ff-glass-border);
   box-shadow: var(--ff-shadow-sm);
+}
+
+.chat-avatar--idle {
+  animation: forge-avatar-idle 3.2s ease-in-out infinite;
+}
+
+.chat-avatar--talking {
+  animation: forge-avatar-talking 0.55s ease-in-out infinite;
+}
+
+.chat-avatar--celebrating {
+  animation: forge-avatar-celebrating 0.9s var(--ff-spring) both;
+}
+
+@keyframes forge-avatar-idle {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.03);
+  }
+}
+
+@keyframes forge-avatar-talking {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-3px) rotate(2deg) scale(1.04);
+  }
+}
+
+@keyframes forge-avatar-celebrating {
+  0% {
+    transform: translateY(0) rotate(0) scale(1);
+  }
+  35% {
+    transform: translateY(-9px) rotate(-8deg) scale(1.12);
+  }
+  65% {
+    transform: translateY(-3px) rotate(7deg) scale(1.07);
+  }
+  100% {
+    transform: translateY(0) rotate(0) scale(1);
+  }
 }
 
 .chat-bubble {
@@ -185,8 +233,13 @@
 
 /* Hareketi azaltmayı tercih eden kullanıcılar için animasyonu kapat */
 @media (prefers-reduced-motion: reduce) {
+  .chat-avatar--idle,
+  .chat-avatar--talking,
+  .chat-avatar--celebrating,
   .forge-typing span {
     animation: none;
+  }
+  .forge-typing span {
     opacity: 0.7;
   }
   .chat-send {

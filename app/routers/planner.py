@@ -82,7 +82,7 @@ async def create_daily_plan(
     Kullanicinin acik gorevlerini + enerji seviyesini alir,
     Gemini API ile analiz edip oncelikli plan dondurur.
     """
-    from app.services.ai_planner_agent import get_ai_recommendations
+    from app.agents.ai_planner_agent import get_ai_recommendations
 
     # Kullanicinin acik gorevlerini al
     tasks = (

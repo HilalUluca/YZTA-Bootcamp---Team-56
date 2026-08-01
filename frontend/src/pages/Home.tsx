@@ -13,21 +13,24 @@ import {
 } from '@ionic/react';
 import {
   checkmarkDoneOutline,
-  flashOutline,
-  flameOutline,
-  trophyOutline,
   alertCircleOutline,
-  journalOutline,
-  chevronForwardOutline,
-  sparklesOutline,
-  repeatOutline,
-  statsChartOutline,
 } from 'ionicons/icons';
 import api from '../services/api';
-import parrotImg from '../assets/parrot-login.png';
+import parrotWaveMascot from '../assets/hmsc/parrot-wave-mascot.png';
+import parrotAvatar from '../assets/hmsc/circular-parrot-avatar.jpg';
+import focusTimeIcon from '../assets/hmsc/focus-time-icon.jpg';
+import dailyStreakIcon from '../assets/hmsc/daily-streak-icon.jpg';
+import starIcon from '../assets/hmsc/star-icon.jpg';
+import analyticsIcon from '../assets/hmsc/orange=statics-icon.jpg';
+import reflectionIcon from '../assets/hmsc/coral-reflection-icon.jpg';
+import habitsIcon from '../assets/hmsc/blue-habits-icon.jpg';
+import chevronIcon from '../assets/hmsc/chevron-right-icon.jpg';
+import sparkleIcon from '../assets/hmsc/sparkle-icon.jpg';
+import planCardArtwork from '../assets/hmsc/plan-card.jpg';
 import Reflection, { ReflectionData } from './Reflection';
 import DailyPlan from './DailyPlan';
 import Habits from './Habits';
+import './Home.css';
 
 interface DashboardData {
   user: {
@@ -88,7 +91,7 @@ const Home: React.FC = () => {
     try {
       const res = await api.get('/stats/dashboard');
       setData(res.data);
-    } catch (err) {
+    } catch {
       setError('Ana sayfa yüklenemedi. Bağlantını kontrol edip tekrar dene.');
     } finally {
       setIsLoading(false);
@@ -100,7 +103,7 @@ const Home: React.FC = () => {
     try {
       const res = await api.get('/reflections/today');
       setTodayReflection(res.data);
-    } catch (err) {
+    } catch {
       setTodayReflection(null);
     }
   };
@@ -117,8 +120,11 @@ const Home: React.FC = () => {
 
   // Karşılamada yalnızca ilk ismi göster (örn. "Aynur Gers" -> "Aynur").
   // İsim boşsa kullanıcı adına düşer.
-  const name = data
+  const rawName = data
     ? (data.user.full_name || '').trim().split(' ')[0] || data.user.username
+    : '';
+  const name = rawName
+    ? rawName.charAt(0).toLocaleUpperCase('tr-TR') + rawName.slice(1)
     : '';
 
   // Seviye ilerlemesi
@@ -134,7 +140,7 @@ const Home: React.FC = () => {
   const openTasks = data ? data.tasks.todays_list.filter((t) => t.status !== 'done') : [];
 
   return (
-    <IonPage className="ff-page">
+    <IonPage className="ff-page home-page">
       <IonHeader>
         <IonToolbar>
           <IonTitle>Ana Sayfa</IonTitle>
@@ -146,7 +152,7 @@ const Home: React.FC = () => {
           <IonRefresherContent />
         </IonRefresher>
 
-        <div style={{ padding: '4px 18px 28px' }}>
+        <main className="home-shell">
           {/* Yükleniyor */}
           {isLoading && !data && (
             <div style={{ textAlign: 'center', marginTop: '80px' }}>
@@ -172,64 +178,39 @@ const Home: React.FC = () => {
           {data && (
             <>
               {/* Karşılama */}
-              <div
-                className="ff-rise"
-                style={{ display: 'flex', alignItems: 'center', gap: '14px', margin: '6px 0 22px' }}
-              >
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p className="ff-subtitle" style={{ fontSize: '14px', fontWeight: 600 }}>
+              <section className="home-welcome ff-rise" aria-labelledby="home-greeting">
+                <div className="home-welcome-copy">
+                  <p className="home-welcome-kicker">
                     {greetingFor(new Date().getHours())}
                   </p>
-                  <h1 className="ff-title" style={{ overflowWrap: 'anywhere' }}>
-                    {name} <span style={{ WebkitTextFillColor: 'initial' }}>👋</span>
+                  <h1 id="home-greeting" className="ff-title home-welcome-title">
+                    {name} <span className="home-wave">👋</span>
                   </h1>
+                  <p className="home-welcome-message">Bugün harika işler başarabilirsin!</p>
                 </div>
-                <div
-                  style={{
-                    width: '62px',
-                    height: '62px',
-                    borderRadius: '22px',
-                    flexShrink: 0,
-                    display: 'grid',
-                    placeItems: 'center',
-                    background: 'var(--ff-glass-bg-strong)',
-                    border: '1px solid var(--ff-glass-border)',
-                    boxShadow: 'var(--ff-shadow-md)',
-                    backdropFilter: 'var(--ff-glass-blur)',
-                    WebkitBackdropFilter: 'var(--ff-glass-blur)',
-                  }}
-                >
-                  <img
-                    src={parrotImg}
-                    alt=""
-                    style={{ width: '46px', height: '46px', objectFit: 'contain' }}
-                  />
+                <div className="home-profile-avatar" aria-hidden="true">
+                  <img src={parrotAvatar} alt="" />
                 </div>
-              </div>
+                <img
+                  className="home-welcome-mascot"
+                  src={parrotWaveMascot}
+                  alt="El sallayan FocusForge maskotu Forge"
+                />
+              </section>
 
               {/* HERO — bugünün planı, günün ana eylemi */}
-              <div className="ff-card-hero ff-rise" style={{ '--ff-delay': '0.05s' } as React.CSSProperties}>
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '14px',
-                    }}
-                  >
-                    <span style={{ fontSize: '14px', fontWeight: 600, opacity: 0.92 }}>
+              <section
+                className="ff-card-hero home-plan-card ff-rise"
+                style={{ '--ff-delay': '0.05s' } as React.CSSProperties}
+                aria-labelledby="home-plan-title"
+              >
+                <img className="home-plan-artwork" src={planCardArtwork} alt="" aria-hidden="true" />
+                <div className="home-plan-content">
+                  <div className="home-plan-heading">
+                    <span id="home-plan-title" className="home-plan-title">
                       Bugünün Planı
                     </span>
-                    <span
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        padding: '5px 11px',
-                        borderRadius: '999px',
-                        background: 'rgba(255,255,255,0.22)',
-                      }}
-                    >
+                    <span className="home-plan-status">
                       {totalToday === 0
                         ? 'Görev yok'
                         : remaining > 0
@@ -240,37 +221,26 @@ const Home: React.FC = () => {
 
                   {totalToday === 0 ? (
                     /* Hiç görev yok: sayı/çubuk yerine boş durum mesajı */
-                    <div style={{ marginTop: '6px', fontSize: '15px', fontWeight: 600, opacity: 0.95, lineHeight: 1.45 }}>
+                    <div className="home-plan-empty">
                       Henüz görev eklemedin — önce bir görev ekle. 📝
                     </div>
                   ) : (
                     <>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                        <span style={{ fontSize: '44px', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                      <div className="home-plan-count">
+                        <span className="home-plan-count-value">
                           {doneToday}
                         </span>
-                        <span style={{ fontSize: '18px', fontWeight: 600, opacity: 0.85 }}>
+                        <span className="home-plan-count-total">
                           / {totalToday} görev
                         </span>
                       </div>
 
                       {/* Beyaz ilerleme çubuğu — gradyan zeminde okunur */}
-                      <div
-                        style={{
-                          height: '8px',
-                          borderRadius: '999px',
-                          background: 'rgba(255,255,255,0.28)',
-                          overflow: 'hidden',
-                          margin: '16px 0 6px',
-                        }}
-                      >
+                      <div className="home-plan-progress">
                         <div
+                          className="home-plan-progress-fill"
                           style={{
-                            height: '100%',
                             width: `${planProgress * 100}%`,
-                            borderRadius: '999px',
-                            background: '#fff',
-                            transition: 'width 0.9s var(--ff-smooth)',
                           }}
                         />
                       </div>
@@ -278,35 +248,11 @@ const Home: React.FC = () => {
                   )}
 
                   {openTasks.length > 0 && (
-                    <div style={{ marginTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div className="home-plan-tasks">
                       {openTasks.slice(0, 3).map((t) => (
-                        <div
-                          key={t.id}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '9px',
-                            fontSize: '14px',
-                            fontWeight: 500,
-                            opacity: 0.95,
-                          }}
-                        >
-                          <span
-                            style={{
-                              width: '6px',
-                              height: '6px',
-                              borderRadius: '50%',
-                              background: '#fff',
-                              flexShrink: 0,
-                            }}
-                          />
-                          <span
-                            style={{
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
+                        <div key={t.id} className="home-plan-task">
+                          <span className="home-plan-task-dot" />
+                          <span className="home-plan-task-title">
                             {t.title}
                           </span>
                         </div>
@@ -315,51 +261,39 @@ const Home: React.FC = () => {
                   )}
 
                   <button
-                    className="ff-btn"
+                    className="ff-btn home-plan-button"
                     onClick={() => setShowPlan(true)}
-                    style={{
-                      marginTop: '18px',
-                      background: 'rgba(255,255,255,0.95)',
-                      color: '#d1481f',
-                      boxShadow: '0 6px 18px rgba(0,0,0,0.14)',
-                    }}
                   >
-                    <IonIcon icon={sparklesOutline} style={{ fontSize: '19px' }} />
+                    <img src={sparkleIcon} alt="" aria-hidden="true" />
                     AI ile Günü Planla
                   </button>
                 </div>
-              </div>
+              </section>
 
               {/* İstatistikler */}
               <div
-                className="ff-stat-grid ff-rise"
-                style={{ marginTop: '14px', '--ff-delay': '0.1s' } as React.CSSProperties}
+                className="ff-stat-grid home-stat-grid ff-rise"
+                style={{ '--ff-delay': '0.1s' } as React.CSSProperties}
               >
-                <div className="ff-stat">
+                <div className="ff-stat home-stat home-stat-completed">
                   <span className="ff-stat-icon ff-icon-mint">
                     <IonIcon icon={checkmarkDoneOutline} />
                   </span>
                   <span className="ff-stat-value">{data.tasks.completed_today}</span>
                   <span className="ff-stat-label">Tamamlanan Görev</span>
                 </div>
-                <div className="ff-stat">
-                  <span className="ff-stat-icon ff-icon-cool">
-                    <IonIcon icon={flashOutline} />
-                  </span>
+                <div className="ff-stat home-stat home-stat-focus">
+                  <img className="home-stat-asset" src={focusTimeIcon} alt="" aria-hidden="true" />
                   <span className="ff-stat-value">{data.focus.minutes_today} dk</span>
                   <span className="ff-stat-label">Bugün Odaklanma</span>
                 </div>
-                <div className="ff-stat">
-                  <span className="ff-stat-icon ff-icon-primary">
-                    <IonIcon icon={flameOutline} />
-                  </span>
+                <div className="ff-stat home-stat home-stat-streak">
+                  <img className="home-stat-asset" src={dailyStreakIcon} alt="" aria-hidden="true" />
                   <span className="ff-stat-value">{data.user.streak_count}</span>
                   <span className="ff-stat-label">Günlük Seri</span>
                 </div>
-                <div className="ff-stat">
-                  <span className="ff-stat-icon ff-icon-gold">
-                    <IonIcon icon={trophyOutline} />
-                  </span>
+                <div className="ff-stat home-stat home-stat-xp">
+                  <img className="home-stat-asset" src={starIcon} alt="" aria-hidden="true" />
                   <span className="ff-stat-value">{data.user.total_xp}</span>
                   <span className="ff-stat-label">Toplam XP</span>
                 </div>
@@ -367,36 +301,23 @@ const Home: React.FC = () => {
 
               {/* Seviye ilerlemesi */}
               <div
-                className="ff-card ff-rise"
-                style={{ marginTop: '14px', '--ff-delay': '0.15s' } as React.CSSProperties}
+                className="ff-card home-level-card ff-rise"
+                style={{ '--ff-delay': '0.15s' } as React.CSSProperties}
               >
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'baseline',
-                    marginBottom: '12px',
-                  }}
-                >
-                  <span style={{ fontSize: '17px', fontWeight: 700, letterSpacing: '-0.02em' }}>
-                    Seviye {data.user.level}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      color: 'var(--ff-text-muted)',
-                      fontVariantNumeric: 'tabular-nums',
-                    }}
-                  >
-                    {xpIntoLevel} / {XP_PER_LEVEL} XP
-                  </span>
+                <div className="home-level-main">
+                  <div className="home-level-content">
+                    <div className="home-level-heading">
+                      <span className="home-level-title">Seviye {data.user.level}</span>
+                      <span className="home-level-xp">{xpIntoLevel} / {XP_PER_LEVEL} XP</span>
+                    </div>
+                    <div className="ff-progress">
+                      <div className="ff-progress-fill is-gold" style={{ width: `${levelProgress * 100}%` }} />
+                    </div>
+                  </div>
+                  <img className="home-level-avatar" src={parrotAvatar} alt="Forge maskotu" />
                 </div>
-                <div className="ff-progress">
-                  <div className="ff-progress-fill is-gold" style={{ width: `${levelProgress * 100}%` }} />
-                </div>
-                <p style={{ margin: '10px 0 0', fontSize: '13px', color: 'var(--ff-text-muted)' }}>
-                  Sonraki seviyeye <strong style={{ color: 'var(--ff-text-soft)' }}>
+                <p className="home-level-caption">
+                  Sonraki seviyeye <strong>
                     {XP_PER_LEVEL - xpIntoLevel} XP
                   </strong> kaldı
                 </p>
@@ -404,29 +325,29 @@ const Home: React.FC = () => {
 
               {/* Hızlı eylemler */}
               <div
-                className="ff-rise"
-                style={{ marginTop: '14px', '--ff-delay': '0.2s' } as React.CSSProperties}
+                className="home-actions ff-rise"
+                style={{ '--ff-delay': '0.2s' } as React.CSSProperties}
               >
-                <div className="ff-row ff-pressable" onClick={() => history.push('/analytics')}>
-                  <span className="ff-stat-icon ff-icon-gold">
-                    <IonIcon icon={statsChartOutline} />
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="ff-row ff-pressable home-action" onClick={() => history.push('/analytics')}>
+                  <img className="home-action-icon" src={analyticsIcon} alt="" aria-hidden="true" />
+                  <div className="home-action-copy">
                     <p className="ff-row-title">Detaylı İstatistikler</p>
                     <p className="ff-row-sub">
                       Ruh hali, odaklanma ve alışkanlık gelişimini incele.
                     </p>
                   </div>
-                  <IonIcon icon={chevronForwardOutline} style={{ color: 'var(--ff-text-muted)' }} />
+                  <img className="home-action-chevron" src={chevronIcon} alt="" aria-hidden="true" />
                 </div>
 
-                <div className="ff-row ff-pressable" onClick={() => setShowReflection(true)}>
-                  <span
-                    className={`ff-stat-icon ${todayReflection ? 'ff-icon-mint' : 'ff-icon-primary'}`}
-                  >
-                    <IonIcon icon={todayReflection ? checkmarkDoneOutline : journalOutline} />
+                <div className="ff-row ff-pressable home-action" onClick={() => setShowReflection(true)}>
+                  <span className={`home-action-icon-wrap ${todayReflection ? 'is-complete' : ''}`}>
+                    {todayReflection ? (
+                      <IonIcon icon={checkmarkDoneOutline} />
+                    ) : (
+                      <img className="home-action-icon" src={reflectionIcon} alt="" aria-hidden="true" />
+                    )}
                   </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="home-action-copy">
                     <p className="ff-row-title">
                       {todayReflection ? 'Bugünü değerlendirdin' : 'Günlük Yansıma'}
                     </p>
@@ -436,23 +357,21 @@ const Home: React.FC = () => {
                         : 'Günün nasıl geçti? Kısa bir değerlendirme yap.'}
                     </p>
                   </div>
-                  <IonIcon icon={chevronForwardOutline} style={{ color: 'var(--ff-text-muted)' }} />
+                  <img className="home-action-chevron" src={chevronIcon} alt="" aria-hidden="true" />
                 </div>
 
-                <div className="ff-row ff-pressable" onClick={() => setShowHabits(true)}>
-                  <span className="ff-stat-icon ff-icon-cool">
-                    <IonIcon icon={repeatOutline} />
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="ff-row ff-pressable home-action" onClick={() => setShowHabits(true)}>
+                  <img className="home-action-icon" src={habitsIcon} alt="" aria-hidden="true" />
+                  <div className="home-action-copy">
                     <p className="ff-row-title">Alışkanlıklar</p>
                     <p className="ff-row-sub">Günlük alışkanlıklarını işaretle ve serini büyüt.</p>
                   </div>
-                  <IonIcon icon={chevronForwardOutline} style={{ color: 'var(--ff-text-muted)' }} />
+                  <img className="home-action-chevron" src={chevronIcon} alt="" aria-hidden="true" />
                 </div>
               </div>
             </>
           )}
-        </div>
+        </main>
 
         {/* Günlük yansıma modalı */}
         <Reflection

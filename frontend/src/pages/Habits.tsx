@@ -33,6 +33,11 @@ import {
 } from 'ionicons/icons';
 import api from '../services/api';
 import HabitStats from './HabitStats';
+import forgeAvatar from '../assets/hmsc/circular-parrot-avatar.jpg';
+import habitsIcon from '../assets/hmsc/blue-habits-icon.jpg';
+import streakIcon from '../assets/hmsc/daily-streak-icon.jpg';
+import leafDecoration from '../assets/hmsc/leaf-tropical-cluster.jpg';
+import './Habits.css';
 
 interface HabitToday {
   id: string;
@@ -87,7 +92,7 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
     try {
       const res = await api.get('/habits/today');
       setHabits(res.data || []);
-    } catch (err) {
+    } catch {
       setError('Alışkanlıklar yüklenemedi. Bağlantını kontrol edip tekrar dene.');
     } finally {
       setLoading(false);
@@ -113,8 +118,9 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
 
   // Bileşen kaldırılırsa bekleyen timer'ları temizle
   useEffect(() => {
+    const timers = timersRef.current;
     return () => {
-      Object.values(timersRef.current).forEach(clearTimeout);
+      Object.values(timers).forEach(clearTimeout);
     };
   }, []);
 
@@ -146,7 +152,7 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
       await loadToday();
       onChanged?.();
       notify('Aferin! İşaretlendi 🎉 (+15 XP)');
-    } catch (err) {
+    } catch {
       notify('İşaretlenemedi. Lütfen tekrar dene.');
     } finally {
       setPending((prev) => {
@@ -169,7 +175,7 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
       await api.put(`/habits/${id}`, { title: editTitle.trim() });
       setEditingId(null);
       await loadToday();
-    } catch (err) {
+    } catch {
       notify('Güncellenemedi. Lütfen tekrar dene.');
     } finally {
       setBusy(false);
@@ -182,7 +188,7 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
       await api.delete(`/habits/${id}`);
       notify('Alışkanlık silindi 🗑️');
       await loadToday();
-    } catch (err) {
+    } catch {
       notify('Silinemedi. Lütfen tekrar dene.');
     } finally {
       setBusy(false);
@@ -199,7 +205,7 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
       setNewCategory('growth');
       setShowAdd(false);
       await loadToday();
-    } catch (err) {
+    } catch {
       notify('Eklenemedi. Lütfen tekrar dene.');
     } finally {
       setBusy(false);
@@ -212,19 +218,30 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
   const pct = total > 0 ? done / total : 0;
 
   return (
-    <IonModal isOpen={isOpen} onDidDismiss={onClose}>
-      <IonHeader>
-        <IonToolbar color="primary">
+    <IonModal isOpen={isOpen} onDidDismiss={onClose} className="habits-modal">
+      <IonHeader className="habits-header">
+        <IonToolbar className="habits-toolbar">
           <IonButtons slot="start">
-            <IonButton onClick={onClose}>Kapat</IonButton>
+            <IonButton onClick={onClose} className="habits-close">Kapat</IonButton>
           </IonButtons>
           <IonTitle>Alışkanlıklar</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent className="ion-padding" style={{ '--background': 'var(--ion-background-color)' }}>
+      <IonContent className="habits-content">
+        <div className="habits-shell">
+        <section className="habits-intro">
+          <img className="habits-intro-leaf" src={leafDecoration} alt="" aria-hidden="true" />
+          <div className="habits-intro-copy">
+            <span><img src={habitsIcon} alt="" aria-hidden="true" /> Küçük adımlar</span>
+            <h1>Rutinini güçlendir</h1>
+            <p>Her tamamlanan alışkanlık, hedeflerine atılmış güçlü bir adım.</p>
+          </div>
+          <img className="habits-intro-forge" src={forgeAvatar} alt="FocusForge maskotu Forge" />
+        </section>
+
         {/* Bugün / İstatistik geçişi */}
-        <IonSegment value={view} onIonChange={(e) => setView(e.detail.value as 'today' | 'stats')} style={{ marginBottom: '16px' }}>
+        <IonSegment value={view} onIonChange={(e) => setView(e.detail.value as 'today' | 'stats')} className="habits-view-segment">
           <IonSegmentButton value="today"><IonLabel>Bugün</IonLabel></IonSegmentButton>
           <IonSegmentButton value="stats"><IonLabel>İstatistik</IonLabel></IonSegmentButton>
         </IonSegment>
@@ -235,7 +252,7 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
         <>
         {/* Yükleniyor */}
         {loading && (
-          <div style={{ textAlign: 'center', marginTop: '60px' }}>
+          <div className="habits-state">
             <IonSpinner name="crescent" color="primary" style={{ transform: 'scale(1.4)' }} />
             <p style={{ color: 'var(--ion-color-medium)' }}>Yükleniyor...</p>
           </div>
@@ -243,7 +260,7 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
 
         {/* Hata */}
         {error && !loading && (
-          <div style={{ textAlign: 'center', marginTop: '40px', color: 'var(--ion-color-danger)' }}>
+          <div className="habits-state habits-error">
             <IonIcon icon={alertCircleOutline} style={{ fontSize: '56px' }} />
             <h3>Bir sorun oluştu</h3>
             <p style={{ color: 'var(--ion-color-medium)' }}>{error}</p>
@@ -255,33 +272,35 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
           <>
             {/* Üstte tamamlanma yüzdesi + progress bar */}
             {total > 0 && (
-              <div style={{ marginBottom: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginBottom: '8px' }}>
-                  <span>Bugünkü ilerleme</span>
-                  <span style={{ color: 'var(--ion-color-medium)' }}>{done} / {total}</span>
+              <section className="habits-progress-card">
+                <div className="habits-progress-heading">
+                  <div>
+                    <img src={streakIcon} alt="" aria-hidden="true" />
+                    <span><small>Bugünkü ilerleme</small><strong>%{Math.round(pct * 100)} tamamlandı</strong></span>
+                  </div>
+                  <b>{done} / {total}</b>
                 </div>
-                <IonProgressBar value={pct} color="tertiary" style={{ height: '10px', borderRadius: '5px' }} />
-                <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: 'var(--ion-color-medium)' }}>
-                  %{Math.round(pct * 100)} tamamlandı
-                </p>
-              </div>
+                <IonProgressBar value={pct} color="tertiary" />
+                <p>{done === total ? 'Bugünkü hedeflerinin hepsi tamamlandı! 🎉' : `${total - done} alışkanlık daha seni bekliyor.`}</p>
+              </section>
             )}
 
             {/* Boş durum */}
             {total === 0 && (
-              <div style={{ textAlign: 'center', marginTop: '40px', color: 'var(--ion-color-medium)' }}>
+              <div className="habits-empty">
+                <img src={habitsIcon} alt="" aria-hidden="true" />
                 <h3>Henüz alışkanlığın yok</h3>
                 <p>Aşağıdan ilk alışkanlığını ekleyerek başla.</p>
               </div>
             )}
 
             {/* Liste */}
-            <IonList style={{ background: 'transparent' }}>
+            <IonList className="habits-list">
               {habits.map((h) => {
                 const cat = categoryInfo(h.category);
                 if (editingId === h.id) {
                   return (
-                    <IonItem key={h.id} style={{ '--background': 'transparent' }}>
+                    <IonItem key={h.id} className="habit-edit-card" lines="none">
                       <IonInput
                         value={editTitle}
                         onIonInput={(e) => setEditTitle(e.detail.value!)}
@@ -303,19 +322,19 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
                 const remaining = isPending ? Math.max(0, Math.ceil((pending[h.id] - Date.now()) / 1000)) : 0;
                 return (
                   <React.Fragment key={h.id}>
-                  <IonItem style={{ '--background': 'transparent' }}>
+                  <IonItem className={`habit-card ${isChecked ? 'is-checked' : ''}`} lines="none">
                     <IonCheckbox
                       slot="start"
                       checked={isChecked}
                       disabled={h.is_completed_today || isPending}
                       onIonChange={() => startCheckIn(h.id)}
-                      style={{ marginRight: '12px' }}
+                      className="habit-checkbox"
                     />
-                    <IonLabel style={{ opacity: isChecked ? 0.6 : 1 }}>
-                      <h2 style={{ fontWeight: 600, textDecoration: isChecked ? 'line-through' : 'none' }}>
+                    <IonLabel className="habit-copy">
+                      <h2>
                         {h.title}
                       </h2>
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px', flexWrap: 'wrap' }}>
+                      <div className="habit-badges">
                         <IonBadge color={cat.color}>{cat.label}</IonBadge>
                         {h.streak_count > 0 && (
                           <IonBadge color="warning" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -337,16 +356,8 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
 
                   {/* 5 saniyelik geri alma şeridi */}
                   {isPending && (
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '4px 12px 10px 12px',
-                        marginTop: '-4px',
-                      }}
-                    >
-                      <span style={{ fontSize: '13px', color: 'var(--ion-color-medium)' }}>
+                    <div className="habit-undo-row">
+                      <span>
                         İşaretlendi · {remaining} sn içinde kaydedilecek
                       </span>
                       <IonButton size="small" fill="clear" onClick={() => undoCheckIn(h.id)}>
@@ -362,8 +373,9 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
 
             {/* Yeni alışkanlık ekleme */}
             {showAdd ? (
-              <div style={{ marginTop: '16px' }}>
-                <IonItem style={{ marginBottom: '10px', borderRadius: '12px' }}>
+              <div className="habit-add-card">
+                <div className="habit-add-heading"><img src={habitsIcon} alt="" aria-hidden="true" /><div><h2>Yeni alışkanlık</h2><p>Küçük ve sürdürülebilir bir hedef belirle.</p></div></div>
+                <IonItem className="habit-add-field" lines="none">
                   <IonLabel position="stacked">Yeni alışkanlık</IonLabel>
                   <IonInput
                     value={newTitle}
@@ -371,7 +383,7 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
                     onIonInput={(e) => setNewTitle(e.detail.value!)}
                   />
                 </IonItem>
-                <IonSegment value={newCategory} onIonChange={(e) => setNewCategory(e.detail.value as string)} style={{ marginBottom: '12px' }}>
+                <IonSegment value={newCategory} onIonChange={(e) => setNewCategory(e.detail.value as string)} className="habit-category-segment">
                   <IonSegmentButton value="must_do">
                     <IonLabel>Olmazsa olmaz</IonLabel>
                   </IonSegmentButton>
@@ -379,8 +391,8 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
                     <IonLabel>Gelişim</IonLabel>
                   </IonSegmentButton>
                 </IonSegment>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <IonButton expand="block" onClick={addHabit} disabled={busy || !newTitle.trim()} style={{ flex: 1, '--border-radius': '25px' }}>
+                <div className="habit-add-actions">
+                  <IonButton expand="block" onClick={addHabit} disabled={busy || !newTitle.trim()}>
                     Ekle
                   </IonButton>
                   <IonButton fill="clear" color="medium" onClick={() => setShowAdd(false)}>İptal</IonButton>
@@ -390,14 +402,14 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
               <IonButton
                 expand="block"
                 onClick={() => setShowAdd(true)}
-                style={{ marginTop: '16px', '--border-radius': '25px', fontWeight: 'bold' }}
+                className="habit-add-button"
               >
                 <IonIcon slot="start" icon={addOutline} />
                 Yeni Alışkanlık
               </IonButton>
             )}
 
-            <IonText color="medium" style={{ display: 'block', textAlign: 'center', fontSize: '12px', marginTop: '16px' }}>
+            <IonText color="medium" className="habit-save-note">
               İşaretledikten sonra 5 saniye içinde "Geri al"a basabilirsin; basmazsan kaydedilir. Kaydedildikten sonra gün içinde geri alınamaz.
             </IonText>
           </>
@@ -411,6 +423,7 @@ const Habits: React.FC<HabitsProps> = ({ isOpen, onClose, onChanged }) => {
           message={toastMessage}
           duration={2200}
         />
+        </div>
       </IonContent>
     </IonModal>
   );

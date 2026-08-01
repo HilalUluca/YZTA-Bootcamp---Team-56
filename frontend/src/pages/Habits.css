@@ -1,0 +1,89 @@
+.habits-modal { --habits-navy: #17375f; --habits-teal: #08a7a5; --habits-coral: #ff654d; }
+.habits-header::after { display: none; }
+.habits-toolbar { --background: rgba(255,101,77,.96); --border-width: 0; --color: #fff; --min-height: 58px; box-shadow: 0 8px 26px rgba(214,72,43,.16); }
+.habits-toolbar ion-title { font-size: 17px; font-weight: 750; }
+.habits-close { --color: #fff; font-weight: 650; }
+
+.habits-content { --background: transparent; background: radial-gradient(circle at 4% 7%,rgba(255,181,27,.1),transparent 27%), radial-gradient(circle at 97% 18%,rgba(8,167,165,.1),transparent 29%), var(--ion-background-color); }
+.habits-shell { width: min(100%,680px); min-height: 100%; margin: 0 auto; padding: 18px 18px calc(34px + env(safe-area-inset-bottom)); }
+
+.habits-intro { position: relative; min-height: 178px; overflow: hidden; border: 1px solid var(--ff-glass-border); border-radius: 28px; background: linear-gradient(145deg,rgba(255,255,255,.96),rgba(242,252,249,.87)); box-shadow: var(--ff-shadow-md); isolation: isolate; }
+.habits-intro-copy { position: relative; z-index: 3; width: 68%; padding: 22px 0 18px 23px; }
+.habits-intro-copy > span { display: inline-flex; align-items: center; gap: 6px; color: var(--habits-teal); font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+.habits-intro-copy > span img { width: 24px; height: 24px; object-fit: contain; }
+.habits-intro h1 { margin: 8px 0 0; color: var(--habits-navy); font-size: clamp(25px,7vw,33px); font-weight: 820; letter-spacing: -.035em; line-height: 1.08; }
+.habits-intro p { margin: 9px 0 0; color: var(--ff-text-muted); font-size: 13px; line-height: 1.45; }
+.habits-intro-forge { position: absolute; right: 18px; bottom: 16px; z-index: 2; width: 91px; height: 91px; border: 4px solid rgba(255,255,255,.87); border-radius: 50%; object-fit: cover; box-shadow: 0 13px 28px rgba(23,55,95,.18); }
+.habits-intro-leaf { position: absolute; right: -40px; bottom: -58px; z-index: 1; width: 175px; opacity: .72; transform: rotate(-10deg); pointer-events: none; }
+
+.habits-view-segment { margin: 15px 0; padding: 4px; border: 1px solid var(--ff-glass-border); border-radius: 18px; background: var(--ff-glass-bg-strong); }
+.habits-view-segment ion-segment-button { --border-radius: 14px; --indicator-color: linear-gradient(135deg,#19b5ac,#078d9d); --color: var(--ff-text-muted); --color-checked: #fff; min-height: 42px; font-weight: 700; text-transform: none; }
+
+.habits-state { display: flex; min-height: 330px; align-items: center; justify-content: center; flex-direction: column; color: var(--ff-text-muted); text-align: center; }
+.habits-state ion-spinner { transform: scale(1.35); }
+.habits-error { color: var(--ion-color-danger); }
+
+.habits-progress-card { margin-bottom: 15px; padding: 17px; border: 1px solid var(--ff-glass-border); border-radius: 23px; background: var(--ff-glass-bg-strong); box-shadow: var(--ff-shadow-sm); }
+.habits-progress-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+.habits-progress-heading > div { display: flex; align-items: center; gap: 10px; }
+.habits-progress-heading img { width: 42px; height: 42px; object-fit: contain; }
+.habits-progress-heading span { display: flex; flex-direction: column; }
+.habits-progress-heading small { color: var(--ff-text-muted); font-size: 11px; }
+.habits-progress-heading strong { color: var(--ff-text); font-size: 16px; }
+.habits-progress-heading b { display: grid; min-width: 50px; height: 38px; place-items: center; border-radius: 13px; background: rgba(8,167,165,.1); color: var(--habits-teal); font-size: 14px; }
+.habits-progress-card ion-progress-bar { height: 9px; overflow: hidden; border-radius: 999px; --background: var(--ff-fill-soft); --progress-background: linear-gradient(90deg,#18b8ad,#08a7a5); }
+.habits-progress-card > p { margin: 9px 0 0; color: var(--ff-text-muted); font-size: 12px; }
+
+.habits-empty { padding: 30px 20px; color: var(--ff-text-muted); text-align: center; }
+.habits-empty img { width: 58px; height: 58px; object-fit: contain; }
+.habits-empty h3 { margin: 10px 0 4px; color: var(--ff-text); }
+.habits-empty p { margin: 0; }
+
+.habits-list { display: flex; flex-direction: column; gap: 9px; padding: 0; background: transparent; }
+.habit-card,
+.habit-edit-card { --background: var(--ff-glass-bg-strong); --inner-border-width: 0; --padding-start: 13px; --inner-padding-end: 7px; --min-height: 78px; overflow: hidden; border: 1px solid var(--ff-glass-border); border-radius: 20px; box-shadow: var(--ff-shadow-sm); }
+.habit-card.is-checked { opacity: .68; background: rgba(8,167,165,.06); }
+.habit-checkbox { margin-right: 12px; --size: 25px; --border-radius: 9px; --border-color: rgba(8,167,165,.36); --checkbox-background-checked: var(--habits-teal); --border-color-checked: var(--habits-teal); }
+.habit-copy { margin-block: 11px; }
+.habit-copy h2 { margin: 0; overflow-wrap: anywhere; color: var(--ff-text); font-size: 15px; font-weight: 700; }
+.habit-card.is-checked .habit-copy h2 { text-decoration: line-through; }
+.habit-badges { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-top: 6px; }
+.habit-badges ion-badge { --padding-start: 8px; --padding-end: 8px; border-radius: 999px; font-size: 10px; }
+.habit-card ion-buttons ion-button { --padding-start: 8px; --padding-end: 8px; width: 34px; height: 34px; }
+
+.habit-undo-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -4px 8px 3px; padding: 7px 10px 7px 13px; border-radius: 0 0 15px 15px; background: rgba(255,181,27,.09); }
+.habit-undo-row > span { color: var(--ff-text-muted); font-size: 11.5px; }
+.habit-undo-row ion-button { font-weight: 700; }
+
+.habit-add-button { height: 54px; margin-top: 16px; --border-radius: 999px; --background: linear-gradient(135deg,#18b8ad,#078d9d); --box-shadow: 0 12px 25px rgba(7,141,157,.2); font-size: 15px; font-weight: 750; }
+.habit-add-card { margin-top: 16px; padding: 17px; border: 1px solid var(--ff-glass-border); border-radius: 23px; background: var(--ff-glass-bg-strong); box-shadow: var(--ff-shadow-sm); }
+.habit-add-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 13px; }
+.habit-add-heading img { width: 40px; height: 40px; object-fit: contain; }
+.habit-add-heading h2 { margin: 0; color: var(--ff-text); font-size: 17px; font-weight: 750; }
+.habit-add-heading p { margin: 2px 0 0; color: var(--ff-text-muted); font-size: 11.5px; }
+.habit-add-field { --background: var(--ff-fill-soft); --inner-border-width: 0; --border-radius: 16px; --padding-start: 13px; border: 1px solid var(--ff-glass-border); border-radius: 16px; }
+.habit-add-field ion-label { color: var(--ff-text-soft); font-weight: 700; }
+.habit-add-field ion-input { --color: var(--ff-text); --placeholder-color: var(--ff-text-muted); }
+.habit-category-segment { margin: 11px 0; padding: 3px; border-radius: 15px; background: var(--ff-fill-soft); }
+.habit-category-segment ion-segment-button { --border-radius: 12px; --indicator-color: var(--ff-glass-bg-strong); min-height: 40px; font-size: 12px; text-transform: none; }
+.habit-add-actions { display: flex; align-items: center; gap: 8px; }
+.habit-add-actions ion-button:first-child { flex: 1; --border-radius: 999px; --background: linear-gradient(135deg,#18b8ad,#078d9d); font-weight: 750; }
+.habit-save-note { display: block; margin-top: 14px; padding: 0 8px; color: var(--ff-text-muted) !important; font-size: 11px; line-height: 1.45; text-align: center; }
+
+html.ff-dark .habits-intro { background: linear-gradient(145deg,rgba(35,29,25,.97),rgba(25,22,20,.9)); }
+html.ff-dark .habits-intro h1 { color: var(--ff-text); }
+
+@media (min-width: 700px) {
+  .habits-modal { --width: min(680px,94vw); --height: min(900px,94vh); --border-radius: 30px; }
+  .habits-modal::part(content) { overflow: hidden; box-shadow: 0 28px 70px rgba(35,20,13,.24); }
+  .habits-shell { padding: 22px 24px 36px; }
+}
+
+@media (max-width: 370px) {
+  .habits-shell { padding-inline: 13px; }
+  .habits-intro-copy { width: 69%; padding-left: 18px; }
+  .habits-intro-forge { right: 11px; width: 80px; height: 80px; }
+  .habit-card { --padding-start: 10px; --inner-padding-end: 3px; }
+  .habit-card ion-buttons ion-button { --padding-start: 5px; --padding-end: 5px; width: 30px; }
+  .habit-undo-row > span { font-size: 10px; }
+}

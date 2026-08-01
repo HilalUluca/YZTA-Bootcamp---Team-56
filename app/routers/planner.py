@@ -7,8 +7,11 @@ Endpoints:
 """
 
 import uuid
+import logging
 from datetime import datetime, timezone
 from typing import Optional, List
+
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
@@ -84,6 +87,9 @@ async def create_daily_plan(
     """
     from app.agents.ai_planner_agent import get_ai_recommendations
 
+    request_id = str(uuid.uuid4())
+    logger.info(f"[DailyPlan] Request {request_id} from user {current_user.id}")
+
     # Kullanicinin acik gorevlerini al
     tasks = (
         db.query(Task)
@@ -106,7 +112,7 @@ async def create_daily_plan(
         {
             "title": task.title,
             "description": task.description or "Aciklama yok",
-            "deadline": task.due_date.isoformat() if task.due_date else "Belirlenmemis",
+            "priority": task.priority.value,
             "estimated_duration": task.estimated_minutes or 30,
         }
         for task in tasks
@@ -125,15 +131,58 @@ async def create_daily_plan(
         )
         return recommendations
     except ValueError as e:
+        logger.error(f"[DailyPlan] Req: {request_id} - AI config error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"AI servisi yapilandirma hatasi: {str(e)}",
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Gunluk plan olusturma hatasi: {str(e)}",
-        )
+        logger.error(f"[DailyPlan] Req: {request_id} - AI call failed: {str(e)}")
+        # Fallback plan: Create a simple schedule without AI
+        fallback_schedule = []
+        assigned_time = 0
+        total_time = request.available_hours * 60
+        
+        # Sort tasks by priority (HIGH=3, MEDIUM=2, LOW=1) and due_date
+        def get_prio_val(t):
+            if t.priority == TaskPriority.HIGH: return 3
+            if t.priority == TaskPriority.MEDIUM: return 2
+            return 1
+
+        sorted_tasks = sorted(tasks, key=lambda t: (-get_prio_val(t), t.due_date or datetime.max.replace(tzinfo=timezone.utc)))
+        
+        for task in sorted_tasks:
+            if assigned_time >= total_time:
+                break
+            duration = task.estimated_minutes or 30
+            if assigned_time + duration > total_time:
+                duration = total_time - assigned_time
+            if duration <= 0:
+                continue
+                
+            fallback_schedule.append({
+                "block_type": "task",
+                "task_name": task.title,
+                "category": task.priority.value,
+                "suggested_duration_minutes": duration,
+                "priority_score": get_prio_val(task)
+            })
+            assigned_time += duration
+        
+        if not fallback_schedule:
+             raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Plan olusturulamadi (Req ID: {request_id}). AI servisi yanit vermedi.",
+            )
+
+        return {
+            "prioritized_tasks": tasks_for_ai,
+            "summary": "AI servisine ulaşılamadı. Görevleriniz aciliyet sırasına göre basitçe listelendi.",
+            "recommended_schedule": fallback_schedule,
+            "motivation_message": "Sistem geçici olarak çevrimdışı olsa da, senin durmana gerek yok!",
+            "energy_level": request.energy_level,
+            "generated_at": datetime.now().isoformat()
+        }
 
 
 @router.post("/bulk-create", response_model=BulkCreateResponse, status_code=status.HTTP_201_CREATED)

@@ -75,6 +75,10 @@ class PrioritizedTask(BaseModel):
         ...,
         description="Eisenhower matrisi kategorisi: urgent_important, important, urgent, low"
     )
+    estimated_duration: int = Field(
+        30,
+        description="Tahmini süre"
+    )
 
 
 class PrioritizedTasksOutput(BaseModel):
@@ -196,90 +200,40 @@ async def prioritize_tasks(
     user_context: Optional[str] = None
 ) -> PrioritizedTasksOutput:
     """
-    Kullanıcının görevlerini Eisenhower matrisine göre analiz ederek 
-    önceliklendirmek. YZTA-70: Yapay zekayla görev önceliklendirme.
-    
-    Args:
-        tasks: Görev listesi. Her görev dict şu alanları içermeli:
-            - title: str (görev adı)
-            - description: Optional[str] (görev açıklaması)
-            - deadline: Optional[str] (deadline tarihi, ISO format)
-            - estimated_duration: Optional[int] (dakika cinsinden)
-            - user_goals: Optional[str] (kullanıcının günlük hedefleri)
-        
-        user_context: Opsiyonel - Kullanıcı duygu durumu veya ek context
-    
-    Returns:
-        PrioritizedTasksOutput: Önceliklendirilen görevler ve özet
-    
-    Raises:
-        ValueError: API key veya diğer konfigürasyon hataları
-        OutputParserException: JSON parse hatası
+    Kullanıcının görevlerini deterministik olarak önceliklendir.
+    AI kullanılmaz, görevlerin kendi priority (eisenhower_category) alanları dikkate alınır.
     """
     
-    llm = _get_llm()
+    # Priority mapping for deterministic sort
+    # Acil&Önemli > Acil > Önemli > Düşük
+    priority_map = {
+        "urgent_important": 4,
+        "urgent": 3,
+        "important": 2,
+        "low": 1
+    }
     
-    # Task'leri string formatına çevir
-    tasks_str = "\n".join(
-        [f"{i+1}. {t.get('title', 'Başlıksız')} (Açıklama: {t.get('description', 'Yok')}, Deadline: {t.get('deadline', 'Yok')})"
-         for i, t in enumerate(tasks)]
-    )
-    
-    # Prompt Template
-    prompt_template = PromptTemplate.from_template(
-        """Sen bir kişisel verimlilik danışmanısın. Kullanıcının görevlerini 
-Eisenhower Matrisi (Acil & Önemli, Önemli, Acil, Düşük) kategorilerine 
-göre sınıflandırıp önceliklendirmen gerekiyor.
-
-GÖREVLER:
-{tasks_text}
-
-{context_note}
-
-Lütfen her görev için şu JSON formatında analiz yap:
-{format_instructions}
-
-Çıktı kesinlikle geçerli JSON olmalı."""
-    )
-    
-    parser = PydanticOutputParser(pydantic_object=PrioritizedTasksOutput)
-    
-    context_note = ""
-    if user_context:
-        context_note = f"\nKULLANICI CONTEXT: {user_context}"
-    
-    prompt = prompt_template.format(
-        tasks_text=tasks_str,
-        context_note=context_note,
-        format_instructions=parser.get_format_instructions()
-    )
-    
-    try:
-        logger.info("LLM'e görev önceliklendirme isteği gönderiliyor...")
+    prioritized_list = []
+    for task in tasks:
+        cat = task.get("priority") or task.get("eisenhower_category") or "low"
+        score = priority_map.get(cat, 1)
         
-        # LangChain chain - async
-        response = await llm.ainvoke(prompt)
-        response_text = _extract_text(response)
-
-        logger.debug(f"LLM yanıtı: {response_text[:300]}...")
-
-        # JSON parse ve Pydantic model validation
-        try:
-            output = parser.parse(response_text)
-        except OutputParserException:
-            logger.warning("Parser başarısız, fallback JSON parsing kullanılıyor...")
-            json_data = _parse_json_with_fallback(
-                response_text,
-                PrioritizedTasksOutput
-            )
-            output = PrioritizedTasksOutput(**json_data)
+        prioritized_list.append(PrioritizedTask(
+            task_name=task.get("title") or task.get("task_name") or "Başlıksız",
+            priority_score=score,
+            ai_reasoning=f"Seçilen kategori ({cat}) baz alınarak sıralandı.",
+            eisenhower_category=cat,
+            estimated_duration=task.get("estimated_duration") or task.get("estimated_minutes") or 30
+        ))
         
-        logger.info(f"✅ {len(output.tasks)} görev başarıyla önceliklendirdi.")
-        return output
+    # Sort deterministically
+    prioritized_list.sort(key=lambda x: x.priority_score, reverse=True)
     
-    except Exception as e:
-        logger.error(f"Görev önceliklendirme hatası: {str(e)}")
-        raise
+    return PrioritizedTasksOutput(
+        tasks=prioritized_list,
+        summary="Görevleriniz seçtiğiniz öncelik seviyelerine göre deterministik olarak sıralanmıştır."
+    )
+
 
 
 # ============================================================================
@@ -443,27 +397,33 @@ def _create_schedule(
     schedule: List[dict] = []
     assigned_time = 0
 
-    # Sırala: Urgent & Important, Important, Urgent, Low (mevcut mantık korunuyor)
+    # Sırala: Urgent & Important, Urgent, Important, Low
     category_order = {
         "urgent_important": 0,
-        "important": 1,
-        "urgent": 2,
+        "urgent": 1,
+        "important": 2,
         "low": 3
     }
 
     sorted_tasks = sorted(
         tasks,
-        key=lambda t: (category_order.get(t.eisenhower_category, 4), -t.priority_score)
+        key=lambda t: category_order.get(t.eisenhower_category, 4)
     )
 
     # Enerji seviyesine göre görev sayısını sınırla (bilişsel yük kontrolü)
-    sorted_tasks = sorted_tasks[: config["max_tasks"]]
+    # sorted_tasks = sorted_tasks[: config["max_tasks"]] # Kullanıcı deterministik plan istiyor, sınırlamayı kaldıralım veya esnetelim.
+    # Görevleri filtrelemiyoruz çünkü tüm görevlerin gerçek süresiyle yer alması istenmiş.
 
     for i, task in enumerate(sorted_tasks):
         if assigned_time >= available_time:
             break
 
-        block_duration = min(config["work_minutes"], available_time - assigned_time)
+        # Görevin kendi süresini kullan (fallback 30 dk)
+        task_duration = task.estimated_duration if getattr(task, "estimated_duration", None) else 30
+        block_duration = min(task_duration, available_time - assigned_time)
+
+        if block_duration <= 0:
+            continue
 
         schedule.append({
             "block_type": "task",

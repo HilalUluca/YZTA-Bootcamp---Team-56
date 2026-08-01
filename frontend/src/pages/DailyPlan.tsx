@@ -79,7 +79,7 @@ const DailyPlan: React.FC<DailyPlanProps> = ({ isOpen, onClose, openTaskCount })
     setSummary('');
     setEmptyMessage('');
     try {
-      const res = await api.post('/planner/daily-plan', {
+      const res = await api.post('/planner/daily-plan/', {
         energy_level: energy,
         available_hours: hours,
       });

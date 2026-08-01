@@ -27,6 +27,9 @@ from app.routers.planner import router as planner_router
 from app.routers.reports import router as reports_router
 from app.routers.profile import router as profile_router
 
+# --- YENİ EKLENEN MODÜL: Söz Takibi ve İnfaz Motoru ---
+from app.routers.commitments import router as commitments_router
+
 # Logging ayarı
 logging.basicConfig(
     level=logging.INFO,
@@ -85,7 +88,7 @@ if settings.frontend_url:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=["*"],  # Geliştirme ortamında tüm originlere izin ver
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -124,6 +127,8 @@ app.include_router(planner_router)
 app.include_router(achievements_router)
 app.include_router(reports_router)
 app.include_router(profile_router)
+# ---  Söz Takibi ---
+app.include_router(commitments_router)
 
 
 @app.get("/", tags=["Genel"])

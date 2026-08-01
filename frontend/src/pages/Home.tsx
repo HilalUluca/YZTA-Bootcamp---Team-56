@@ -12,6 +12,7 @@ import {
 } from '@ionic/react';
 import {
   checkmarkDoneOutline,
+  shieldHalfOutline,
   flashOutline,
   flameOutline,
   trophyOutline,
@@ -92,6 +93,16 @@ const Home: React.FC = () => {
     }
   };
 
+  // Chat sayfasından 'refresh_dashboard' sinyali ateşlendiğinde bu blok uyanır
+  // ve sayfayı yenilemeye gerek kalmadan arkaplanda verileri günceller.
+  useEffect(() => {
+    window.addEventListener('refresh_dashboard', loadDashboard);
+    return () => {
+      window.removeEventListener('refresh_dashboard', loadDashboard);
+    };
+  }, []);
+  // ------------------------------------------------
+
   // Bugünün yansıması var mı? Backend yoksa 404 döner → henüz yapılmamış demektir.
   const loadTodayReflection = async () => {
     try {
@@ -164,39 +175,84 @@ const Home: React.FC = () => {
 
           {data && (
             <>
-              {/* Karşılama */}
+              {/* Karşılama ve Sağ Üst Sorumluluk Skoru (Şarj İbaresi) */}
               <div
                 className="ff-rise"
-                style={{ display: 'flex', alignItems: 'center', gap: '14px', margin: '6px 0 22px' }}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between', 
+                  gap: '14px', 
+                  margin: '6px 0 22px' 
+                }}
               >
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p className="ff-subtitle" style={{ fontSize: '14px', fontWeight: 600 }}>
-                    {greetingFor(new Date().getHours())}
-                  </p>
-                  <h1 className="ff-title" style={{ overflowWrap: 'anywhere' }}>
-                    {name} <span style={{ WebkitTextFillColor: 'initial' }}>👋</span>
-                  </h1>
+                {/* Sol Taraf: Avatar ve İsim */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
+                  <div
+                    style={{
+                      width: '54px',
+                      height: '54px',
+                      borderRadius: '18px',
+                      flexShrink: 0,
+                      display: 'grid',
+                      placeItems: 'center',
+                      background: 'var(--ff-glass-bg-strong)',
+                      border: '1px solid var(--ff-glass-border)',
+                      boxShadow: 'var(--ff-shadow-md)',
+                      backdropFilter: 'var(--ff-glass-blur)',
+                      WebkitBackdropFilter: 'var(--ff-glass-blur)',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <img
+                      src={parrotImg}
+                      alt=""
+                      style={{ width: '40px', height: '40px', objectFit: 'contain' }}
+                    />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <p className="ff-subtitle" style={{ fontSize: '13px', fontWeight: 600, margin: 0 }}>
+                      {greetingFor(new Date().getHours())}
+                    </p>
+                    <h1 className="ff-title" style={{ fontSize: '20px', margin: '2px 0 0', overflowWrap: 'anywhere', textTransform: 'capitalize' }}>
+                      {name} <span style={{ WebkitTextFillColor: 'initial' }}>👋</span>
+                    </h1>
+                  </div>
                 </div>
+
+                {/* Sağ Taraf: Sorumluluk Skoru (Şarj /  Profil ile Senkronize) */}
                 <div
                   style={{
-                    width: '62px',
-                    height: '62px',
-                    borderRadius: '22px',
-                    flexShrink: 0,
-                    display: 'grid',
-                    placeItems: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '6px 12px',
+                    borderRadius: '999px',
                     background: 'var(--ff-glass-bg-strong)',
                     border: '1px solid var(--ff-glass-border)',
-                    boxShadow: 'var(--ff-shadow-md)',
+                    boxShadow: 'var(--ff-shadow-sm)',
                     backdropFilter: 'var(--ff-glass-blur)',
-                    WebkitBackdropFilter: 'var(--ff-glass-blur)',
+                    flexShrink: 0,
                   }}
                 >
-                  <img
-                    src={parrotImg}
-                    alt=""
-                    style={{ width: '46px', height: '46px', objectFit: 'contain' }}
+                  <IonIcon 
+                    icon={shieldHalfOutline} 
+                    style={{ 
+                      fontSize: '15px', 
+                      color: (data?.score?.value ?? 50) >= 70 ? '#34d399' : (data?.score?.value ?? 50) >= 40 ? '#fbbf24' : '#f43f5e' 
+                    }} 
                   />
+                  <div style={{ width: '1px', height: '12px', background: 'rgba(255,255,255,0.15)' }} />
+                  <span 
+                    style={{ 
+                      fontSize: '13px', 
+                      fontWeight: 800, 
+                      letterSpacing: '-0.02em',
+                      color: (data?.score?.value ?? 50) >= 70 ? '#34d399' : (data?.score?.value ?? 50) >= 40 ? '#fbbf24' : '#f43f5e'
+                    }}
+                  >
+                    %{data?.score?.value ?? 50}
+                  </span>
                 </div>
               </div>
 
@@ -327,7 +383,7 @@ const Home: React.FC = () => {
                     <IonIcon icon={flashOutline} />
                   </span>
                   <span className="ff-stat-value">{data.focus.minutes_today} dk</span>
-                  <span className="ff-stat-label">Bugün Odaklanma</span>
+                  <span className="ff-stat-label">Günlük Odaklanma</span>
                 </div>
                 <div className="ff-stat">
                   <span className="ff-stat-icon ff-icon-primary">

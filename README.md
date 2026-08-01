@@ -221,14 +221,14 @@ Backlog'umuz projenin öncelikli çalışan iskeletini (MVP) ayağa kaldıracak 
 
 ## 💬 Daily Scrum & İletişim Mimarisi
 
-Asenkron ve yazılı iletişimin kriz anlarında yavaş kalması ve takım içi senkronizasyonu zayıflatması sorunu kökten çözülmüştür. Bu verimsizliği kırmak adına Sprint 3 boyunca biri hafta içi, diğeri hafta sonu olmak üzere haftada 2 kez zorunlu, canlı ve odaklanmış Google Meet seansları düzenlenmiştir. Tüm teknik krizler bu canlı oturumlarda anlık aksiyonlarla çözülmüş, akran öğrenimi en üst seviyeye çıkarılmıştır: ![Daily Scrum](Project%20Management/Daily%20Scrum,%20Sprint%202)
+Asenkron ve yazılı iletişimin kriz anlarında yavaş kalması ve takım içi senkronizasyonu zayıflatması sorunu kökten çözülmüştür. Bu verimsizliği kırmak adına Sprint 3 boyunca biri hafta içi, diğeri hafta sonu olmak üzere haftada 2 kez zorunlu, canlı ve odaklanmış Google Meet seansları düzenlenmiştir. Tüm teknik krizler bu canlı oturumlarda anlık aksiyonlarla çözülmüş, akran öğrenimi en üst seviyeye çıkarılmıştır: ![Daily Scrum](Project%20Management/Daily%20Scrum,%20Sprint%203)
 
 
 ## 📊 Sprint Board Update & Ürün Durumu
 
 | 🔄 JIRA Sprint Board | 📱 Product Screenshot |
 | :--- | :--- |
-| [🔗 JIRA Sprint Board Görünümü](Project%20Management/Jira%20Board,%20Sprint2) | [🔗 UI Ürün Görünümü](UI%20Gallery/Sprint%202) |
+| [🔗 JIRA Sprint Board Görünümü](Project%20Management/Jira%20Board,%20Sprint3) | [🔗 UI Ürün Görünümü](UI%20Gallery/Sprint%203) |
 
 ## 🔎 Sprint Review
 

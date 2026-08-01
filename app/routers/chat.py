@@ -128,7 +128,7 @@ async def chat_with_ai(
         target_agent = routing["target_agent"]
 
         # 4. DİNAMİK BEYNİ ÇAĞIR (Cold Start & Tone + Anlık Durum Adaptation)
-        full_system_prompt = build_director_system_prompt(current_user, user_context)
+        full_system_prompt = build_director_system_prompt(current_user, user_context, db)
 
         # Açık görevleri BİR KEZ çekiyoruz (tekrar sorgu yapmamak için branch'lerde
         # tekrar kullanılacak). Intent ne olursa olsun, Director en azından kaç açık

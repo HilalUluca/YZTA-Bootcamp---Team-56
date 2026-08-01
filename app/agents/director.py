@@ -4,9 +4,11 @@ Kullanıcı durumunu analiz eder, dinamik prompt üretir ve mesajı doğru ajana
 """
 
 from typing import Dict, Any
+from sqlalchemy.orm import Session
 from app.models.user import User
 from app.schemas.task import UserContext
 from app.services.gamification import get_coach_tone
+from app.services.focus_service import get_focus_summary_text
 
 # AI'ın kullanıcının verdiği sözleri yakalaması için Function Calling aracı
 commitment_tool = {
@@ -31,7 +33,7 @@ commitment_tool = {
     }
 }
 
-def build_director_system_prompt(user: User, context: UserContext = None) -> str:
+def build_director_system_prompt(user: User, context: UserContext = None, db: Session = None) -> str:
     """
     User objesini ve anlık UserContext (mood, energy) verisini alır, 
     merkezi gamification mantığıyla dinamik Director Agent promptu üretir.
@@ -61,6 +63,12 @@ def build_director_system_prompt(user: User, context: UserContext = None) -> str
     # YZTA-93: Anlık Durum (Mood ve Energy) Entegrasyonu
     current_mood = context.mood if context and context.mood else "Bilinmiyor"
     current_energy = context.energy if context and context.energy else "Bilinmiyor"
+    
+    focus_summary = ""
+    if db:
+        focus_summary = get_focus_summary_text(db, user.id)
+    else:
+        focus_summary = "Odak verisi yüklenemedi."
     
     dynamic_persona = ""
     if context and context.persona:

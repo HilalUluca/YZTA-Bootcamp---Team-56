@@ -16,7 +16,7 @@ import {
   IonSpinner,
   IonText,
 } from '@ionic/react';
-import { sparklesOutline, alertCircleOutline, timeOutline } from 'ionicons/icons';
+import { sparklesOutline, alertCircleOutline, timeOutline, cafeOutline } from 'ionicons/icons';
 import api from '../services/api';
 
 interface DailyPlanProps {
@@ -27,10 +27,13 @@ interface DailyPlanProps {
 
 // AI'ın döndürdüğü çizelge elemanı
 interface ScheduleItem {
-  task_name: string;
-  category: string;
-  suggested_duration_minutes: number;
+  block_type?: string; // 'task' | 'break'
+  task_name?: string;
+  category?: string;
+  suggested_duration_minutes?: number;
   priority_score?: number;
+  suggestion?: string; // mola önerisi
+  duration_minutes?: number; // mola süresi
 }
 
 // Öncelik kategorisi → etiket + renk
@@ -78,31 +81,41 @@ const DailyPlan: React.FC<DailyPlanProps> = ({ isOpen, onClose, openTaskCount })
     setSchedule(null);
     setSummary('');
     setEmptyMessage('');
-    try {
-      const res = await api.post('/planner/daily-plan/', {
-        energy_level: energy,
-        available_hours: hours,
-      });
-      const data = res.data || {};
-      const sched: ScheduleItem[] = data.recommended_schedule || [];
-      setSummary(data.summary || '');
-      if (sched.length > 0) {
-        setSchedule(sched);
-      } else {
-        // Görev yoksa backend { message, plan: [] } döndürür
-        setEmptyMessage(data.message || 'Planlanacak açık görev bulunamadı.');
-        setSchedule([]);
+    
+    let attempt = 0;
+    let success = false;
+
+    while (attempt < 2 && !success) {
+      try {
+        const res = await api.post('/planner/daily-plan', {
+          energy_level: energy,
+          available_hours: hours,
+        }, { timeout: 30000 });
+        
+        const data = res.data || {};
+        const sched: ScheduleItem[] = data.recommended_schedule || [];
+        setSummary(data.summary || '');
+        if (sched.length > 0) {
+          setSchedule(sched);
+        } else {
+          // Görev yoksa backend { message, plan: [] } döndürür
+          setEmptyMessage(data.message || 'Planlanacak açık görev bulunamadı.');
+          setSchedule([]);
+        }
+        success = true;
+      } catch (err: any) {
+        attempt++;
+        if (attempt >= 2) {
+          const detail = err.response?.data?.detail;
+          setError(
+            typeof detail === 'string'
+              ? detail
+              : 'Plan oluşturulamadı. AI servisi şu an yanıt veremiyor olabilir, lütfen tekrar dene.'
+          );
+        }
       }
-    } catch (err: any) {
-      const detail = err.response?.data?.detail;
-      setError(
-        typeof detail === 'string'
-          ? detail
-          : 'Plan oluşturulamadı. AI servisi şu an yanıt veremiyor olabilir, lütfen tekrar dene.'
-      );
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const reset = () => {
@@ -220,7 +233,32 @@ const DailyPlan: React.FC<DailyPlanProps> = ({ isOpen, onClose, openTaskCount })
             ) : (
               <>
                 {schedule.map((item, i) => {
-                  const cat = categoryInfo(item.category);
+                  if (item.block_type === 'break') {
+                    return (
+                      <div
+                        key={i}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          background: 'rgba(var(--ion-color-success-rgb), 0.1)',
+                          border: '1px dashed var(--ion-color-success)',
+                          borderRadius: '14px',
+                          padding: '10px 14px',
+                          marginBottom: '10px',
+                          color: 'var(--ion-color-success)'
+                        }}
+                      >
+                        <IonIcon icon={cafeOutline} style={{ fontSize: '24px' }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>Mola Zamanı ({item.duration_minutes} dk)</div>
+                          <div style={{ fontSize: '13px' }}>{item.suggestion}</div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  const cat = categoryInfo(item.category || '');
                   return (
                     <div
                       key={i}

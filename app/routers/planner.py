@@ -112,7 +112,7 @@ async def create_daily_plan(
         {
             "title": task.title,
             "description": task.description or "Aciklama yok",
-            "deadline": task.due_date.isoformat() if task.due_date else "Belirlenmemis",
+            "priority": task.priority.value,
             "estimated_duration": task.estimated_minutes or 30,
         }
         for task in tasks
@@ -160,11 +160,10 @@ async def create_daily_plan(
             if duration <= 0:
                 continue
                 
-            cat_map = {3: "urgent_important", 2: "important", 1: "low"}
             fallback_schedule.append({
                 "block_type": "task",
                 "task_name": task.title,
-                "category": cat_map.get(get_prio_val(task), "low"),
+                "category": task.priority.value,
                 "suggested_duration_minutes": duration,
                 "priority_score": get_prio_val(task)
             })

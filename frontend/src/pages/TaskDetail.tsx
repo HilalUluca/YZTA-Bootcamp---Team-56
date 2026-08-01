@@ -14,7 +14,6 @@ import {
   IonSelect,
   IonSelectOption,
   IonIcon,
-  IonBadge,
   IonSpinner,
   IonText,
   IonToast,

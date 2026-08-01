@@ -141,6 +141,54 @@ export interface WeeklyReport {
   generated_at: string;
 }
 
+export interface FocusStatsSummary {
+  total_sessions: number;
+  total_focus_minutes: number;
+  total_focus_hours: number;
+  avg_productivity_rating: number;
+  current_level: number;
+  total_xp: number;
+}
+
+export interface HabitStatsSummary {
+  total_habits: number;
+  completed_today_count: number;
+  completion_rate_today: number;
+  longest_streak: number;
+}
+
+export interface MoodTrendPoint {
+  date: string;
+  value: number;
+  label: 'great' | 'good' | 'neutral' | 'low' | 'bad' | string;
+}
+
+export interface EnergyTrendPoint {
+  date: string;
+  value: number;
+}
+
+export interface SentimentSummary {
+  label: 'positive' | 'neutral' | 'negative' | string;
+  score: number;
+}
+
+export interface ReflectionAnalysis {
+  period: string;
+  total_reflections: number;
+  mood_trend: {
+    average: number;
+    direction: string;
+    data: MoodTrendPoint[];
+  };
+  energy_trend: {
+    average: number;
+    data: EnergyTrendPoint[];
+  };
+  sentiment_summary: SentimentSummary | string | null;
+  recommendation: string;
+}
+
 // --- Rozetler (YZTA-120) ---
 
 export interface BadgeCatalogItem {

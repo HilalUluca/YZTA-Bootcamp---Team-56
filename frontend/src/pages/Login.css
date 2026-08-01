@@ -1,0 +1,359 @@
+/* Login / Kayıt ekranı.
+   Düzen ekteki papağanlı mock'a göre; GÖRSEL DİL ise uygulamanın geri kalanıyla
+   (Aurora tasarım sistemi) aynı: aurora arka plan, cam kart, gradyan buton,
+   --ff-* token'ları. Böylece açık/koyu mod tek kaynaktan (design-system.css)
+   gelir ve ekran diğer sayfalardan kopuk durmaz. */
+
+.lp-wrap {
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 8px 20px 32px;
+}
+
+/* --- Kahraman bölümü (başlık + papağan) --- */
+.lp-hero {
+  text-align: center;
+  padding-top: 10px;
+}
+
+.lp-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--ff-font);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ion-color-secondary);
+  letter-spacing: 0.1px;
+}
+
+.lp-brand ion-icon {
+  font-size: 17px;
+}
+
+.lp-hero .lp-title {
+  font-family: var(--ff-font);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ff-text);
+  margin: 12px 0 8px;
+  line-height: 1.18;
+}
+
+.lp-hero .lp-sub {
+  color: var(--ff-text-muted);
+  font-size: 15px;
+  line-height: 1.45;
+  margin: 0 auto;
+  max-width: 340px;
+}
+
+/* Görsel 768x1376 — çok uzun/dikey ve alt-üstünde bol şeffaf boşluk var
+   (alpha taramasıyla: üstte %26.5 boş, papağan %26.5–89.2, pençeler ~%84).
+   Papağanı kartın üstüne "tünüyormuş" gibi göstermek için sahnede iki katman
+   kullanıyoruz; kart bu ikisinin arasına (z-index) giriyor. */
+.lp-hero-stage {
+  max-width: 320px;
+  /* Kart bindirmesiz (margin-bottom 0): ana papağan tam kart hizasında kesiliyor,
+     böylece yarı saydam kartın ARKASINA papağan sızmıyor. Talon uçlarını yalnızca
+     öndeki pençe katmanı (z2) kartın üstüne taşırıyor → temiz tünüme.
+     Küçük negatif alt marj: kart, papağanın kesildiği çizgiye tam otursun
+     (cream boşluk kalmasın), ama bindirme olmadığı için sızıntı da olmaz. */
+  margin: 0 auto -6px;
+  position: relative;
+}
+
+/* Katman 1 — tam papağan (kartın ARKASINDA). overflow:hidden ile boş alan kırpılır. */
+.lp-parrot-wrap {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  z-index: 0;
+}
+
+.lp-parrot {
+  width: 100%;
+  height: auto;
+  display: block;
+  /* % marjlar GENİŞLİĞE göre → üst boşluğu kırp (papağan metne yaklaşsın),
+     altta ise KUYRUĞU da kırp: pençeler görselin ~%64'ünde, kuyruk aşağı
+     sarkıyor. Kartın gerçek pençe hizasına gelmesi için alttan bolca kırpıyoruz;
+     kuyruk kartın arkasında/altında kalır (tünüme). */
+  margin-top: -42%;
+  margin-bottom: -70%;   /* alt kısım tam pençe/talon hizasında kesilir (kuyruk gizli) */
+}
+
+/* Katman 2 — sadece ayak/pençe bandı (kartın ÖNÜNDE). Aynı görsel, aynı hizada;
+   clip-path ile yalnızca pençeler görünür. Böylece pençe uçları kutunun önüne
+   taşar, gövde ve kuyruk arkada kalır → "tünüme" hissi. */
+.lp-feet-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 2;             /* kart z-index:1 → pençeler kartın önünde */
+  pointer-events: none;
+}
+
+.lp-parrot--feet {
+  margin-top: -42%;       /* ana papağanla BİREBİR aynı hiza */
+  margin-bottom: 0;
+  /* yalnızca pençe/talon kutusu (ölçüldü: y %56.5–64.2, x %47–65). Dar tutuyoruz
+     ki yanındaki teal tüyler kartın önüne taşmasın. */
+  clip-path: inset(57% 37% 34% 47%);
+}
+
+/* --- Form kartı: uygulamanın cam yüzeyi (.ff-card ile aynı dil) --- */
+.lp-card {
+  position: relative;
+  z-index: 1; /* papağanın alt kısmının üzerine binsin */
+  background: var(--ff-glass-bg);
+  backdrop-filter: var(--ff-glass-blur);
+  -webkit-backdrop-filter: var(--ff-glass-blur);
+  border: 1px solid var(--ff-glass-border);
+  border-radius: var(--ff-r-lg);
+  box-shadow: var(--ff-shadow-md);
+  padding: 22px 18px;
+  overflow: hidden;
+}
+
+/* Üst kenar ışık çizgisi — .ff-card ile tutarlı */
+.lp-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  pointer-events: none;
+}
+
+.lp-label {
+  display: block;
+  font-family: var(--ff-font);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ff-text);
+  margin: 0 0 7px 4px;
+}
+
+.lp-field-gap {
+  margin-bottom: 15px;
+}
+
+/* Girdi hücresi: sol ikon + input + (opsiyonel) göz butonu */
+.lp-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--ff-fill-soft);
+  border: 1.5px solid var(--ff-glass-border);
+  border-radius: var(--ff-r-md);
+  padding: 0 14px;
+  height: 52px;
+  transition: border-color 0.15s ease;
+}
+
+.lp-field:focus-within {
+  border-color: var(--ion-color-primary);
+}
+
+.lp-field .lp-lead-icon {
+  font-size: 20px;
+  color: var(--ff-text-muted);
+  flex-shrink: 0;
+}
+
+.lp-field .lp-input {
+  flex: 1;
+  --background: transparent;
+  --color: var(--ff-text);
+  --placeholder-color: var(--ff-text-muted);
+  --placeholder-opacity: 1;
+  --padding-start: 0;
+  --padding-end: 0;
+  font-family: var(--ff-font);
+  font-size: 15px;
+}
+
+.lp-eye {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--ff-text-muted);
+}
+
+.lp-eye ion-icon {
+  font-size: 20px;
+}
+
+.lp-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--ff-text-muted);
+  margin: 6px 0 0 4px;
+}
+
+/* --- Onay kutusu --- */
+.lp-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 6px 0 18px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.lp-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  border: 2px solid var(--ff-glass-border);
+  background: var(--ff-fill-soft);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  transition: all 0.15s ease;
+}
+
+.lp-check.is-checked {
+  background: var(--ion-color-primary);
+  border-color: var(--ion-color-primary);
+}
+
+.lp-check ion-icon {
+  font-size: 15px;
+  color: var(--ion-color-primary-contrast);
+}
+
+.lp-terms-text {
+  font-size: 13.5px;
+  color: var(--ff-text-muted);
+  line-height: 1.4;
+}
+
+.lp-terms-text b {
+  color: var(--ion-color-secondary);
+  font-weight: 600;
+}
+
+/* --- Ana buton: uygulamanın gradyan primary butonu (.ff-btn dili) --- */
+.lp-primary {
+  position: relative;
+  width: 100%;
+  height: 53px;
+  border: none;
+  border-radius: var(--ff-r-pill);
+  background: var(--ff-grad-primary);
+  color: #fff;
+  font-family: var(--ff-font);
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--ff-shadow-glow);
+  transition: transform 0.32s var(--ff-spring), box-shadow 0.3s ease, opacity 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lp-primary:active {
+  transform: scale(0.965);
+  box-shadow: var(--ff-shadow-sm);
+}
+
+.lp-primary:disabled {
+  opacity: 0.45;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.lp-primary .lp-arrow {
+  position: absolute;
+  right: 18px;
+  font-size: 20px;
+}
+
+/* --- "veya" ayıracı --- */
+.lp-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: var(--ff-text-muted);
+  font-size: 13px;
+}
+
+.lp-divider::before,
+.lp-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--ff-glass-border);
+}
+
+/* --- Sosyal butonlar (Google / Apple) — cam ghost dili --- */
+.lp-social {
+  width: 100%;
+  height: 51px;
+  border-radius: var(--ff-r-pill);
+  border: 1px solid var(--ff-glass-border);
+  background: var(--ff-glass-bg);
+  backdrop-filter: var(--ff-glass-blur);
+  -webkit-backdrop-filter: var(--ff-glass-blur);
+  color: var(--ff-text);
+  font-family: var(--ff-font);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 11px;
+  box-shadow: var(--ff-shadow-sm);
+  transition: transform 0.2s var(--ff-spring), filter 0.15s ease;
+}
+
+.lp-social:active {
+  transform: scale(0.98);
+}
+
+.lp-social ion-icon {
+  font-size: 20px;
+}
+
+.lp-social .lp-google {
+  color: #ea4335;
+}
+
+.lp-social .lp-apple {
+  color: var(--ff-text);
+}
+
+/* --- Alt geçiş linki --- */
+.lp-switch {
+  text-align: center;
+  margin-top: 22px;
+  font-size: 14px;
+  color: var(--ff-text-muted);
+}
+
+.lp-switch button {
+  background: none;
+  border: none;
+  padding: 0 0 0 4px;
+  font-family: var(--ff-font);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ion-color-secondary);
+  cursor: pointer;
+}

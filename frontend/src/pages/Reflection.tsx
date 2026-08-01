@@ -17,6 +17,10 @@ import {
 } from '@ionic/react';
 import { checkmarkCircle } from 'ionicons/icons';
 import api from '../services/api';
+import forgeAvatar from '../assets/hmsc/circular-parrot-avatar.jpg';
+import reflectionIcon from '../assets/hmsc/coral-reflection-icon.jpg';
+import leafDecoration from '../assets/hmsc/leaf-tropical-cluster.jpg';
+import './Reflection.css';
 
 // Backend MoodLevel değerleri: bad, low, neutral, good, great (kötü → iyi)
 const MOODS = [
@@ -82,7 +86,7 @@ const Reflection: React.FC<ReflectionProps> = ({ isOpen, onClose, existing, onSa
       notify('Yansıman kaydedildi ✅ (+25 XP)');
       onSaved(res.data);
       onClose();
-    } catch (err) {
+    } catch {
       notify('Yansıma kaydedilemedi. Lütfen tekrar dene.');
     } finally {
       setSaving(false);
@@ -93,20 +97,25 @@ const Reflection: React.FC<ReflectionProps> = ({ isOpen, onClose, existing, onSa
   const showSummary = !!existing && !editing;
 
   return (
-    <IonModal isOpen={isOpen} onDidDismiss={onClose}>
-      <IonHeader>
-        <IonToolbar color="primary">
+    <IonModal isOpen={isOpen} onDidDismiss={onClose} className="reflection-modal">
+      <IonHeader className="reflection-header">
+        <IonToolbar className="reflection-toolbar">
           <IonButtons slot="start">
-            <IonButton onClick={onClose}>Kapat</IonButton>
+            <IonButton onClick={onClose} className="reflection-close">Kapat</IonButton>
           </IonButtons>
           <IonTitle>Günlük Yansıma</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent className="ion-padding" style={{ '--background': 'var(--ion-background-color)' }}>
+      <IonContent className="reflection-content">
+        <div className="reflection-shell">
         {showSummary ? (
           /* ---------- Bugün tamamlandı: ÖZET ---------- */
-          <div style={{ textAlign: 'center' }}>
+          <div className="reflection-summary">
+            <div className="reflection-summary-avatar">
+              <img src={forgeAvatar} alt="Forge maskotu" />
+              <IonIcon icon={checkmarkCircle} />
+            </div>
             <IonIcon
               icon={checkmarkCircle}
               style={{ fontSize: '64px', color: 'var(--ion-color-tertiary)', marginTop: '16px' }}
@@ -145,9 +154,20 @@ const Reflection: React.FC<ReflectionProps> = ({ isOpen, onClose, existing, onSa
           </div>
         ) : (
           /* ---------- Form ---------- */
-          <>
-            <h2 style={{ fontWeight: 'bold', marginTop: '8px' }}>Bugün nasıl hissediyorsun?</h2>
-            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '12px 0 24px 0' }}>
+          <div className="reflection-form">
+            <section className="reflection-intro">
+              <img className="reflection-intro-leaf" src={leafDecoration} alt="" aria-hidden="true" />
+              <div className="reflection-intro-copy">
+                <span><img src={reflectionIcon} alt="" aria-hidden="true" /> Günlük check-in</span>
+                <h1>Bugün nasıl hissediyorsun?</h1>
+                <p>Kendine bir dakika ayır ve gününü Forge ile değerlendir.</p>
+              </div>
+              <img className="reflection-intro-forge" src={forgeAvatar} alt="FocusForge maskotu Forge" />
+            </section>
+
+            <section className="reflection-card">
+              <div className="reflection-section-heading"><span>01</span><div><h2>Ruh halin</h2><p>Sana en yakın olanı seç</p></div></div>
+              <div className="reflection-moods">
               {MOODS.map((m) => {
                 const selected = mood === m.value;
                 return (
@@ -155,26 +175,20 @@ const Reflection: React.FC<ReflectionProps> = ({ isOpen, onClose, existing, onSa
                     key={m.value}
                     type="button"
                     onClick={() => setMood(m.value)}
-                    style={{
-                      background: selected ? 'rgba(var(--ion-color-primary-rgb), 0.15)' : 'transparent',
-                      border: selected ? '2px solid var(--ion-color-primary)' : '2px solid transparent',
-                      borderRadius: '14px',
-                      padding: '6px 4px',
-                      cursor: 'pointer',
-                      flex: 1,
-                      margin: '0 2px',
-                      transition: 'all 0.15s',
-                    }}
+                    className={`reflection-mood ${selected ? 'is-selected' : ''}`}
+                    aria-pressed={selected}
                   >
-                    <div style={{ fontSize: '28px' }}>{m.emoji}</div>
-                    <div style={{ fontSize: '10px', color: 'var(--ion-color-medium)', marginTop: '2px' }}>{m.label}</div>
+                    <span>{m.emoji}</span>
+                    <small>{m.label}</small>
                   </button>
                 );
               })}
-            </div>
+              </div>
+            </section>
 
-            <h2 style={{ fontWeight: 'bold' }}>Enerji seviyen</h2>
-            <IonItem lines="none" style={{ '--background': 'transparent' }}>
+            <section className="reflection-card">
+              <div className="reflection-section-heading reflection-energy-heading"><span>02</span><div><h2>Enerji seviyen</h2><p>1 sakin, 5 oldukça enerjik</p></div><strong>{energy}/5</strong></div>
+            <IonItem lines="none" className="reflection-range-item">
               <IonRange
                 min={1}
                 max={5}
@@ -184,17 +198,17 @@ const Reflection: React.FC<ReflectionProps> = ({ isOpen, onClose, existing, onSa
                 pin
                 value={energy}
                 onIonInput={(e) => setEnergy(e.detail.value as number)}
-                style={{ paddingInline: 0 }}
+                className="reflection-range"
               >
                 <IonLabel slot="start">1</IonLabel>
                 <IonLabel slot="end">5</IonLabel>
               </IonRange>
             </IonItem>
-            <p style={{ textAlign: 'center', margin: '0 0 16px 0', color: 'var(--ion-color-medium)' }}>
-              Enerji: <b style={{ color: 'var(--ion-text-color)' }}>{energy}/5</b>
-            </p>
+            </section>
 
-            <IonItem style={{ marginBottom: '16px', borderRadius: '12px' }}>
+            <section className="reflection-card reflection-writing">
+              <div className="reflection-section-heading"><span>03</span><div><h2>Kısa notların</h2><p>Bu alanları istersen boş bırakabilirsin</p></div></div>
+            <IonItem className="reflection-text-field" lines="none">
               <IonLabel position="stacked">Bugün ne iyi gitti?</IonLabel>
               <IonTextarea
                 value={wins}
@@ -204,7 +218,7 @@ const Reflection: React.FC<ReflectionProps> = ({ isOpen, onClose, existing, onSa
               />
             </IonItem>
 
-            <IonItem style={{ marginBottom: '24px', borderRadius: '12px' }}>
+            <IonItem className="reflection-text-field" lines="none">
               <IonLabel position="stacked">Yarın ne değiştirirsin?</IonLabel>
               <IonTextarea
                 value={improvements}
@@ -213,16 +227,17 @@ const Reflection: React.FC<ReflectionProps> = ({ isOpen, onClose, existing, onSa
                 onIonInput={(e) => setImprovements(e.detail.value!)}
               />
             </IonItem>
+            </section>
 
             <IonButton
               expand="block"
               onClick={handleSave}
               disabled={saving}
-              style={{ '--border-radius': '25px', height: '50px', fontWeight: 'bold' }}
+              className="reflection-save-button"
             >
-              {saving ? 'Kaydediliyor...' : 'Kaydet'}
+              {saving ? 'Kaydediliyor...' : 'Yansımamı Kaydet'}
             </IonButton>
-          </>
+          </div>
         )}
 
         <IonToast
@@ -231,6 +246,7 @@ const Reflection: React.FC<ReflectionProps> = ({ isOpen, onClose, existing, onSa
           message={toastMessage}
           duration={2500}
         />
+        </div>
       </IonContent>
     </IonModal>
   );

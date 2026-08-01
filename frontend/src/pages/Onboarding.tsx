@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import {
   IonButton,
-  IonButtons,
   IonChip,
   IonContent,
   IonHeader,
@@ -23,6 +22,10 @@ import {
 import { add, arrowBack, arrowForward, checkmarkCircle, close } from 'ionicons/icons';
 import { completeOnboarding } from '../services/authService';
 import type { OnboardingData, User } from '../services/types';
+import forgeThinking from '../assets/forge-thinking.png';
+import forgeNeutral from '../assets/forge-neutral.png';
+import forgeHappy from '../assets/forge-happy.png';
+import './Onboarding.css';
 
 interface OnboardingProps {
   /** Onboarding tamamlanınca güncel kullanıcıyla çağrılır. */
@@ -53,6 +56,13 @@ const TECHNIQUES: { value: string; label: string }[] = [
 ];
 
 const TOTAL_STEPS = 4;
+
+const STEP_MESSAGES = [
+  'Seni biraz tanıyayım; böylece önerilerimi sana göre şekillendirebilirim.',
+  'Nasıl konuşmamı istediğini seç, aynı ekiptenmişiz gibi ilerleyelim.',
+  'Günlük düzenini öğrenirsem sana daha gerçekçi öneriler sunabilirim.',
+  'Harika gidiyorsun! Son olarak ulaşmak istediğin hedefleri birlikte netleştirelim.',
+];
 
 /** Etikete (chip) dayalı liste alanı: yaz, Ekle'ye bas, sil. */
 const ListField: React.FC<{
@@ -163,23 +173,42 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   const back = () => setStep((s) => Math.max(0, s - 1));
 
   const stepTitles = ['Seni tanıyalım', 'Üslup & kişilik', 'Alışkanlıkların', 'Hedeflerin'];
+  const mascotSrc =
+    step === 0 ? forgeThinking : step === TOTAL_STEPS - 1 ? forgeHappy : forgeNeutral;
+  const mascotState =
+    step === 0 ? 'is-thinking' : step === TOTAL_STEPS - 1 ? 'is-happy' : 'is-neutral';
 
   return (
-    <IonPage>
-      <IonHeader>
-        <IonToolbar color="primary">
+    <IonPage className="onboarding-page">
+      <IonHeader className="onboarding-header">
+        <IonToolbar>
           <IonTitle>Profilini Oluştur</IonTitle>
         </IonToolbar>
         <IonProgressBar value={progress} />
       </IonHeader>
 
-      <IonContent className="ion-padding" style={{ '--background': 'var(--ion-background-color)' }}>
-        <div style={{ maxWidth: '520px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', margin: '8px 0 20px' }}>
+      <IonContent className="onboarding-content">
+        <div className="onboarding-shell">
+          <aside className={`onboarding-forge-card ${step === TOTAL_STEPS - 1 ? 'is-happy' : ''}`}>
+            <div className="onboarding-mascot-frame" aria-hidden="true">
+              <img
+                src={mascotSrc}
+                alt=""
+                className={`onboarding-mascot ${mascotState}`}
+              />
+            </div>
+            <div className="onboarding-forge-copy">
+              <span className="onboarding-forge-name">Forge</span>
+              <p>{STEP_MESSAGES[step]}</p>
+            </div>
+          </aside>
+
+          <main className="onboarding-form-card ff-card">
+            <div className="onboarding-step-heading">
             <IonText color="medium" style={{ fontSize: '13px' }}>
               Adım {step + 1} / {TOTAL_STEPS}
             </IonText>
-            <h2 style={{ margin: '4px 0 0', color: 'var(--ion-color-primary)', fontWeight: 800 }}>
+            <h2>
               {stepTitles[step]}
             </h2>
             <IonText color="medium" style={{ fontSize: '13px' }}>
@@ -190,7 +219,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
           {/* Adım 1 — Kim olduğun */}
           {step === 0 && (
             <>
-              <IonItem lines="full" style={{ marginBottom: '16px', borderRadius: '12px' }}>
+              <IonItem lines="full" className="onboarding-field">
                 <IonLabel position="stacked">Kendini birkaç cümleyle anlat</IonLabel>
                 <IonTextarea
                   value={aboutMe}
@@ -199,7 +228,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   onIonInput={(e) => setAboutMe(e.detail.value ?? '')}
                 />
               </IonItem>
-              <IonItem lines="full" style={{ marginBottom: '16px', borderRadius: '12px' }}>
+              <IonItem lines="full" className="onboarding-field">
                 <IonLabel position="stacked">Meslek / odak alanı</IonLabel>
                 <IonInput
                   value={profession}
@@ -207,7 +236,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   onIonInput={(e) => setProfession(e.detail.value ?? '')}
                 />
               </IonItem>
-              <IonItem lines="full" style={{ borderRadius: '12px' }}>
+              <IonItem lines="full" className="onboarding-field">
                 <IonLabel position="stacked">Yaş</IonLabel>
                 <IonInput
                   type="number"
@@ -224,7 +253,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
           {/* Adım 2 — Üslup & kişilik */}
           {step === 1 && (
             <>
-              <IonItem lines="full" style={{ marginBottom: '16px', borderRadius: '12px' }}>
+              <IonItem lines="full" className="onboarding-field">
                 <IonLabel position="stacked">Genel olarak nasıl birisin?</IonLabel>
                 <IonTextarea
                   value={personality}
@@ -233,7 +262,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   onIonInput={(e) => setPersonality(e.detail.value ?? '')}
                 />
               </IonItem>
-              <IonItem lines="full" style={{ borderRadius: '12px' }}>
+              <IonItem lines="full" className="onboarding-field">
                 <IonLabel position="stacked">Koçun sana nasıl bir üslupla seslensin?</IonLabel>
                 <IonSelect
                   value={commStyle}
@@ -259,7 +288,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                 items={hobbies}
                 onChange={setHobbies}
               />
-              <IonItem lines="full" style={{ marginBottom: '16px', borderRadius: '12px' }}>
+              <IonItem lines="full" className="onboarding-field">
                 <IonLabel position="stacked">Uyku düzenin (saat / süre)</IonLabel>
                 <IonInput
                   value={sleep}
@@ -267,7 +296,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   onIonInput={(e) => setSleep(e.detail.value ?? '')}
                 />
               </IonItem>
-              <IonItem lines="full" style={{ marginBottom: '16px', borderRadius: '12px' }}>
+              <IonItem lines="full" className="onboarding-field">
                 <IonLabel position="stacked">Seni en çok zorlayan ne?</IonLabel>
                 <IonSelect
                   value={challenge}
@@ -281,7 +310,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   ))}
                 </IonSelect>
               </IonItem>
-              <IonItem lines="full" style={{ borderRadius: '12px' }}>
+              <IonItem lines="full" className="onboarding-field">
                 <IonLabel position="stacked">Tercih ettiğin çalışma tekniği</IonLabel>
                 <IonSelect
                   value={technique}
@@ -323,9 +352,9 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
           )}
 
           {/* Gezinme butonları */}
-          <div style={{ display: 'flex', gap: '12px', marginTop: '28px' }}>
+          <div className="onboarding-actions">
             {step > 0 && (
-              <IonButton fill="outline" color="medium" onClick={back} style={{ '--border-radius': '25px' }}>
+              <IonButton fill="outline" color="medium" onClick={back} className="onboarding-back">
                 <IonIcon slot="start" icon={arrowBack} />
                 Geri
               </IonButton>
@@ -333,7 +362,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             <IonButton
               expand="block"
               onClick={next}
-              style={{ flex: 1, '--border-radius': '25px', height: '50px', fontWeight: 'bold' }}
+              className="onboarding-next"
             >
               {step < TOTAL_STEPS - 1 ? (
                 <>
@@ -350,7 +379,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
           </div>
 
           {step < TOTAL_STEPS - 1 && (
-            <div style={{ textAlign: 'center', marginTop: '12px' }}>
+            <div className="onboarding-skip">
               <IonText
                 color="medium"
                 style={{ cursor: 'pointer', fontSize: '13px' }}
@@ -360,6 +389,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
               </IonText>
             </div>
           )}
+          </main>
         </div>
 
         <IonLoading isOpen={isSaving} message="Profilin oluşturuluyor..." />

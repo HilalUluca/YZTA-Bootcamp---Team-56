@@ -48,85 +48,90 @@
 <summary><b>📝 Ürün Açıklaması & Yol Haritası</b></summary>
 <br>
 
-**Yapay Zeka Destekli Otonom Performans ve Alışkanlık Yönetimi Mimarisi**
+# 🚀 FocusForge — Yapay Zeka Destekli Otonom Yaşam ve Alışkanlık Mimarisi
 
-**FocusForge;** uzaktan çalışan profesyoneller, indie geliştiriciler ve disiplin inşa etmeye çalışan bireyler için tasarlanmış **proaktif ve otonom bir verimlilik platformudur.** Geleneksel "To-Do" uygulamaları, kullanıcının girdiği görevleri pasif bir şekilde listeler ve suçluluk duygusunu besler. FocusForge ise bir liste değil; kullanıcının dijital ayak iziyle anlık duygu durumunu **semantik olarak birleştiren Rasyonel bir Strateji Ortağıdır (Director Agent).** Sistem; kullanıcının uyku, ekran süresi ve tamamlanma oranları gibi verilerini analiz eder, erteleme davranışlarının altındaki kök sebepleri otonom olarak çözer ve büyük projeleri zihinsel yük yaratmayacak eylemlere (Tool Calling) böler. "Neden yapmadın?" diye sormaz; "Bu eylemsizlik seni hedefinden matematiksel olarak şu kadar saptırıyor, şimdi şu 15 dakikalık adımı at" diyerek eyleme geçirir.
+> *"projelerin değil, insanın sürdürülebilirliği."*
 
+**FocusForge;** uzaktan çalışan profesyoneller, indie geliştiriciler ve disiplin inşa etmeye çalışan bireyler için tasarlanmış **proaktif ve otonom bir yaşam mimarisidir.** Geleneksel "To-Do" uygulamaları, kullanıcının girdiği görevleri pasif bir şekilde listeler ve suçluluk duygusunu besler. FocusForge ise bir liste yönetimi aracı değil; kullanıcının dijital ayak izini, uyku düzenini, ekran süresini ve anlık duygu durumunu **semantik olarak birleştiren Rasyonel bir Strateji Ortağıdır (Director Agent).** 
 
-* **Dual-Track (Çift Yönlü) Veritabanı Mimarisi:** Görevler (`Must-Do`) ve sürekli alışkanlıklar (`Habit`) veritabanı seviyesinde birbirinden ayrılır. 
+Sistem; kullanıcının biyolojik kapasitesi ile hedeflenen iş yükü arasındaki uyumsuzlukları analiz eder, erteleme davranışlarının (konfor alanı kaçışları) altındaki kök sebepleri otonom olarak çözer ve büyük hedefleri zihinsel yük yaratmayacak mikro adımlara (Tool Calling) böler. "Neden yapmadın?" diye suçlamaz; *"Bu eylemsizlik seni hedefinden matematiksel olarak şu kadar saptırıyor, şimdi konfor alanını kır"* diyerek rasyonel bir ayna tutar.
+
+---
+
+## 🏛️ Temel Mimari Özellikler
+
+* **Dual-Track (Çift Yönlü) Veritabanı Mimarisi:** Görevler (`Must-Do`) ve sürekli yaşam alışkanlıkları (`Habit` - su içmek, diş fırçalamak vb.) veritabanı seviyesinde birbirinden ayrılır. 
 * **Mood & Habit Tracker:** Sistem, her gün kullanıcının modunu, enerji seviyesini ve geliştirmek istediği alışkanlıklarını takip eder. Bu veriler, kullanıcının "Sorumluluk Skoru" ile eşleştirilerek, hangi günlerde daha üretken olduğunu gösteren semantik bir korelasyon matrisi oluşturur.
-* **Kurban Psikolojisine Karşı Semantik Yüzleşme:** Sistem, kullanıcıyı sahte bir şekilde motive etmeye çalışmaz. Kullanıcının günlük mod bildirimlerini ve biyolojik verilerini (uyku/ekran süresi) semantik olarak analiz ederek darboğazları tespit eder. Ertelemenin maliyetini rasyonel bir şekilde önüne koyar.
-* **Sorumluluk Skoru (Gamification):** Kullanıcının sistemle kurduğu ilişkinin istikrarı, geciken görevleri ve tamamlanan alışkanlıkları dinamik bir algoritmaya tabi tutularak matematiksel bir "Sorumluluk Skoru" (0-100) üretir.
+* **Kurban Psikolojisine Karşı Rasyonel Yüzleşme:** Sistem, kullanıcıyı sahte bir şekilde motive etmeye çalışmaz. Kullanıcının günlük mod bildirimlerini ve biyolojik verilerini (uyku / ekran süresi) semantik olarak analiz ederek darboğazları tespit eder. Ertelemenin maliyetini rasyonel bir şekilde önüne koyar.
+* **Sorumluluk Skoru & Integrity Check (Gamification):** Kullanıcının sistemle kurduğu ilişkinin istikrarı; geciken görevleri, verilen sözleri ve tamamlanan alışkanlıkları dinamik bir algoritmaya tabi tutularak matematiksel bir "Sorumluluk Skoru" (0-100) üretir. Sahte "tamamlandı" beyanlarını dijital ayak iziyle çapraz okuyarak öz-aldatmayı engeller.
+
+---
 
 ### 🗺️ Üç Aşamalı Genişleme Stratejisi (Roadmap)
 
 #### Faz 1: B2C Bireysel Asistan MVP (Mevcut Aşama)
 * **Hibrit UI ve Agentic Akış:** Kullanıcının Director (AI) ile sohbet ettiği ve AI'ın arkada `break_down_task` aracıyla büyük işleri parçalayıp chatin içine onaylanabilir interaktif UI Widget'ları (Checklist Kartları) gönderdiği temel yapı.
-* **Günlük Mod ve Alışkanlık Takibi:** Kullanıcının günlük enerji ve mod girişlerini veritabanına işleyen `Habit` modülünün entegrasyonu.
+* **Günlük Mod ve Alışkanlık Takibi:** Kullanıcının günlük enerji, su içme, uyku ve mod girişlerini veritabanına işleyen `Habit` modülünün entegrasyonu.
 * **LLM Destekli Önceliklendirme:** Kullanıcının görev havuzunun arka planda LLM (Büyük Dil Modeli) ile analiz edilip otomatik Eisenhower sınıflandırmasına tabi tutulması.
 
-#### Faz 2: Sensör ve İşletim Sistemi Entegrasyonları (Proaktif Müdahale)
-* **Bağlamsal Veri Akışı:** Kullanıcının mobil cihazından veya akıllı saatinden gelen (Apple Health / Google Fit / OS Screen Time) API'lerinin sisteme entegrasyonu.
-* **Otonom Tetikleyiciler:** Ekran süresi kritik eşiği aştığında veya biyolojik verilerde yorgunluk saptandığında, uygulamanın otonom bildirimler (Push Notifications) üreterek kullanıcının dijital döngüsünü kırması. Stres anlarında tetiklenen otonom nefes egzersizi öneri modülleri.
+#### Faz 2: Sensör ve Sağlık/İşletim Sistemi Entegrasyonları (Proaktif Müdahale)
+* **Bağlamsal Veri Akışı:** Kullanıcının mobil cihazından veya akıllı saatinden gelen (Apple Health / Google Fit / OS Screen Time) API'lerinin sisteme entegrasyonu (Uyku süresi, biyolojik onarım takibi).
+* **Otonom Tetikleyiciler:** Ekran süresi kritik eşiği aştığında veya uyku 4 saatin altına düştüğünde, uygulamanın otonom bildirimler üreterek kullanıcının dijital döngüsünü kırması. Stres ve tükenmişlik anlarında tetiklenen otonom nefes ve mola öneri modülleri.
 
 #### Faz 3: B2B Kurumsal Entegrasyon (Tükenmişlik ve Performans Yönetimi)
-* **Sessiz İstifa (Quiet Quitting) Kalkanı:**   Yazılım ve mühendislik ekipleri için Jira ve Slack API entegrasyonları.
-* **Erken Uyarı Dashboard'u:** Takım içindeki iş yükü dağılımının ve bireysel tükenmişlik emarelerinin (sistemde uzun süre eylemsizlik vb.) yöneticilere anonimleştirilmiş, semantik veri raporları olarak sunulması.
+* **Sessiz İstifa (Quiet Quitting) Kalkanı:** Yazılım ve mühendislik ekipleri için Jira ve Slack API entegrasyonları ile iş yükü ve tükenmişlik analizi.
+* **Erken Uyarı Dashboard'u:** Takım içindeki iş yükü dağılımının ve bireysel tükenmişlik emarelerinin yöneticilere anonimleştirilmiş, semantik veri raporları olarak sunulması.
 
-</details>
+---
+
+## 🔌 API Endpoint Mimarisi
 
 <details>
-<summary><b>✨ Mevcut Ürün Özellikleri ve API Endpoint'leri </b></summary>
-<br>
+<summary><b>Auth & Kullanıcı Yönetimi</b></summary>
 
-*   **Akıllı Görev Yönetimi (Temel CRUD API):** Kullanıcıların günlük hedeflerini ekleme, silme, düzenleme ve tamamlama süreçlerinin backend entegrasyonu.
-*   **Yapay Zeka Koçu Entegrasyonu:** Google Gemini API bağlantısı koordine edilerek, kullanıcının motivasyon durumuna göre stratejik, net ve proaktif geri bildirimler üreten ilk istem (prompt) şablonlarının altyapısının kurulması.
-*   **Güvenli Kullanıcı Yönetimi (Auth):** Projenin iskeletini oluşturan şifreli kullanıcı kayıt ve giriş sisteminin FastAPI mimarisinde ayağa kaldırılması.
-
-### 🔌 API Endpoint'leri
-**Auth & Kullanıcı**
 - `POST /api/auth/register` : Yeni kullanıcı kaydı
 - `POST /api/auth/login` : Kullanıcı girişi (JWT Token)
 - `GET /api/auth/me` : Mevcut kullanıcı bilgilerini getir
 - `PATCH /api/auth/profile` : Kullanıcı AI profilini güncelle (Onboarding)
+</details>
 
-**Görev Yönetimi & Planlama**
+<details>
+<summary><b>Görev, Alışkanlık & Planlama</b></summary>
+
 - `GET /api/tasks/` : Görevleri listele
 - `POST /api/tasks/` : Yeni görev ekle
 - `PUT /api/tasks/{task_id}` : Görev güncelle
 - `DELETE /api/tasks/{task_id}` : Görev sil
 - `POST /api/planner/daily-plan` : AI ile günlük plan oluştur
 - `POST /api/planner/bulk-create` : Toplu görev oluşturma (parçalama sonrası)
-
-**Odaklanma & Yansıma & İstatistik**
-- `POST /api/focus/start` & `end` : Odaklanma seansları
-- `POST /api/reflections/` : Günlük yansıma (mod ve enerji) kaydı
-- `GET /api/stats/dashboard` : Dashboard özet verileri (XP, Level, Streak, Görevler)
-- `GET /api/score` : Sorumluluk skoru
-- `POST /api/achievements/check` : Rozet ve başarım kontrolü (otomatik XP/Rozet ataması)
-
-### AI Sohbet (Director & Coach)
-* `POST /api/chat/` - LangChain tabanlı yapay zeka ile sohbet edin. 
-  * *Hafıza (Memory):* Sistem varsayılan olarak **Summary Buffer Memory** kullanır. Bu sayede sadece son `N` mesaj değil, tüm sohbet geçmişinin dinamik bir özeti arka planda (`BackgroundTasks`) tutulur ve token tasarrufuyla birlikte uzun süreli bağlam korunur. Ayarlar `.env` veya `app/config.py` içerisinden `memory_strategy` (summary_buffer/last_n) ile değiştirilebilir.
-* `GET /api/chat/history` - Geçmiş sohbet kayıtlarını listeler.
-
-### AI Profiling (Uzun Süreli Hafıza)
-* `POST /api/profile/generate` - Kullanıcının geçmiş sohbet, görev ve yansımalarını analiz ederek kalıcı AI Profilini günceller (Manuel tetikleme).
-* `GET /api/profile/` - Kullanıcının AI Profilini (`UserProfileData` JSON şemasıyla) getirir.
-
 </details>
 
 <details>
-<summary><b>🎯 Hedef Kitle</b></summary>
-<br>
+<summary><b>Odaklanma, Yansıma & Skor</b></summary>
 
-1.  **Odak Problemi Yaşayan Bireyler:** Akademik veya profesyonel düzeyde proje hazırlığında olan, erteleme problemi yaşayan ve kişisel disiplin sağlamak isteyen insanlar.
-2.  **Çalışan Profesyoneller:** Zaman yönetimi ve odak bölünmesi yaşayan bağımsız yazılımcılar, veri bilimciler ve freelancerlar.
-3.  **Kurumsal Takımlar (Faz 3 Hedefi):** Mühendis verimliliğini artırmayı amaçlayan teknoloji şirketleri, startup'lar ve İK departmanları.
+- `POST /api/focus/start` & `end` : Odaklanma seansları
+- `POST /api/reflections/` : Günlük yansıma (mod, enerji, uyku) kaydı
+- `GET /api/stats/dashboard` : Dashboard özet verileri (Streak, Görevler, Maliyet Raporu)
+- `GET /api/score` : Sorumluluk skoru ve risk sinyalleri
+- `POST /api/achievements/check` : Başarım ve rozet kontrolü
+</details>
 
+<details>
+<summary><b>AI Sohbet (Director & Coach) & Profiling</b></summary>
+
+- `POST /api/chat/` - LangChain tabanlı yapay zeka ile sohbet (Summary Buffer Memory ile uzun süreli bağlam ve token tasarrufu).
+- `GET /api/chat/history` - Geçmiş sohbet kayıtları.
+- `POST /api/profile/generate` - Kullanıcının geçmiş sohbet, görev ve yansımalarını analiz ederek kalıcı AI Profilini günceller.
+- `GET /api/profile/` - Kullanıcının AI Profilini getirir.
 </details>
 
 ---
+
+## 🎯 Hedef Kitle
+
+1. **Odak Problemi Yaşayan Bireyler:** Akademik veya profesyonel düzeyde proje hazırlığında olan, erteleme döngüsünden çıkmak ve kişisel disiplin inşa etmek isteyenler.
+2. **Çalışan Profesyoneller & Developerlar:** Zaman yönetimi, uyku düzensizliği ve odak bölünmesi yaşayan bağımsız geliştiriciler, veri bilimciler ve freelancerlar.
+3. **Kurumsal Takımlar (Faz 3 Hedefi):** Mühendis verimliliğini artırmayı ve tükenmişliği (burnout) önlemeyi amaçlayan teknoloji şirketleri ve İK departmanları.
 
 ## 🔗 Product Backlog URL
 
@@ -221,7 +226,7 @@ Backlog'umuz projenin öncelikli çalışan iskeletini (MVP) ayağa kaldıracak 
 
 ## 💬 Daily Scrum & İletişim Mimarisi
 
-Asenkron ve yazılı iletişimin kriz anlarında yavaş kalması ve takım içi senkronizasyonu zayıflatması sorunu kökten çözülmüştür. Bu verimsizliği kırmak adına Sprint 3 boyunca biri hafta içi, diğeri hafta sonu olmak üzere haftada 2 kez zorunlu, canlı ve odaklanmış Google Meet seansları düzenlenmiştir. Tüm teknik krizler bu canlı oturumlarda anlık aksiyonlarla çözülmüş, akran öğrenimi en üst seviyeye çıkarılmıştır: ![Daily Scrum](Project%20Management/Daily%20Scrum,%20Sprint%203)
+Asenkron ve yazılı iletişimin kriz anlarında yavaş kalması ve takım içi senkronizasyonu zayıflatması sorunu kökten çözülmüştür. Bu verimsizliği kırmak adına Sprint 3 boyunca biri hafta içi, diğeri hafta sonu olmak üzere haftada 2 kez zorunlu, canlı ve odaklanmış Google Meet seansları düzenlenmiştir. Tüm teknik krizler bu canlı oturumlarda anlık aksiyonlarla çözülmüş, akran öğrenimi en üst seviyeye çıkarılmıştır: ![Daily Scrum](Project%20Management/Daily%20Scrum,%20Sprint3/1.jpeg)
 
 
 ## 📊 Sprint Board Update & Ürün Durumu

@@ -142,9 +142,9 @@ Sistem; kullanıcının biyolojik kapasitesi ile hedeflenen iş yükü arasında
 | Ajan | İsim | Görev | Kişilik |
 |---|---|---|---|
 | Orkestratör | Director | Mesajı doğru ajana yönlendirir, sorumluluk skorunu yönetir | Görünmez, arka planda çalışır |
-| Koç | Forge | Motivasyon, tavsiye, hesap sorma, görev parçalama | Hedef odaklı ama empatik |
-| Planlayıcı | Architect | Görev önceliklendirme, günlük plan, deadline yönetimi | Rasyonel, stratejik |
-| Analist | Sage | Verimlilik analizi, pattern tespiti, haftalık rapor | Sakin, yargılamayan |
+| Koç | Forge | Motivasyon, tavsiye, sorgulama, görev parçalama | Hedef odaklı ama empatik |
+| Planlayıcı | Architect | Önceliklendirme, günlük plan, deadline yönetimi | Rasyonel, stratejik |
+| Analist | Sage | Verimlilik analizi, pattern tespiti, haftalık rapor (faz 2: ekran süresi, sağlık verileri analizi)| Sakin, yargılamayan |
 </details>
 
 <details> 
@@ -153,7 +153,7 @@ Sistem; kullanıcının biyolojik kapasitesi ile hedeflenen iş yükü arasında
 Sistem, kullanıcının son 30 mesajını analiz ederek kanıta dayalı, LLM tarafından üretilen semantik bir profil oluşturur. Aşağıdaki örnek, sınırlı zamanı ve düşük enerjisi olan bir kullanıcı için üretilen gerçek çıktıdır:
 
 <details>
-<summary>Tam API response'unu görüntüle</summary>
+<summary> <b>Tam API response'unu görüntüle</b> </summary>
 
 ```json
 {

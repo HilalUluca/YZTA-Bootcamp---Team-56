@@ -73,7 +73,7 @@ Sistem; kullanıcının biyolojik kapasitesi ile hedeflenen iş yükü arasında
 ## 🗺️ Üç Aşamalı Genişleme Stratejisi (Roadmap)
 
 ### Faz 1: B2C Bireysel Asistan MVP (Mevcut Aşama)
-* **Hibrit UI ve Agentic Akış:** Kullanıcının Director (AI) ile sohbet ettiği ve AI'ın arkada `break_down_task` aracıyla büyük işleri parçalayıp chatin içine onaylanabilir interaktif UI Widget'ları (Checklist Kartları) gönderdiği temel yapı.
+* **Hibrit UI ve Agentic Akış:** Kullanıcının Director (AI) ile sohbet ettiği ve AI'ın arkada `break_down_task` aracıyla büyük işleri parçalayıp chatin içine onaylanabilir interaktif UI Widget'ları (Checklist Kartları) gönderdiği temel yapı kurulması ve gerçekçi zaman yönetimi yapılması.
 * **Günlük Mod ve Alışkanlık Takibi:** Kullanıcının günlük enerji, su içme, uyku ve mod girişlerini veritabanına işleyen `Habit` modülünün entegrasyonu.
 * **LLM Destekli Önceliklendirme:** Kullanıcının görev havuzunun arka planda LLM (Büyük Dil Modeli) ile analiz edilip otomatik Eisenhower sınıflandırmasına tabi tutulması. Sorumluluk skoruna göre AI koçun tonunun esnek şekilde değişmesi.
 
@@ -149,13 +149,13 @@ Sistem; kullanıcının biyolojik kapasitesi ile hedeflenen iş yükü arasında
 
 <details> 
 <summary><b> Örnek: Kullanıcı Profil Segmentasyonu (Gerçek API Çıktısı)</b></summary>
-  
+
 Sistem, kullanıcının son 30 mesajını analiz ederek kanıta dayalı, LLM tarafından üretilen semantik bir profil oluşturur. Aşağıdaki örnek, sınırlı zamanı ve düşük enerjisi olan bir kullanıcı için üretilen gerçek çıktıdır:
 
 <details>
 <summary>Tam API response'unu görüntüle</summary>
 
-\`\`\`json
+```json
 {
   "profile_version": "1.0.0",
   "generated_at": "2026-07-26T14:41:05.571120+00:00",
@@ -188,11 +188,13 @@ Sistem, kullanıcının son 30 mesajını analiz ederek kanıta dayalı, LLM tar
   "evidence": "Son 30 sohbet mesajı analiz edildi. Günlük yansıma ve görev verisi bulunmamaktadır.",
   "last_updated_from_range": "2026-07-12 to 2026-07-26"
 }
-\`\`\`
+```
 
 </details>
 
 Dikkat çeken noktalar: `evidence` alanı çıkarımın hangi veriye dayandığını şeffaf şekilde belirtiyor; `confidence` alanı sistemin kendi belirsizliğini de raporluyor — bu, halüsinasyon riskini azaltan ve güvenilirliği artıran bir tasarım kararı.
+
+</details>
 
 ---
 
@@ -284,21 +286,21 @@ Sprint 1 ve Sprint 2'de yaşanan kapasite aşımı ve teorik puanlama yanılgıl
 Asenkron ve yazılı iletişimin kriz anlarında yavaş kalması sorunu kökten çözülmüştür. Sprint 3 boyunca haftada 2 kez zorunlu, canlı ve odaklanmış Google Meet seansları düzenlenmiştir. Tüm teknik krizler bu canlı oturumlarda anlık aksiyonlarla çözülmüştür:
 * [📂 Sprint 3 Daily Scrum Toplantı Görselleri ve Kayıtlarını İncele](./Project%20Management/Daily%20Scrum,%20Sprint3)
 
-## 📊 Sprint Board Update & Ürün Durumu
+### 📊 Sprint Board Update & Ürün Durumu
 
 | 🔄 JIRA Sprint Board | 📱 Product Screenshot |
 | :--- | :--- |
 | [🔗 JIRA Sprint Board Görünümü](Project%20Management/Jira%20Board,%20Sprint3) | [🔗 UI Ürün Görünümü](UI%20Gallery/Sprint%203) |
 
-## 🔎 Sprint Review
+### 🔎 Sprint Review
 
 - **Sprint Hedefi:** Sistemin kararlı MVP iskeletinin tamamlanması, AI bağlam ve söz takibi modüllerinin entegrasyonu ve erken dağıtımın gerçekleştirilmesi.
 - **Mevcut Durum:** Hedef eksiksiz tamamlanmıştır. Backend ve yapay zeka servisleri katmanında kararlı bir sistem çıktısı elde edilmiş; kullanıcı deneyimini üst seviyeye taşıyan ek özellikler sisteme kazandırılmıştır.
 - **Erken Dağıtım:** Deployment'ı en son dakikaya bırakma tuzağına düşülmemiştir. Son haftaya girilirken sistem erken aşamada canlıya (deploy) alınmış; olası CORS, yönlendirme ve veritabanı migrasyon krizleri son güne bırakılmadan çözülmüştür.
 - **Frontend Kaynak Optimizasyonu:** Arayüz geliştirme eforunun tek bir noktada yığılmasını engellemek adına Frontend ekibine 2 tam zamanlı geliştirici özel olarak atanmış ve iş yükü dengelenmiştir.
-*   **Katılımcılar:** Hilal Uluca, Furkan Türker, Doğukan Kaya, Asya Aynur Gers, Mete Ülken.
-  
-## 🛠️ Tamamlanan ve Demo Edilecek İşler 
+* **Katılımcılar:** Hilal Uluca, Furkan Türker, Doğukan Kaya, Asya Aynur Gers, Mete Ülken.
+
+### 🛠️ Tamamlanan ve Demo Edilecek İşler 
 
 1. **Frontend Kaynak Dengelemesi:** 2 kişilik özel frontend yardım ekibiyle arayüz bileşenlerinin backend API'leriyle kusursuz senkronizasyonu.
 2. **AI Söz ve Bağlam Takibi (Commitment Tracking):** Director ajanının geçmiş sohbetlerde kullanıcının verdiği sözleri (Örn: "Yarın şu modülü bitireceğim") takip etmesi ve sonraki oturumlarda sorgulaması altyapısı.
@@ -306,11 +308,11 @@ Asenkron ve yazılı iletişimin kriz anlarında yavaş kalması sorunu kökten 
 4. **Bilinçli Kapsam Daraltılması (Scope Pruning):** Planlanan özellikler arasında yer alan *AI sesli konuşma özelliği*, zaman kısıtını ve mimari kararlılığı riske atacağı (vakti aşırı zorlayacağı) gerekçesiyle bilinçli olarak kapsam dışı bırakılmış ve projenin odağı korunmuştur.
 5. **Jüri demosu için uçtan uca senaryoların test edilmesi ve final sunum provası odaklı son disiplinin işletilmesi.**
 
-## ⚠️ Karşılaşılan Zorluklar ve Tespitler
+### ⚠️ Karşılaşılan Zorluklar ve Tespitler
 
 - **Zaman Baskısı ve Kapsam Yönetimi:** Son haftaya girerken eklenen bonus özelliklerin entegrasyonu sıkı bir zaman yönetimi gerektirmiştir. Ancak erken deploy stratejisi ve task-based execution sayesinde bu risk başarıyla yönetilmiş, hatta hataları tespit edip yeni özellikler eklememizi sağlamıştır.
 
-## 🔎 Sprint 3 Retrospective
+### 🔎 Sprint 3 Retrospective
 
 - **Neleri Geliştirdik / Başardık?:** Asenkron iletişimin yarattığı kör noktaları canlı toplantı disipliniyle tamamen kapattık. Frontend darboğazını kaynak atamasıyla çözdük ve proaktif deployment stratejisiyle sistemimizi güvence altına aldık.
 
@@ -318,7 +320,7 @@ Asenkron ve yazılı iletişimin kriz anlarında yavaş kalması sorunu kökten 
 
 ---
 <p align="center">
-  <img src="Project%20Management/Daily%20Scrum/GitHub_banner_geometric_shapes_t…_202607300354.jpeg" alt="FocusForge Corporate Header" width="100%" />
+  <img src="Project%20Management/Daily%20Scrum/GitHub_banner_geometric_shapes_t..._202607300354.jpeg" alt="FocusForge Corporate Header" width="100%" />
 </p> 
 
 <p align="center">

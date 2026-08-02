@@ -35,6 +35,7 @@ import type {
 } from '../services/types';
 import { getThemeMode, isDarkActive, setThemeMode, type ThemeMode } from '../theme/theme';
 import { SettingsDeviceConnectSection } from '../components/SettingsDeviceConnectSection';
+import forgeAvatar from '../assets/hmsc/circular-parrot-avatar.jpg';
 import './Tab3.css';
 
 interface Tab3Props {
@@ -76,7 +77,7 @@ const WeeklyChart: React.FC<{ report: WeeklyReport }> = ({ report }) => {
           );
         })}
       </div>
-      <p className="ff-subtitle" style={{ fontSize: '13px', marginTop: '14px' }}>
+      <p className="profile-chart-summary">
         {hasFocus
           ? `Bu hafta toplam ${report.totals.focus_minutes} dk odaklanma · ${report.totals.active_days}/7 aktif gün`
           : `Bu hafta ${report.totals.active_days}/7 aktif gün — henüz odak seansı yok`}
@@ -119,7 +120,7 @@ const Tab3: React.FC<Tab3Props> = ({ onLogout }) => {
         setDashboard(dash);
         setWeekly(week);
         setAchievements(ach);
-      } catch (err) {
+      } catch {
         setToast('Profil verileri yüklenemedi. Lütfen tekrar dene.');
       } finally {
         setIsLoading(false);
@@ -149,7 +150,6 @@ const Tab3: React.FC<Tab3Props> = ({ onLogout }) => {
   const score = dashboard?.score.value ?? 0;
 
   const displayName = me ? me.full_name || me.username : '';
-  const initial = displayName.trim().charAt(0) || '?';
 
   return (
     <IonPage className="ff-page">
@@ -180,167 +180,58 @@ const Tab3: React.FC<Tab3Props> = ({ onLogout }) => {
         )}
 
         {me && dashboard && (
-          <div style={{ padding: '4px 18px 28px' }}>
-            {/* Kimlik */}
-            <div
-              className="ff-rise"
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                margin: '12px 0 24px',
-              }}
-            >
+          <div className="profile-shell">
+            <section className="profile-hero ff-rise">
               <div className="profile-avatar">
-                <div className="profile-avatar-inner">{initial}</div>
+                <img src={forgeAvatar} alt="Forge profil fotoğrafı" />
+                <span className="profile-avatar-status" aria-label="Aktif" />
               </div>
-              <h1 className="ff-title" style={{ fontSize: '26px', marginTop: '14px' }}>
-                {displayName}
-              </h1>
-              <p className="ff-subtitle">@{me.username}</p>
-            </div>
+              <div className="profile-identity">
+                <span className="profile-eyebrow">FOCUSFORGE PROFİLİ</span>
+                <h1>{displayName}</h1>
+                <p>@{me.username}</p>
+                <span className="profile-level-pill"><IonIcon icon={trophyOutline} /> Seviye {dashboard.user.level}</span>
+              </div>
+              <div className="profile-xp-block">
+                <div><span>Seviye ilerlemen</span><strong>{currentLevelXp} / {xpNeeded} XP</strong></div>
+                <div className="profile-xp-track"><span style={{ width: `${xpProgress * 100}%` }} /></div>
+                <small>Sonraki seviyeye {xpNeeded - currentLevelXp} XP kaldı · Toplam {totalXp} XP</small>
+              </div>
+            </section>
 
-            {/* Özet istatistikler */}
-            <div
-              className="ff-stat-grid ff-rise"
-              style={{ '--ff-delay': '0.05s' } as React.CSSProperties}
-            >
-              <div className="ff-stat">
-                <span className="ff-stat-icon ff-icon-primary">
-                  <IonIcon icon={flameOutline} />
-                </span>
-                <span className="ff-stat-value">{streak}</span>
-                <span className="ff-stat-label">Günlük Seri</span>
-              </div>
-              <div className="ff-stat">
-                <span className="ff-stat-icon ff-icon-gold">
-                  <IonIcon icon={trophyOutline} />
-                </span>
-                <span className="ff-stat-value">{dashboard.user.level}</span>
-                <span className="ff-stat-label">Seviye</span>
-              </div>
-              <div className="ff-stat">
-                <span className="ff-stat-icon ff-icon-cool">
-                  <IonIcon icon={shieldCheckmarkOutline} />
-                </span>
-                <span className="ff-stat-value">%{score.toFixed(0)}</span>
-                <span className="ff-stat-label">Sorumluluk</span>
-              </div>
-              <div className="ff-stat">
-                <span className="ff-stat-icon ff-icon-mint">
-                  <IonIcon icon={ribbonOutline} />
-                </span>
-                <span className="ff-stat-value">
-                  {achievements ? achievements.total_earned : '—'}
-                </span>
-                <span className="ff-stat-label">
-                  {achievements ? `${achievements.total_badges} rozetten` : 'Rozet'}
-                </span>
-              </div>
-            </div>
+            <section className="profile-overview ff-rise" style={{ '--ff-delay': '0.05s' } as React.CSSProperties}>
+              <div className="is-streak"><IonIcon icon={flameOutline} /><strong>{streak}</strong><span>Günlük seri</span></div>
+              <div className="is-score"><IonIcon icon={shieldCheckmarkOutline} /><strong>%{score.toFixed(0)}</strong><span>Sorumluluk</span></div>
+              <div className="is-badge"><IonIcon icon={ribbonOutline} /><strong>{achievements ? achievements.total_earned : '—'}</strong><span>Kazanılan rozet</span></div>
+              <div className="is-xp"><IonIcon icon={flashOutline} /><strong>{totalXp}</strong><span>Toplam XP</span></div>
+            </section>
 
-            {/* Seviye & XP */}
-            <div
-              className="ff-card ff-rise"
-              style={{ marginTop: '14px', '--ff-delay': '0.1s' } as React.CSSProperties}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'baseline',
-                  marginBottom: '12px',
-                }}
-              >
-                <span style={{ fontSize: '17px', fontWeight: 700, letterSpacing: '-0.02em' }}>
-                  Seviye {dashboard.user.level}
-                </span>
-                <span
-                  style={{
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    color: 'var(--ff-text-muted)',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
-                >
-                  {currentLevelXp} / {xpNeeded} XP
-                </span>
+            <section className="profile-score-card ff-rise" style={{ '--ff-delay': '0.1s' } as React.CSSProperties}>
+              <div className="profile-score-ring" style={{ '--score': `${Math.min(100, Math.max(0, score)) * 3.6}deg` } as React.CSSProperties}>
+                <span>%{score.toFixed(0)}</span>
               </div>
-              <div className="ff-progress">
-                <div className="ff-progress-fill is-gold" style={{ width: `${xpProgress * 100}%` }} />
+              <div>
+                <span className="profile-eyebrow">HAFTALIK KARARLILIK</span>
+                <h2>Ritmini koruyorsun</h2>
+                <p>Forge, son 7 gündeki görev ve odak düzenine göre bu skoru hesaplıyor.</p>
               </div>
-              <p style={{ margin: '10px 0 0', fontSize: '13px', color: 'var(--ff-text-muted)' }}>
-                Sonraki seviyeye{' '}
-                <strong style={{ color: 'var(--ff-text-soft)' }}>
-                  {xpNeeded - currentLevelXp} XP
-                </strong>{' '}
-                kaldı · Toplam {totalXp} XP
-              </p>
-            </div>
-
-            {/* Sorumluluk skoru */}
-            <div
-              className="ff-card ff-rise"
-              style={{ marginTop: '14px', '--ff-delay': '0.15s' } as React.CSSProperties}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'baseline',
-                  marginBottom: '12px',
-                }}
-              >
-                <span style={{ fontSize: '17px', fontWeight: 700, letterSpacing: '-0.02em' }}>
-                  Sorumluluk Skoru
-                </span>
-                <span
-                  style={{
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    color: 'var(--ff-text-muted)',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
-                >
-                  %{score.toFixed(0)}
-                </span>
-              </div>
-              <div className="ff-progress">
-                <div className="ff-progress-fill is-cool" style={{ width: `${score}%` }} />
-              </div>
-              <p style={{ margin: '10px 0 0', fontSize: '13px', color: 'var(--ff-text-muted)' }}>
-                Son 7 günün performansına göre AI koçunun kararlılık puanı.
-              </p>
-            </div>
+            </section>
 
             {/* Son 7 gün */}
             {weekly && (
-              <>
-                <h2 className="ff-section-title">Son 7 Gün</h2>
-                <div
-                  className="ff-card ff-rise"
-                  style={{ '--ff-delay': '0.2s' } as React.CSSProperties}
-                >
+              <section className="profile-section">
+                <div className="profile-section-heading"><div><span className="profile-eyebrow">GELİŞİMİN</span><h2>Son 7 gün</h2></div><span>{weekly.totals.active_days}/7 aktif</span></div>
+                <div className="profile-panel ff-rise" style={{ '--ff-delay': '0.15s' } as React.CSSProperties}>
                   <WeeklyChart report={weekly} />
                 </div>
-              </>
+              </section>
             )}
 
             {/* Rozetler */}
             {achievements && (
-              <>
-                <h2 className="ff-section-title">
-                  Rozetler{' '}
-                  <span
-                    style={{ fontSize: '15px', fontWeight: 600, color: 'var(--ff-text-muted)' }}
-                  >
-                    {achievements.total_earned}/{achievements.total_badges}
-                  </span>
-                </h2>
-                <div
-                  className="ff-card ff-rise"
-                  style={{ '--ff-delay': '0.25s' } as React.CSSProperties}
-                >
+              <section className="profile-section">
+                <div className="profile-section-heading"><div><span className="profile-eyebrow">BAŞARILARIN</span><h2>Rozetler</h2></div><span>{achievements.total_earned}/{achievements.total_badges}</span></div>
+                <div className="profile-panel ff-rise" style={{ '--ff-delay': '0.2s' } as React.CSSProperties}>
                   <div className="profile-badges">
                     {achievements.catalog.map((b) => (
                       <div
@@ -361,29 +252,28 @@ const Tab3: React.FC<Tab3Props> = ({ onLogout }) => {
                     ))}
                   </div>
                 </div>
-              </>
+              </section>
             )}
 
             {/* Hesap */}
-            <h2 className="ff-section-title">Hesap</h2>
-            <div className="ff-row ff-rise" style={{ '--ff-delay': '0.3s' } as React.CSSProperties}>
-              <span className="ff-stat-icon ff-icon-cool">
-                <IonIcon icon={mailOutline} />
-              </span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p className="ff-row-sub" style={{ margin: 0 }}>E-posta Adresi</p>
-                <p className="ff-row-title" style={{ overflowWrap: 'anywhere' }}>{me.email}</p>
+            <section className="profile-section">
+              <div className="profile-section-heading"><div><span className="profile-eyebrow">KİŞİSEL BİLGİLER</span><h2>Hesap</h2></div></div>
+              <div className="profile-account-row ff-rise" style={{ '--ff-delay': '0.25s' } as React.CSSProperties}>
+                <span><IonIcon icon={mailOutline} /></span>
+                <div><small>E-posta adresi</small><strong>{me.email}</strong></div>
               </div>
-            </div>
+            </section>
 
             {/* AI Cihaz Verileri Simülasyonu */}
-            <SettingsDeviceConnectSection />
+            <section className="profile-section profile-connections">
+              <div className="profile-section-heading"><div><span className="profile-eyebrow">ENTEGRASYONLAR</span><h2>Bağlantılar</h2></div></div>
+              <SettingsDeviceConnectSection />
+            </section>
 
             {/* Çıkış */}
             <button
               className="ff-btn ff-btn-ghost profile-logout"
               onClick={onLogout}
-              style={{ marginTop: '18px' }}
             >
               <IonIcon icon={logOutOutline} style={{ fontSize: '19px' }} />
               Çıkış Yap

@@ -8,11 +8,11 @@ import {
   IonFooter,
   IonInput,
   IonIcon,
-  IonToast,
 } from '@ionic/react';
-import { send } from 'ionicons/icons';
+import { send, sparklesOutline } from 'ionicons/icons';
 import api from '../services/api';
 import parrotAvatar from '../assets/forge-avatar.png';
+import forgeHappy from '../assets/forge-happy.png';
 import './Tab2.css';
 
 interface Message {
@@ -21,6 +21,62 @@ interface Message {
   text: string;
   timestamp: Date;
 }
+
+interface ChatHistoryItem {
+  id: string;
+  sender: 'human' | 'ai';
+  message: string;
+  created_at?: string;
+}
+
+const QUICK_PROMPTS = [
+  'Bugünkü planımı oluştur',
+  'Odaklanmama yardım et',
+  'Görevimi küçük adımlara böl',
+];
+
+const renderInlineMarkdown = (text: string, keyPrefix: string) =>
+  text
+    .split(/(\*\*[^*\n]+\*\*|__[^_\n]+__|\*[^*\n]+\*)/g)
+    .filter(Boolean)
+    .map((part, index) => {
+      if ((part.startsWith('**') && part.endsWith('**')) || (part.startsWith('__') && part.endsWith('__'))) {
+        return <strong key={`${keyPrefix}-strong-${index}`}>{part.slice(2, -2)}</strong>;
+      }
+      if (part.startsWith('*') && part.endsWith('*')) {
+        return <em key={`${keyPrefix}-em-${index}`}>{part.slice(1, -1)}</em>;
+      }
+      return <React.Fragment key={`${keyPrefix}-text-${index}`}>{part}</React.Fragment>;
+    });
+
+const MessageContent: React.FC<{ text: string }> = ({ text }) => {
+  const lines = text.replace(/\r\n/g, '\n').split('\n');
+  return (
+    <div className="chat-message-content">
+      {lines.map((rawLine, index) => {
+        const line = rawLine.trim();
+        if (!line) return <span className="chat-line-break" key={`space-${index}`} />;
+
+        const heading = line.match(/^#{1,6}\s+(.+)$/);
+        if (heading) {
+          return <p className="chat-message-heading" key={`heading-${index}`}>{renderInlineMarkdown(heading[1], `heading-${index}`)}</p>;
+        }
+
+        const bullet = line.match(/^[-*•]\s+(.+)$/);
+        if (bullet) {
+          return <div className="chat-message-list-item" key={`bullet-${index}`}><span>✓</span><p>{renderInlineMarkdown(bullet[1], `bullet-${index}`)}</p></div>;
+        }
+
+        const numbered = line.match(/^(\d+)[.)]\s+(.+)$/);
+        if (numbered) {
+          return <div className="chat-message-list-item is-numbered" key={`number-${index}`}><span>{numbered[1]}</span><p>{renderInlineMarkdown(numbered[2], `number-${index}`)}</p></div>;
+        }
+
+        return <p className="chat-message-paragraph" key={`line-${index}`}>{renderInlineMarkdown(line, `line-${index}`)}</p>;
+      })}
+    </div>
+  );
+};
 
 // İlk açılışta gösterilecek karşılama mesajı (geçmiş boşsa)
 const WELCOME_MESSAGE: Message = {
@@ -46,8 +102,6 @@ const Tab2: React.FC = () => {
   const [inputVal, setInputVal] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [celebratingMessageId, setCelebratingMessageId] = useState<string | null>(null);
-  const [toastMessage] = useState('');
-  const [showToast, setShowToast] = useState(false);
   const contentRef = useRef<HTMLIonContentElement>(null);
   const celebrationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -57,7 +111,6 @@ const Tab2: React.FC = () => {
   // iki kez çalışması durumunda mesajları çiftliyordu. Kaldırıldı.)
   useEffect(() => {
     loadHistory();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Yeni mesaj eklendiğinde en alta kaydır
@@ -84,7 +137,7 @@ const Tab2: React.FC = () => {
     try {
       const res = await api.get('/chat/history', { params: { limit: 50 } });
       // Backend sender'ı "human"/"ai" döndürür; arayüzde "user"/"forge"e çeviriyoruz.
-      const history: Message[] = (res.data || []).map((m: any) => ({
+      const history: Message[] = (res.data || []).map((m: ChatHistoryItem) => ({
         id: m.id,
         sender: m.sender === 'human' ? 'user' : 'forge',
         text: m.message,
@@ -110,7 +163,7 @@ const Tab2: React.FC = () => {
         });
         setMessages(unique);
       }
-    } catch (err) {
+    } catch {
       // Geçmiş yüklenemezse sessizce karşılama mesajıyla devam et.
       console.log('Sohbet geçmişi yüklenemedi, karşılama mesajı gösteriliyor.');
     }
@@ -165,12 +218,14 @@ const Tab2: React.FC = () => {
       celebrationTimerRef.current = setTimeout(() => {
         setCelebratingMessageId(null);
       }, 900);
-    } catch (err: any) {
-      // --- SENİN KUSURSUZ HATA YAKALAMA (CATCH) KODUN ---
+    } catch (err: unknown) {
+      const response = typeof err === 'object' && err !== null && 'response' in err
+        ? (err as { response?: { status?: number; data?: { detail?: string } } }).response
+        : undefined;
       const errorText =
-        err.response?.status === 401
+        response?.status === 401
           ? 'Oturum süresi dolmuş. Lütfen tekrar giriş yapın.'
-          : err.response?.data?.detail || 'AI koçuna ulaşılamadı. Lütfen tekrar deneyin.';
+          : response?.data?.detail || 'AI koçuna ulaşılamadı. Lütfen tekrar deneyin.';
 
       const errorMessage: Message = {
         id: Math.random().toString(),
@@ -197,12 +252,16 @@ const Tab2: React.FC = () => {
       </IonHeader>
 
       <IonContent ref={contentRef}>
-        <div style={{ padding: '10px 16px 4px' }}>
-          {/* Başlık */}
-          <div className="ff-rise" style={{ marginBottom: '18px' }}>
-            <h1 className="ff-title">Forge</h1>
-            <p className="ff-subtitle">Verimlilik koçun — takıldığın yeri anlat, birlikte çözelim.</p>
-          </div>
+        <div className="chat-shell">
+          <section className="chat-hero ff-rise">
+            <span className="chat-hero-eyebrow"><IonIcon icon={sparklesOutline} /> AI KOÇUN</span>
+            <h1>Forge yanında</h1>
+            <p>Takıldığın yeri anlat; birlikte sade, uygulanabilir bir yol bulalım.</p>
+            <div className="chat-online"><span /> Çevrimiçi</div>
+            <img src={forgeHappy} alt="Mutlu Forge maskotu" />
+          </section>
+
+          <div className="chat-day-label"><span>Bugün</span></div>
 
           {messages.map((msg) => (
             <div
@@ -223,7 +282,8 @@ const Tab2: React.FC = () => {
               )}
 
               <div className={`chat-bubble ${msg.sender === 'user' ? 'is-user' : 'is-forge'}`}>
-                {msg.text}
+                {msg.sender === 'forge' && <span className="chat-author">Forge</span>}
+                <MessageContent text={msg.text} />
                 <span className="chat-time">
                   {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
@@ -249,6 +309,13 @@ const Tab2: React.FC = () => {
 
       <IonFooter className="chat-footer">
         <IonToolbar>
+          <div className="chat-quick-prompts" aria-label="Hızlı mesaj önerileri">
+            {QUICK_PROMPTS.map((prompt) => (
+              <button key={prompt} type="button" onClick={() => setInputVal(prompt)} disabled={isSending}>
+                {prompt}
+              </button>
+            ))}
+          </div>
           <form onSubmit={handleSendMessage} className="chat-composer">
             <IonInput
               className="chat-input"
@@ -268,14 +335,6 @@ const Tab2: React.FC = () => {
           </form>
         </IonToolbar>
       </IonFooter>
-
-      <IonToast
-        isOpen={showToast}
-        onDidDismiss={() => setShowToast(false)}
-        message={toastMessage}
-        duration={3000}
-        color="danger"
-      />
     </IonPage>
   );
 };

@@ -16,6 +16,10 @@ import {
 } from '@ionic/react';
 import { play, pause, refresh, star, starOutline, add, notificationsOffOutline } from 'ionicons/icons';
 import api from '../services/api';
+import type { FocusStatsSummary } from '../services/types';
+import forgeFocus from '../assets/focus-mascot-hd.png';
+import focusLeaves from '../assets/hmsc/yellow-orange-branch.png';
+import './Focus.css';
 import {
   getNotificationPermission,
   notifySessionFinished,
@@ -36,7 +40,7 @@ const sessionTypeFor = (min: number) =>
 
 // Aynı seçimin kullanıcıya gösterilen adı.
 const sessionTypeLabel = (min: number) =>
-  min === 25 ? 'Pomodoro 25' : min === 50 ? 'Pomodoro 50' : 'Özel seans';
+  min === 15 ? 'Kısa odak' : min === 25 ? 'Pomodoro 25' : min === 50 ? 'Derin odak' : 'Özel seans';
 
 // Toplam odaklanmayı okunur biçimde yazar. Saate yuvarlamak 59 dakikalık
 // odaklanmayı "0s" gösterirdi, o yüzden 1 saatin altında dakika kullanıyoruz.
@@ -66,7 +70,7 @@ const Focus: React.FC = () => {
   const [newTaskTitle, setNewTaskTitle] = useState<string>('');
 
   // İstatistik + bildirim
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<FocusStatsSummary | null>(null);
   const [toastMessage, setToastMessage] = useState<string>('');
   const [showToast, setShowToast] = useState<boolean>(false);
 
@@ -99,7 +103,7 @@ const Focus: React.FC = () => {
       const res = await api.get('/tasks/');
       // Sadece tamamlanmamış görevleri seçime sun
       setTasks((res.data.tasks || []).filter((t: Task) => t.status !== 'done'));
-    } catch (err) {
+    } catch {
       // Görevler alınamazsa seçim boş kalır; serbest odak yine mümkün.
     }
   };
@@ -108,7 +112,7 @@ const Focus: React.FC = () => {
     try {
       const res = await api.get('/focus/stats/summary');
       setStats(res.data);
-    } catch (err) {
+    } catch {
       setStats(null);
     }
   };
@@ -160,7 +164,7 @@ const Focus: React.FC = () => {
       setNewTaskTitle('');
       setShowNewTask(false);
       notify('Görev oluşturuldu ✅ Artık seansa başlayabilirsin.');
-    } catch (err) {
+    } catch {
       notify('Görev oluşturulamadı. Lütfen tekrar dene.');
     }
   };
@@ -188,7 +192,7 @@ const Focus: React.FC = () => {
       setSecondsLeft(durationMin * 60);
       setIsActive(true);
       setIsRunning(true);
-    } catch (err) {
+    } catch {
       notify('Seans başlatılamadı. Bağlantını kontrol et.');
     }
   };
@@ -236,7 +240,7 @@ const Focus: React.FC = () => {
     if (!abandonedId) return;
     try {
       await api.delete(`/focus/${abandonedId}`);
-    } catch (err) {
+    } catch {
       // Silinemezse istatistik biraz şişer ama kullanıcıyı burada rahatsız
       // etmiyoruz; backend zaten yarım seansları saymıyor.
     }
@@ -253,7 +257,7 @@ const Focus: React.FC = () => {
       await api.patch(`/focus/${sessionId}/end`, { productivity_rating: rating });
       notify('Harika iş! Seans kaydedildi 🎉');
       await loadStats();
-    } catch (err) {
+    } catch {
       notify('Seans kaydedilemedi. Lütfen tekrar dene.');
     } finally {
       setShowRating(false);
@@ -286,105 +290,49 @@ const Focus: React.FC = () => {
       </IonHeader>
 
       <IonContent>
-        <div style={{ padding: '4px 18px 28px' }}>
-          {/* Başlık */}
-          <div className="ff-rise" style={{ margin: '6px 0 20px' }}>
-            <h1 className="ff-title">Odaklan</h1>
-            <p className="ff-subtitle">
-              {isActive
-                ? isRunning
-                  ? 'Seans sürüyor — dikkatini dağıtma.'
-                  : 'Seans duraklatıldı.'
-                : 'Bir süre seç ve derin çalışmaya başla.'}
-            </p>
-          </div>
+        <div className="focus-shell">
+          <section className="focus-intro ff-rise">
+            <div>
+              <span className="focus-eyebrow">ODAK MODU</span>
+              <h1 className="ff-title">Şimdi odaklanma zamanı</h1>
+              <p className="ff-subtitle">
+                {isActive
+                  ? isRunning
+                    ? 'Seansın başladı. Şimdi sadece seçtiğin işe odaklan.'
+                    : 'Seansın duraklatıldı, hazır olduğunda devam et.'
+                  : 'Süreni ve görevini seç; gerisini Forge takip etsin.'}
+              </p>
+            </div>
+          </section>
 
-          {/* Görev seçimi */}
-          <div
-            className="ff-card ff-card-tight ff-rise"
-            style={{ padding: '6px 16px', '--ff-delay': '0.05s' } as React.CSSProperties}
-          >
-            <IonItem
-              lines="none"
-              style={{
-                '--background': 'transparent',
-                '--padding-start': '0',
-                '--inner-padding-end': '0',
-                '--min-height': '52px',
-              }}
-            >
-              <IonLabel
-                style={{
-                  fontSize: '12.5px',
-                  fontWeight: 600,
-                  color: 'var(--ff-text-muted)',
-                  flex: '0 0 auto',
-                  marginInlineEnd: '10px',
-                }}
-              >
-                Görev
-              </IonLabel>
-              <IonSelect
-                key={`task-select-${selectedTaskId}`}
-                value={selectedTaskId}
-                placeholder="Serbest odak"
-                disabled={isActive}
-                interface="action-sheet"
-                onIonChange={(e) => setSelectedTaskId(e.detail.value)}
-                style={{ fontWeight: 600, maxWidth: '100%' }}
-              >
-                <IonSelectOption value="">Serbest odak (görevsiz)</IonSelectOption>
-                {tasks.map((t) => (
-                  <IonSelectOption key={t.id} value={t.id}>
-                    {t.title}
-                  </IonSelectOption>
-                ))}
-              </IonSelect>
-            </IonItem>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
-            <button
-              className="ff-btn ff-btn-ghost ff-btn-auto"
-              disabled={isActive}
-              onClick={() => setShowNewTask(true)}
-              style={{ fontSize: '13.5px', padding: '8px 14px' }}
-            >
-              <IonIcon icon={add} style={{ fontSize: '17px' }} />
-              Yeni görev
-            </button>
-          </div>
-
-          {/* Süre seçimi */}
-          <div
-            className="ff-segment ff-rise"
-            style={{ marginTop: '14px', '--ff-delay': '0.1s' } as React.CSSProperties}
-          >
-            {DURATION_PRESETS.map((p) => (
+          <div className="focus-duration-tabs ff-rise">
+            {DURATION_PRESETS.map((preset) => (
               <button
-                key={p}
-                className={`ff-segment-btn ${!customMode && durationMin === p ? 'is-active' : ''}`}
+                key={preset}
+                className={!customMode && durationMin === preset ? 'is-active' : ''}
                 disabled={isActive}
                 onClick={() => {
                   setCustomMode(false);
-                  selectDuration(p);
+                  selectDuration(preset);
                 }}
               >
-                {p} dk
+                <strong>{preset}</strong>
+                <span>{preset === 15 ? 'Kısa' : preset === 25 ? 'Pomodoro' : 'Derin'}</span>
               </button>
             ))}
             <button
-              className={`ff-segment-btn ${customMode ? 'is-active' : ''}`}
+              className={customMode ? 'is-active' : ''}
               disabled={isActive}
               onClick={() => setCustomMode(true)}
             >
-              Özel
+              <strong>+</strong>
+              <span>Özel</span>
             </button>
           </div>
 
           {customMode && (
-            <IonItem className="ff-field" lines="none" style={{ marginTop: '12px' }}>
-              <IonLabel position="stacked">Özel süre (dakika)</IonLabel>
+            <IonItem className="ff-field focus-custom-duration" lines="none">
+              <IonLabel position="stacked">Özel süre (1–180 dakika)</IonLabel>
               <IonInput
                 type="number"
                 value={durationMin}
@@ -392,217 +340,131 @@ const Focus: React.FC = () => {
                 min={1}
                 max={180}
                 disabled={isActive}
-                onIonInput={(e) => {
-                  const v = parseInt(e.detail.value || '');
-                  if (!isNaN(v) && v > 0) selectDuration(Math.min(v, 180));
+                onIonInput={(event) => {
+                  const value = parseInt(event.detail.value || '');
+                  if (!isNaN(value) && value > 0) selectDuration(Math.min(value, 180));
                 }}
               />
             </IonItem>
           )}
 
-          {/* Seans türü etiketi */}
-          <div style={{ textAlign: 'center', marginTop: '14px' }}>
-            <span className="ff-chip ff-chip-primary">
-              {sessionTypeLabel(durationMin)} · {durationMin} dk
-            </span>
-          </div>
+          <section className={`focus-stage ff-rise${isRunning ? ' is-running' : ''}`}>
+            <img className="focus-stage__leaves" src={focusLeaves} alt="" aria-hidden="true" />
+            <div className="focus-stage__spark focus-stage__spark--one" />
+            <div className="focus-stage__spark focus-stage__spark--two" />
 
-          {notifPermission === 'denied' && (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                marginTop: '10px',
-                fontSize: '12px',
-                color: 'var(--ff-text-muted)',
-                textAlign: 'center',
-              }}
-            >
-              <IonIcon icon={notificationsOffOutline} />
-              Bildirim izni kapalı — süre bitince yalnızca ses ve uygulama içi uyarı gelir.
+            <div className="focus-task-row">
+              <div className="focus-task-select">
+                <span>Odak görevi</span>
+                <IonSelect
+                  key={`task-select-${selectedTaskId}`}
+                  value={selectedTaskId}
+                  placeholder="Serbest odak"
+                  disabled={isActive}
+                  interface="action-sheet"
+                  onIonChange={(event) => setSelectedTaskId(event.detail.value)}
+                >
+                  <IonSelectOption value="">Serbest odak (görevsiz)</IonSelectOption>
+                  {tasks.map((task) => (
+                    <IonSelectOption key={task.id} value={task.id}>
+                      {task.title}
+                    </IonSelectOption>
+                  ))}
+                </IonSelect>
+              </div>
+              <button
+                className="focus-add-task"
+                disabled={isActive}
+                onClick={() => setShowNewTask(true)}
+                aria-label="Yeni görev ekle"
+              >
+                <IonIcon icon={add} />
+              </button>
             </div>
-          )}
 
-          {/* TIMER — gradyan halkalı cam disk */}
-          <div
-            className="ff-rise"
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              margin: '26px 0 22px',
-              '--ff-delay': '0.15s',
-            } as React.CSSProperties}
-          >
-            <div style={{ position: 'relative', width: '292px', height: '292px' }}>
-              {/* Arkadaki parlama — seans akarken nefes alır */}
-              <div
-                className={isRunning ? 'ff-pulse' : ''}
-                style={{
-                  position: 'absolute',
-                  inset: '18px',
-                  borderRadius: '50%',
-                  background: 'var(--ff-grad-focus)',
-                  filter: 'blur(38px)',
-                  opacity: isRunning ? 0.42 : 0.2,
-                  transition: 'opacity 0.6s ease',
-                }}
-              />
+            <div className="focus-session-chip">
+              <span className="focus-session-chip__dot" />
+              {sessionTypeLabel(durationMin)} · {durationMin} dk
+            </div>
 
-              {/* Cam disk */}
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: '16px',
-                  borderRadius: '50%',
-                  background: 'var(--ff-glass-bg-strong)',
-                  backdropFilter: 'var(--ff-glass-blur)',
-                  WebkitBackdropFilter: 'var(--ff-glass-blur)',
-                  border: '1px solid var(--ff-glass-border)',
-                  boxShadow: 'var(--ff-shadow-lg)',
-                }}
-              />
-
-              {/* İlerleme halkası */}
-              <svg width="292" height="292" viewBox="0 0 292 292" style={{ position: 'relative' }}>
+            <div className="focus-timer">
+              <div className="focus-timer__glow" />
+              <svg viewBox="0 0 292 292" aria-label={`${mm}:${ss} kaldı`}>
                 <defs>
                   <linearGradient id="ffRing" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#ff8a3d" />
-                    <stop offset="55%" stopColor="#ff5e62" />
-                    <stop offset="100%" stopColor="#f0468a" />
+                    <stop offset="0%" stopColor="#ffb13b" />
+                    <stop offset="48%" stopColor="#ff684f" />
+                    <stop offset="100%" stopColor="#08a7a5" />
                   </linearGradient>
                 </defs>
-
-                {/* Zemin halkası */}
+                <circle cx="146" cy="146" r={radius} className="focus-timer__track" />
                 <circle
                   cx="146"
                   cy="146"
                   r={radius}
-                  fill="none"
-                  stroke="var(--ff-fill-soft)"
-                  strokeWidth="12"
-                />
-                {/* Dolan halka */}
-                <circle
-                  cx="146"
-                  cy="146"
-                  r={radius}
-                  fill="none"
-                  stroke="url(#ffRing)"
-                  strokeWidth="12"
-                  strokeLinecap="round"
+                  className="focus-timer__progress"
                   strokeDasharray={circumference}
                   strokeDashoffset={dashOffset}
                   transform="rotate(-90 146 146)"
-                  style={{ transition: 'stroke-dashoffset 1s linear' }}
                 />
               </svg>
-
-              {/* Ortadaki süre */}
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  pointerEvents: 'none',
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: '62px',
-                    fontWeight: 800,
-                    letterSpacing: '-0.045em',
-                    lineHeight: 1,
-                    color: 'var(--ff-text)',
-                    fontVariantNumeric: 'tabular-nums',
-                  }}
-                >
-                  {mm}:{ss}
-                </div>
-                <div
-                  style={{
-                    marginTop: '10px',
-                    fontSize: '13.5px',
-                    fontWeight: 600,
-                    color: 'var(--ff-text-muted)',
-                  }}
-                >
-                  {isActive ? (isRunning ? 'Odaklan 💪' : 'Duraklatıldı') : 'Hazır olduğunda başla'}
-                </div>
-                {selectedTask && (
-                  <div
-                    style={{
-                      marginTop: '6px',
-                      maxWidth: '180px',
-                      fontSize: '12.5px',
-                      fontWeight: 600,
-                      color: 'var(--ff-text-soft)',
-                      textAlign: 'center',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {selectedTask.title}
-                  </div>
-                )}
+              <div className="focus-timer__content">
+                <strong>{mm}:{ss}</strong>
+                <span>{isActive ? (isRunning ? 'Odaklan' : 'Duraklatıldı') : 'Başlamaya hazır'}</span>
+                {selectedTask && <small>{selectedTask.title}</small>}
               </div>
             </div>
-          </div>
 
-          {/* Kontroller */}
-          <div
-            className="ff-rise"
-            style={{
-              display: 'flex',
-              gap: '12px',
-              alignItems: 'center',
-              '--ff-delay': '0.2s',
-            } as React.CSSProperties}
-          >
-            <button className="ff-btn" onClick={handlePrimary}>
-              <IonIcon icon={primaryIcon} style={{ fontSize: '19px' }} />
-              {primaryLabel}
-            </button>
-            <button
-              className="ff-btn ff-btn-ghost"
-              onClick={handleReset}
-              disabled={!isActive}
-              aria-label="Sıfırla"
-              style={{ width: '56px', flexShrink: 0, padding: '15px 0' }}
-            >
-              <IonIcon icon={refresh} style={{ fontSize: '20px' }} />
-            </button>
-          </div>
+            <div className="focus-mascot-wrap" aria-hidden="true">
+              <img src={forgeFocus} alt="" />
+            </div>
+          </section>
 
-          {/* İstatistikler */}
-          {stats && (
-            <div
-              className="ff-card ff-rise"
-              style={{ marginTop: '18px', '--ff-delay': '0.25s' } as React.CSSProperties}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-around', textAlign: 'center' }}>
-                <div>
-                  <div className="ff-stat-value ff-grad-text">{stats.total_sessions}</div>
-                  <div className="ff-stat-label">Seans</div>
-                </div>
-                <div>
-                  <div className="ff-stat-value ff-grad-text">
-                    {formatFocusTotal(stats.total_focus_minutes ?? 0)}
-                  </div>
-                  <div className="ff-stat-label">Toplam Odak</div>
-                </div>
-                <div>
-                  <div className="ff-stat-value ff-grad-text">{stats.avg_productivity_rating}</div>
-                  <div className="ff-stat-label">Ort. Puan</div>
-                </div>
-              </div>
+          {notifPermission === 'denied' && (
+            <div className="focus-notification-note">
+              <IonIcon icon={notificationsOffOutline} />
+              Bildirim izni kapalı; süre bitince uygulama içi uyarı ve ses kullanılacak.
             </div>
           )}
+
+          <div className="focus-controls ff-rise">
+            <button
+              className="focus-reset-button"
+              onClick={handleReset}
+              disabled={!isActive}
+              aria-label="Sayacı sıfırla"
+            >
+              <IonIcon icon={refresh} />
+            </button>
+            <button className="focus-primary-button" onClick={handlePrimary}>
+              <IonIcon icon={primaryIcon} />
+              {primaryLabel}
+            </button>
+          </div>
+
+          <section className="focus-stats-card ff-rise">
+            <div className="focus-stats-card__heading">
+              <div>
+                <span>ODAK ÖZETİN</span>
+                <strong>{stats ? 'İlerlemen kaydediliyor' : 'İlk seansını tamamla'}</strong>
+              </div>
+              <span className="focus-stats-card__badge">Bu hafta</span>
+            </div>
+            <div className="focus-stats-grid">
+              <div>
+                <strong>{stats?.total_sessions ?? 0}</strong>
+                <span>Seans</span>
+              </div>
+              <div>
+                <strong>{formatFocusTotal(stats?.total_focus_minutes ?? 0)}</strong>
+                <span>Toplam odak</span>
+              </div>
+              <div>
+                <strong>{stats?.avg_productivity_rating ?? '–'}</strong>
+                <span>Ort. puan</span>
+              </div>
+            </div>
+          </section>
         </div>
 
         {/* Süre bitince: yıldızlı değerlendirme */}

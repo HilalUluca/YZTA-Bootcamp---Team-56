@@ -15,7 +15,7 @@ import {
   IonIcon,
   IonSpinner,
 } from '@ionic/react';
-import { sparklesOutline, alertCircleOutline, timeOutline, cafeOutline } from 'ionicons/icons';
+import { alertCircleOutline, timeOutline } from 'ionicons/icons';
 import api from '../services/api';
 import forgeAvatar from '../assets/hmsc/circular-parrot-avatar.jpg';
 import leafDecoration from '../assets/hmsc/leaf-tropical-cluster.jpg';
@@ -29,16 +29,22 @@ interface DailyPlanProps {
   openTaskCount: number; // açık (yapılacak) görev sayısı
 }
 
-// AI'ın döndürdüğü çizelge elemanı (tek ve kusursuz tip tanımı)
-interface ScheduleItem {
-  block_type?: string; // 'task' | 'break'
-  task_name?: string;
-  category?: string;
-  suggested_duration_minutes?: number;
+// AI'ın döndürdüğü çizelge elemanı
+interface TaskScheduleItem {
+  block_type?: 'task';
+  task_name: string;
+  category: string;
+  suggested_duration_minutes: number;
   priority_score?: number;
-  suggestion?: string; // mola önerisi
-  duration_minutes?: number; // mola süresi
 }
+
+interface BreakScheduleItem {
+  block_type: 'break';
+  suggestion: string;
+  duration_minutes: number;
+}
+
+type ScheduleItem = TaskScheduleItem | BreakScheduleItem;
 
 // Öncelik kategorisi → etiket + renk
 const categoryInfo = (cat: string): { label: string; color: string } => {
@@ -85,40 +91,52 @@ const DailyPlan: React.FC<DailyPlanProps> = ({ isOpen, onClose, openTaskCount })
     setSchedule(null);
     setSummary('');
     setEmptyMessage('');
-    
-    let attempt = 0;
-    let success = false;
-    while (attempt < 2 && !success) {
-      try {
-        const res = await api.post('/planner/daily-plan', {
-          energy_level: energy,
-          available_hours: hours,
-        }, { timeout: 30000 });
-        
-        const data = res.data || {};
-        const sched: ScheduleItem[] = data.recommended_schedule || [];
-        setSummary(data.summary || '');
-        if (sched.length > 0) {
-          setSchedule(sched);
-        } else {
-          // Görev yoksa backend { message, plan: [] } döndürür
-          setEmptyMessage(data.message || 'Planlanacak açık görev bulunamadı.');
-          setSchedule([]);
-        }
-        success = true;
-      } catch (err: any) {
-        attempt++;
-        if (attempt >= 2) {
-          const detail = err.response?.data?.detail;
-          setError(
-            typeof detail === 'string'
-              ? detail
-              : 'Plan oluşturulamadı. AI servisi şu an yanıt veremiyor olabilir, lütfen tekrar dene.'
-          );
+    try {
+      let responseData: Record<string, unknown> | null = null;
+      let lastError: unknown;
+
+      // Geçici AI servis hatalarında isteği bir kez daha dene.
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        try {
+          const res = await api.post('/planner/daily-plan', {
+            energy_level: energy,
+            available_hours: hours,
+          }, { timeout: 30000 });
+          responseData = res.data || {};
+          break;
+        } catch (err: unknown) {
+          lastError = err;
         }
       }
+
+      if (!responseData) throw lastError;
+
+      const sched = Array.isArray(responseData.recommended_schedule)
+        ? responseData.recommended_schedule as ScheduleItem[]
+        : [];
+      setSummary(typeof responseData.summary === 'string' ? responseData.summary : '');
+      if (sched.length > 0) {
+        setSchedule(sched);
+      } else {
+        const message = typeof responseData.message === 'string'
+          ? responseData.message
+          : 'Planlanacak açık görev bulunamadı.';
+        setEmptyMessage(message);
+        setSchedule([]);
+      }
+    } catch (err: unknown) {
+      const detail =
+        typeof err === 'object' && err !== null && 'response' in err
+          ? (err as { response?: { data?: { detail?: unknown } } }).response?.data?.detail
+          : undefined;
+      setError(
+        typeof detail === 'string'
+          ? detail
+          : 'Plan oluşturulamadı. AI servisi şu an yanıt veremiyor olabilir, lütfen tekrar dene.'
+      );
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const reset = () => {

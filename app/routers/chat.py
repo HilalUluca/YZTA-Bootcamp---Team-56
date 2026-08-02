@@ -4,7 +4,7 @@ AI Sohbet (Chat) API endpoint'i.
 Sprint 1: Basit chatbot (Tamamlandı)
 Sprint 2: LangChain multi-agent orkestrasyon ve Hafıza Yönetimi (Director Agent Entegrasyonu)
 """
-
+import re 
 from fastapi import APIRouter, Depends, HTTPException, Query, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
@@ -133,10 +133,25 @@ async def chat_with_ai(
         # Açık görevleri BİR KEZ çekiyoruz (tekrar sorgu yapmamak için branch'lerde
         # tekrar kullanılacak). Intent ne olursa olsun, Director en azından kaç açık
         # görev olduğunu bilsin — böylece "hiç görev yok" yanılgısına düşmüyor.
+       
         open_tasks = _get_open_tasks(db, current_user.id)
-        full_system_prompt += (
-            f"\n\n[Bilgi: Kullanıcının şu an {len(open_tasks)} açık (tamamlanmamış) görevi var.]"
-        )
+        task_names = [t["title"] for t in open_tasks]
+        task_list_str = ", ".join(task_names) if task_names else "Hiç bekleyen görev yok. Harika!"
+        current_score = getattr(current_user, "responsibility_score", 50.0) or 50.0
+
+        full_system_prompt += f"""\n
+        [GİZLİ SİSTEM BİLGİSİ - KULLANICI BUNU GÖREMEZ]
+        Kullanıcının Güncel Sorumluluk Skoru: {current_score}
+        Açık/Bekleyen Görevleri: {task_list_str}
+
+      ÖNEMLİ TON UYARISI VE YASAKLAR: 
+        1. Asla kullanıcıyı azarlama. "Ezik, tembel, başarısız, suçlu" gibi kelimeleri ASLA kullanma.
+        2. "Şefkatli otorite" ol; bağırmadan, kibar, empati kurarak ama kararlı bir şekilde yol göster.
+        3. Eğer kullanıcının bekleyen görevi varsa, ona yukarıdaki açık görevlerini ve güncel skorunu ({current_score}) çok kibarca, rasyonel bir dille hatırlat.
+        4. SİSTEM TETİKLEYİCİSİ (KESİN KURAL): Kullanıcı görevini ertelemekte ısrar ederse veya belirlediğin sürelere uymazsa skorunu düşürmek ZORUNDASIN. Bunu yapmak için cevabının EN ALT SATIRINA şu formatı aynen ekle: [PENALTY: -10] (Düşecek miktarı belirle). Sadece "puanını düşürdüm" şeklinde sözlü uyarı yapmak YASAKTIR. Sistem sadece bu köşeli parantezli etiketi okuyabilir.
+        5. VİZYON KURALI (POMODORO): Kullanıcıya görevlerini yaparken veya çalışırken sistemdeki "Pomodoro" sayacını kullanmasını stratejik bir dille tavsiye et. Pomodoro kullandığında odaklanma süresi, enerji seviyesi ve verimlilik analizlerinin senin (AI) tarafında çok daha net görüntülenebileceğini, böylece kişisel takibinin ve ona sunacağın stratejilerin güçleneceğini rasyonel bir şekilde vurgula.
+        """
+    
 
         # 5. Hedef ajana göre planner'dan veri çek, context'e ekle
         planner_context = ""
@@ -208,6 +223,25 @@ async def chat_with_ai(
             response_text = "".join(parts)
         else:
             response_text = str(raw_content)
+
+
+        # --- CEZA MEKANİZMASI: SIFIR TOLERANS UYGULAMASI ---
+        penalty_match = re.search(r'\[PENALTY:\s*(-\d+)\]', response_text)
+        
+        if penalty_match:
+            # Yapay zekanın kestiği cezayı (-10) al
+            penalty_amount = float(penalty_match.group(1))
+            
+            # Skoru veritabanında güncelle (minimum 0 olacak şekilde)
+            current_score = getattr(current_user, "responsibility_score", 50.0) or 50.0
+            new_score = max(0.0, current_score + penalty_amount) # penalty zaten eksi değer
+            current_user.responsibility_score = new_score
+            db.add(current_user)
+            # Not: db.commit() hemen aşağıda mesajlar kaydedilirken otomatik çalışacak
+            
+            # Etiketi kullanıcı arayüzüne gitmeden temizle
+            response_text = re.sub(r'\[PENALTY:\s*(-\d+)\]', '', response_text).strip()
+        # ----------------------------------------------------
 
         # 9. Mesajları kalıcı olması için veritabanına kaydet
         user_db_message = ChatMessageDB(

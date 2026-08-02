@@ -97,6 +97,7 @@ export const GunSonuOzetiCard: React.FC = () => {
         </div>
       </div>
       
+      {/* Günün Özetleri */}
       <div className="gso-section">
         <h3 className="gso-section-title">Günün Özetleri</h3>
         <ul className="gso-list">
@@ -106,7 +107,48 @@ export const GunSonuOzetiCard: React.FC = () => {
         </ul>
       </div>
 
-      <div className="gso-section">
+      {/* ⚠️ Dikkat Edilmesi Gerekenler / Risk Sinyalleri */}
+      {summary.warnings && summary.warnings.length > 0 && (
+        <div className="gso-section" style={{
+          background: 'rgba(var(--ion-color-danger-rgb, 255, 0, 0), 0.06)',
+          border: '1px solid var(--ion-color-danger, #eb444a)',
+          borderRadius: '10px',
+          padding: '10px 12px',
+          marginTop: '10px'
+        }}>
+          <h3 className="gso-section-title" style={{ color: 'var(--ion-color-danger, #eb444a)', marginBottom: '6px' }}>
+            ⚠️ Dikkat Edilmesi Gerekenler
+          </h3>
+          <ul className="gso-list" style={{ paddingLeft: '16px' }}>
+            {summary.warnings.map((w, i) => (
+              <li key={i} style={{ marginBottom: '4px', fontSize: '13px' }}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* 🧠 Günün Stratejik Sorgulaması */}
+      {summary.reflection && summary.reflection.length > 0 && (
+        <div className="gso-section" style={{
+          background: 'rgba(var(--ion-color-primary-rgb, 56, 128, 255), 0.06)',
+          border: '1px solid var(--ion-color-primary, #3880ff)',
+          borderRadius: '10px',
+          padding: '10px 12px',
+          marginTop: '10px'
+        }}>
+          <h3 className="gso-section-title" style={{ color: 'var(--ion-color-primary, #3880ff)', marginBottom: '6px' }}>
+            🧠 Günün Sorgulaması
+          </h3>
+          {summary.reflection.map((r, i) => (
+            <p key={i} style={{ fontSize: '13px', fontStyle: 'italic', margin: '0 0 6px 0', lineHeight: '1.4' }}>
+              {r}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {/* Yarın İçin Öneriler */}
+      <div className="gso-section" style={{ marginTop: '12px' }}>
         <h3 className="gso-section-title">Yarın İçin Öneriler</h3>
         <ul className="gso-list">
           {summary.suggestions.map((s, i) => (

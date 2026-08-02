@@ -163,168 +163,166 @@ const DailyPlan: React.FC<DailyPlanProps> = ({ isOpen, onClose, openTaskCount })
       </IonHeader>
 
       <IonContent className="daily-plan-content">
-        <div className="daily-plan-shell">
-          {/* Yükleniyor */}
-          {loading && (
-            <div className="daily-plan-state daily-plan-loading">
-              <div className="daily-plan-avatar is-thinking">
-                <img src={forgeAvatar} alt="Plan hazırlayan Forge" />
-                <IonSpinner name="crescent" color="primary" />
+        {/* Yükleniyor */}
+        {loading && (
+          <div className="daily-plan-state daily-plan-loading">
+            <div className="daily-plan-avatar is-thinking">
+              <img src={forgeAvatar} alt="Plan hazırlayan Forge" />
+              <IonSpinner name="crescent" color="primary" />
+            </div>
+            <h2>Forge planını hazırlıyor...</h2>
+            <p>Görevlerin enerji seviyene ve önceliklerine göre sıralanıyor.</p>
+          </div> 
+        )}
+
+        {/* Hata */}
+        {!loading && error && (
+          <div className="daily-plan-state daily-plan-error">
+            <span className="daily-plan-state-icon">
+              <IonIcon icon={alertCircleOutline} />
+            </span>
+            <h2>Plan oluşturulamadı</h2>
+            <p>{error}</p>
+            <IonButton onClick={generatePlan} fill="outline" color="danger" className="daily-plan-secondary-button">
+              Tekrar Dene
+            </IonButton>
+          </div>
+        )}
+
+        {/* Kurulum (henüz plan yok) */}
+        {!loading && !error && schedule === null && (
+          <div className="daily-plan-setup">
+            <section className="daily-plan-hero" aria-labelledby="daily-plan-heading">
+              <img className="daily-plan-leaf" src={leafDecoration} alt="" aria-hidden="true" />
+              <img className="daily-plan-branch" src={branchDecoration} alt="" aria-hidden="true" />
+              <div className="daily-plan-hero-copy">
+                <span className="daily-plan-kicker">
+                  <img src={sparkleAsset} alt="" aria-hidden="true" />
+                  Kişisel planın
+                </span>
+                <h1 id="daily-plan-heading">AI ile Günü Planla</h1>
+                <p>Forge, açık görevlerini enerjine ve önceliklerine göre senin için sıralasın.</p>
               </div>
-              <h2>Forge planını hazırlıyor...</h2>
-              <p>Görevlerin enerji seviyene ve önceliklerine göre sıralanıyor.</p>
-            </div>
-          )}
+              <img className="daily-plan-forge" src={forgeAvatar} alt="FocusForge maskotu Forge" />
+            </section>
 
-          {/* Hata */}
-          {!loading && error && (
-            <div className="daily-plan-state daily-plan-error">
-              <span className="daily-plan-state-icon">
-                <IonIcon icon={alertCircleOutline} />
-              </span>
-              <h2>Plan oluşturulamadı</h2>
-              <p>{error}</p>
-              <IonButton onClick={generatePlan} fill="outline" color="danger" className="daily-plan-secondary-button">
-                Tekrar Dene
-              </IonButton>
-            </div>
-          )}
-
-          {/* Kurulum (henüz plan yok) */}
-          {!loading && !error && schedule === null && (
-            <div className="daily-plan-setup">
-              <section className="daily-plan-hero" aria-labelledby="daily-plan-heading">
-                <img className="daily-plan-leaf" src={leafDecoration} alt="" aria-hidden="true" />
-                <img className="daily-plan-branch" src={branchDecoration} alt="" aria-hidden="true" />
-                <div className="daily-plan-hero-copy">
-                  <span className="daily-plan-kicker">
-                    <img src={sparkleAsset} alt="" aria-hidden="true" />
-                    Kişisel planın
-                  </span>
-                  <h1 id="daily-plan-heading">AI ile Günü Planla</h1>
-                  <p>Forge, açık görevlerini enerjine ve önceliklerine göre senin için sıralasın.</p>
-                </div>
-                <img className="daily-plan-forge" src={forgeAvatar} alt="FocusForge maskotu Forge" />
-              </section>
-
-              <section className="daily-plan-section" aria-labelledby="energy-heading">
-                <div className="daily-plan-section-heading">
-                  <div>
-                    <span className="daily-plan-step">01</span>
-                    <h2 id="energy-heading">Enerji seviyen</h2>
-                  </div>
-                  <span>Bugün nasılsın?</span>
-                </div>
-                <div className="daily-plan-energy-grid">
-                  {ENERGIES.map((e) => (
-                    <button
-                      key={e.value}
-                      type="button"
-                      className={`daily-plan-energy ${energy === e.value ? 'is-selected' : ''}`}
-                      onClick={() => setEnergy(e.value)}
-                      aria-pressed={energy === e.value}
-                    >
-                      <span className="daily-plan-energy-symbol">{e.symbol}</span>
-                      <strong>{e.label}</strong>
-                      <small>{e.description}</small>
-                    </button>
-                  ))}
-                </div>
-              </section>
-
-              <section className="daily-plan-section daily-plan-time-section" aria-labelledby="time-heading">
-                <div className="daily-plan-section-heading">
-                  <div>
-                    <span className="daily-plan-step">02</span>
-                    <h2 id="time-heading">Müsait süren</h2>
-                  </div>
-                  <span>Planın uzunluğu</span>
-                </div>
-                <IonItem className="daily-plan-time-field" lines="none">
-                  <span className="daily-plan-time-icon" slot="start">
-                    <IonIcon icon={timeOutline} />
-                  </span>
-                  <IonLabel>Bugün ayırabileceğin süre</IonLabel>
-                  <IonSelect
-                    value={hours}
-                    onIonChange={(e) => setHours(e.detail.value)}
-                    interface="popover"
-                    aria-label="Bugün ayırabileceğin süre"
-                  >
-                    {[2, 4, 6, 8, 10, 12].map((h) => (
-                      <IonSelectOption key={h} value={h}>{h} saat</IonSelectOption>
-                    ))}
-                  </IonSelect>
-                </IonItem>
-              </section>
-
-              <IonButton expand="block" onClick={generatePlan} className="daily-plan-primary-button">
-                <img slot="start" src={sparkleAsset} alt="" aria-hidden="true" />
-                Planımı Oluştur
-              </IonButton>
-              <p className="daily-plan-privacy">✨ Planın birkaç saniye içinde hazır olacak.</p>
-            </div>
-          )}
-
-          {/* Sonuç */}
-          {!loading && !error && schedule !== null && (
-            <div className="daily-plan-result">
-              <div className="daily-plan-result-heading">
-                <img src={forgeAvatar} alt="Forge maskotu" />
+            <section className="daily-plan-section" aria-labelledby="energy-heading">
+              <div className="daily-plan-section-heading">
                 <div>
-                  <span>Forge hazırladı</span>
-                  <h1>Bugünkü akışın hazır!</h1>
+                  <span className="daily-plan-step">01</span>
+                  <h2 id="energy-heading">Enerji seviyen</h2>
                 </div>
+                <span>Bugün nasılsın?</span>
               </div>
+              <div className="daily-plan-energy-grid">
+                {ENERGIES.map((e) => (
+                  <button
+                    key={e.value}
+                    type="button"
+                    className={`daily-plan-energy ${energy === e.value ? 'is-selected' : ''}`}
+                    onClick={() => setEnergy(e.value)}
+                    aria-pressed={energy === e.value}
+                  >
+                    <span className="daily-plan-energy-symbol">{e.symbol}</span>
+                    <strong>{e.label}</strong>
+                    <small>{e.description}</small>
+                  </button>
+                ))}
+              </div>
+            </section>
 
-              {summary && <div className="daily-plan-summary"><p>{summary}</p></div>}
-
-              {schedule.length === 0 ? (
-                <div className="daily-plan-state daily-plan-empty">
-                  <span className="daily-plan-state-icon"><IonIcon icon={alertCircleOutline} /></span>
-                  <p>{emptyMessage}</p>
+            <section className="daily-plan-section daily-plan-time-section" aria-labelledby="time-heading">
+              <div className="daily-plan-section-heading">
+                <div>
+                  <span className="daily-plan-step">02</span>
+                  <h2 id="time-heading">Müsait süren</h2>
                 </div>
-              ) : (
-                <>
-                  <div className="daily-plan-schedule">
-                    {schedule.map((item, i) => {
-                      if (item.block_type === 'break') {
-                        return (
-                          <div key={`break-${i}`} className="daily-plan-break-card">
-                            <span>☕</span>
-                            <div>
-                              <strong>Kısa mola</strong>
-                              <p>{item.suggestion}</p>
-                            </div>
-                            <b>{item.duration_minutes} dk</b>
-                          </div>
-                        );
-                      }
-                      const cat = categoryInfo(item.category);
+                <span>Planın uzunluğu</span>
+              </div>
+              <IonItem className="daily-plan-time-field" lines="none">
+                <span className="daily-plan-time-icon" slot="start">
+                  <IonIcon icon={timeOutline} />
+                </span>
+                <IonLabel>Bugün ayırabileceğin süre</IonLabel>
+                <IonSelect
+                  value={hours}
+                  onIonChange={(e) => setHours(e.detail.value)}
+                  interface="popover"
+                  aria-label="Bugün ayırabileceğin süre"
+                >
+                  {[2, 4, 6, 8, 10, 12].map((h) => (
+                    <IonSelectOption key={h} value={h}>{h} saat</IonSelectOption>
+                  ))}
+                </IonSelect>
+              </IonItem>
+            </section>
+
+            <IonButton expand="block" onClick={generatePlan} className="daily-plan-primary-button">
+              <img slot="start" src={sparkleAsset} alt="" aria-hidden="true" />
+              Planımı Oluştur
+            </IonButton>
+            <p className="daily-plan-privacy">✨ Planın birkaç saniye içinde hazır olacak.</p>
+          </div>
+        )}
+
+        {/* Sonuç */}
+        {!loading && !error && schedule !== null && (
+          <div className="daily-plan-result">
+            <div className="daily-plan-result-heading">
+              <img src={forgeAvatar} alt="Forge maskotu" />
+              <div>
+                <span>Forge hazırladı</span>
+                <h1>Bugünkü akışın hazır!</h1>
+              </div>
+            </div>
+
+            {summary && <div className="daily-plan-summary"><p>{summary}</p></div>}
+
+            {schedule.length === 0 ? (
+              <div className="daily-plan-state daily-plan-empty">
+                <span className="daily-plan-state-icon"><IonIcon icon={alertCircleOutline} /></span>
+                <p>{emptyMessage}</p>
+              </div>
+            ) : (
+              <>
+                <div className="daily-plan-schedule">
+                  {schedule.map((item, i) => {
+                    if (item.block_type === 'break') {
                       return (
-                        <div key={i} className="daily-plan-task-card">
-                          <div className="daily-plan-task-number">{i + 1}</div>
-                          <div className="daily-plan-task-copy">
-                            <h3>{item.task_name}</h3>
-                            <div className="daily-plan-task-meta">
-                              <IonBadge color={cat.color}>{cat.label}</IonBadge>
-                              <span><IonIcon icon={timeOutline} />~{item.suggested_duration_minutes} dk</span>
-                            </div>
+                        <div key={`break-${i}`} className="daily-plan-break-card">
+                          <span>☕</span>
+                          <div>
+                            <strong>Kısa mola</strong>
+                            <p>{item.suggestion}</p>
                           </div>
+                          <b>{item.duration_minutes} dk</b>
                         </div>
                       );
-                    })}
-                  </div>
-                  <p className="daily-plan-tip">💡 Her görev arasında kısa bir mola vermeyi unutma.</p>
-                </>
-              )}
+                    }
+                    const cat = categoryInfo(item.category || '');
+                    return (
+                      <div key={i} className="daily-plan-task-card">
+                        <div className="daily-plan-task-number">{i + 1}</div>
+                        <div className="daily-plan-task-copy">
+                          <h3>{item.task_name}</h3>
+                          <div className="daily-plan-task-meta">
+                            <IonBadge color={cat.color}>{cat.label}</IonBadge>
+                            <span><IonIcon icon={timeOutline} />~{item.suggested_duration_minutes} dk</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="daily-plan-tip">💡 Her görev arasında kısa bir mola vermeyi unutma.</p>
+              </>
+            )}
 
-              <IonButton expand="block" fill="outline" onClick={reset} className="daily-plan-secondary-button">
-                Yeni Plan Oluştur
-              </IonButton>
-            </div>
-          )}
-        </div>
+            <IonButton expand="block" fill="outline" onClick={reset} className="daily-plan-secondary-button">
+              Yeni Plan Oluştur
+            </IonButton>
+          </div>
+        )}
       </IonContent>
     </IonModal>
   );

@@ -98,6 +98,16 @@ const Home: React.FC = () => {
     }
   };
 
+  // Chat sayfasından 'refresh_dashboard' sinyali ateşlendiğinde bu blok uyanır
+  // ve sayfayı yenilemeye gerek kalmadan arkaplanda verileri günceller.
+  useEffect(() => {
+    window.addEventListener('refresh_dashboard', loadDashboard);
+    return () => {
+      window.removeEventListener('refresh_dashboard', loadDashboard);
+    };
+  }, []);
+  // ------------------------------------------------
+
   // Bugünün yansıması var mı? Backend yoksa 404 döner → henüz yapılmamış demektir.
   const loadTodayReflection = async () => {
     try {
@@ -285,7 +295,7 @@ const Home: React.FC = () => {
                 <div className="ff-stat home-stat home-stat-focus">
                   <img className="home-stat-asset" src={focusTimeIcon} alt="" aria-hidden="true" />
                   <span className="ff-stat-value">{data.focus.minutes_today} dk</span>
-                  <span className="ff-stat-label">Bugün Odaklanma</span>
+                  <span className="ff-stat-label">Günlük Odaklanma</span>
                 </div>
                 <div className="ff-stat home-stat home-stat-streak">
                   <img className="home-stat-asset" src={dailyStreakIcon} alt="" aria-hidden="true" />

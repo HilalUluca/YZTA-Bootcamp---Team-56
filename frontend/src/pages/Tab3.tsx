@@ -108,7 +108,7 @@ const Tab3: React.FC<Tab3Props> = ({ onLogout }) => {
     const load = async () => {
       setIsLoading(true);
       try {
-        // Profil açılışında rozetleri değerlendir (otomatik telafi), sonra oku.
+        // Profil açılışında rozetleri değerlendir, sonra oku.
         await checkAchievements().catch(() => undefined);
         const [meData, dash, week, ach] = await Promise.all([
           getMe(),
@@ -126,8 +126,19 @@ const Tab3: React.FC<Tab3Props> = ({ onLogout }) => {
         setIsLoading(false);
       }
     };
+    
+    // 1. Sayfa ilk açıldığında verileri yükle
     load();
+
+    // 2. STRATEJİK HAMLE: Chat sayfasından (Tab2) gelen güncellemeleri dinle!
+    window.addEventListener('refresh_dashboard', load);
+
+    // 3. Hafıza sızıntısı olmaması için sayfa kapanınca dinlemeyi bırak
+    return () => {
+      window.removeEventListener('refresh_dashboard', load);
+    };
   }, []);
+   
 
   // XP çubuğu (backend: her 500 XP = 1 seviye).
   const xpNeeded = 500;

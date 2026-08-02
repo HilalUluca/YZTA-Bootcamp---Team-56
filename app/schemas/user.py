@@ -2,13 +2,22 @@
 
 import uuid
 from datetime import datetime
-from typing import Optional
-
-from pydantic import BaseModel, EmailStr, Field, model_validator
 from typing import List, Optional
 
-# --- Kayıt ---
+from pydantic import BaseModel, EmailStr, Field, model_validator
 
+
+# --- AI Söz Takibi (Commitment) Modeli ---
+class Commitment(BaseModel):
+    """AI'a verilen sözlerin veri modeli."""
+    id: str
+    task_name: str
+    deadline: str
+    status: str = "pending"  # pending, completed, failed
+    penalty_score: int = -5
+
+
+# --- Kayıt ---
 class UserRegister(BaseModel):
     """Kullanıcı kayıt isteği."""
     email: EmailStr
@@ -18,7 +27,6 @@ class UserRegister(BaseModel):
 
 
 # --- Giriş ---
-
 class UserLogin(BaseModel):
     """Kullanıcı giriş isteği."""
     username: str
@@ -26,7 +34,6 @@ class UserLogin(BaseModel):
 
 
 # --- Token ---
-
 class Token(BaseModel):
     """JWT token yanıtı."""
     access_token: str
@@ -40,7 +47,6 @@ class TokenData(BaseModel):
 
 
 # --- Kullanıcı Yanıtı ---
-
 class UserResponse(BaseModel):
     """API'den dönen kullanıcı bilgisi. Şifre içermez."""
     id: uuid.UUID
@@ -73,7 +79,6 @@ class UserResponse(BaseModel):
 
 
 # --- Profil Güncelleme ---
-
 class UserUpdate(BaseModel):
     """Kullanıcı profil güncelleme."""
     full_name: Optional[str] = None
@@ -82,7 +87,6 @@ class UserUpdate(BaseModel):
 
 
 # --- Onboarding (Cold-Start) ---
-
 class OnboardingData(BaseModel):
     """
     Sistemin Director ajanı için stratejik veri seti.
@@ -134,8 +138,6 @@ class OnboardingData(BaseModel):
         None, description="Hedeflerin için ayırdığın net saat"
     )
 
-    model_config = {"extra": "allow"} # Esneklik için
-
     biggest_challenge: Optional[str] = Field(
         default=None,
         description="En büyük verimlilik sorunu: 'procrastination', 'focus', 'prioritization', 'motivation'"
@@ -144,3 +146,11 @@ class OnboardingData(BaseModel):
         default=None,
         description="Tercih ettiği teknik: 'pomodoro', 'timeblocking', 'none'"
     )
+
+    # --- YENİ EKLENEN MODÜL ---
+    commitments: List[Commitment] = Field(
+        default_factory=list,
+        description="Kullanıcının AI'a verdiği sözler ve infaz durumları"
+    )
+
+    model_config = {"extra": "allow"} # Esneklik için

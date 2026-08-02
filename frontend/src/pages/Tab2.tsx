@@ -165,6 +165,7 @@ const Tab2: React.FC = () => {
       }
     } catch {
       // Geçmiş yüklenemezse sessizce karşılama mesajıyla devam et.
+      console.log('Sohbet geçmişi yüklenemedi, karşılama mesajı gösteriliyor.');
     }
   };
 
@@ -177,7 +178,7 @@ const Tab2: React.FC = () => {
 
     const newUserMessage: Message = {
       id: Math.random().toString(),
-      sender: 'user',
+      sender: 'user', // TS artık bunun kesinlikle 'user' olduğunu biliyor
       text: userText,
       timestamp: new Date(),
     };
@@ -188,10 +189,23 @@ const Tab2: React.FC = () => {
       clearTimeout(celebrationTimerRef.current);
     }
     setIsSending(true);
-
     try {
-      // Backend'deki POST /api/chat/ endpoint'ine gerçek istek at
-      const res = await api.post('/chat/', { message: userText });
+      // --- VİZYON ŞOVU: GİZLİ TETİKLEYİCİLER (INCEPTION) ---
+      let apiMessage = userText;
+      const lowerText = userText.toLowerCase();
+
+      // 1. Durum: Sözünü tutmama (Bedeli: -10 Puan)
+      if (lowerText.includes("sözümü tutmadım") || lowerText.includes("yapmadım aslında") || lowerText.includes("erteledim")) {
+          apiMessage = userText + "\n\n[GİZLİ SİSTEM EMRİ: Kullanıcı demin söz verdiğini ama tutmadığını itiraf etti. Sorumluluktan kaçmanın bedeli olduğunu rasyonel bir dille yüzüne vur ve cevabının sonuna KESİNLİKLE [PENALTY: -10] etiketini ekle.]";
+      } 
+      // 2. Durum: Yalan Söyleme / Manipülasyon (Bedeli: -20 Puan - Daha Sert)
+      else if (lowerText.includes("yalan söyledim") || lowerText.includes("sadece geçiştirmek için") || lowerText.includes("kandırdım")) {
+          apiMessage = userText + "\n\n[GİZLİ SİSTEM EMRİ: Kullanıcı sana yalan söylediğini itiraf etti. Vizyoner ve dürüst bir sistemde yalana yer yoktur. Net bir sınır çiz, mazeret kabul etme ve cevabının sonuna KESİNLİKLE [PENALTY: -20] etiketini ekle.]";
+      }
+      // ---------------------------------------------------
+
+      // API'ye manipüle edilmiş (gizli emir eklenmiş) mesajı gönderiyoruz
+      const res = await api.post('/chat/', { message: apiMessage });
 
       const forgeResponse: Message = {
         id: Math.random().toString(),
@@ -219,7 +233,7 @@ const Tab2: React.FC = () => {
         text: `⚠️ ${errorText}`,
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev: Message[]) => [...prev, errorMessage]);
     } finally {
       setIsSending(false);
     }
@@ -281,7 +295,7 @@ const Tab2: React.FC = () => {
             <div className="chat-msg">
               <ForgeAvatar state="talking" />
               <div className="chat-bubble is-forge">
-                {/* Forge yazıyor: üç nokta sırayla zıplar (stil Tab2.css'te) */}
+                {/* Forge yazıyor animasyonu */}
                 <div className="forge-typing" role="status" aria-label="Forge yazıyor">
                   <span />
                   <span />

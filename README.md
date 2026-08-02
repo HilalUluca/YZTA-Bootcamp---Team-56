@@ -133,6 +133,67 @@ Sistem; kullanıcının biyolojik kapasitesi ile hedeflenen iş yükü arasında
 - `GET /api/profile/` - Kullanıcının AI Profilini getirir.
 </details>
 
+
+## 🤖 AI Mimarisi
+
+<details>
+<summary><b>🤖 AI Agent Orkestrasyon </b></summary>
+  
+| Ajan | İsim | Görev | Kişilik |
+|---|---|---|---|
+| Orkestratör | Director | Mesajı doğru ajana yönlendirir, sorumluluk skorunu yönetir | Görünmez, arka planda çalışır |
+| Koç | Forge | Motivasyon, tavsiye, hesap sorma, görev parçalama | Hedef odaklı ama empatik |
+| Planlayıcı | Architect | Görev önceliklendirme, günlük plan, deadline yönetimi | Rasyonel, stratejik |
+| Analist | Sage | Verimlilik analizi, pattern tespiti, haftalık rapor | Sakin, yargılamayan |
+</details>
+
+<details> 
+<summary><b> Örnek: Kullanıcı Profil Segmentasyonu (Gerçek API Çıktısı)</b></summary>
+  
+Sistem, kullanıcının son 30 mesajını analiz ederek kanıta dayalı, LLM tarafından üretilen semantik bir profil oluşturur. Aşağıdaki örnek, sınırlı zamanı ve düşük enerjisi olan bir kullanıcı için üretilen gerçek çıktıdır:
+
+<details>
+<summary>Tam API response'unu görüntüle</summary>
+
+\`\`\`json
+{
+  "profile_version": "1.0.0",
+  "generated_at": "2026-07-26T14:41:05.571120+00:00",
+  "confidence": "medium",
+  "traits": [
+    "dalgali_enerjili",
+    "kapsam_fobiği",
+    "disiplin_arayan",
+    "yapilacaklar_delisi"
+  ],
+  "goals": {
+    "short_term": [
+      "Antrenman yapmak",
+      "Projeyi ayağa kaldırmak",
+      "Kitap notları almak"
+    ],
+    "long_term": []
+  },
+  "work_patterns": "Sınırlı zaman diliminde (örneğin 4 saat) ve düşük biyolojik enerjiye rağmen birden fazla yüksek efor gerektiren görevi (fiziksel, bilişsel, analitik) aynı anda planlamaya çalışıyor.",
+  "risk_signals": [
+    "Aşırı yüklenme ve zihinsel parçalanma riski",
+    "Biyolojik kapasite ile hedeflenen iş yükü arasındaki uyumsuzluk",
+    "Gerçekçi olmayan zaman yönetimi nedeniyle tükenmişlik riski"
+  ],
+  "coaching_preferences": "Doğrudan, net, analitik ve odak daraltarak mikro sprintlere yönlendiren disiplin odaklı geri bildirim.",
+  "personalization_hints": [
+    "Kullanıcının aynı anda çok sayıda işi planlamasını engelleyerek tek bir mikro eyleme odaklanmasını sağla.",
+    "Biyolojik enerji seviyesini dikkate alarak hedeflerini hiyerarşik sıraya koyması için yönlendir."
+  ],
+  "evidence": "Son 30 sohbet mesajı analiz edildi. Günlük yansıma ve görev verisi bulunmamaktadır.",
+  "last_updated_from_range": "2026-07-12 to 2026-07-26"
+}
+\`\`\`
+
+</details>
+
+Dikkat çeken noktalar: `evidence` alanı çıkarımın hangi veriye dayandığını şeffaf şekilde belirtiyor; `confidence` alanı sistemin kendi belirsizliğini de raporluyor — bu, halüsinasyon riskini azaltan ve güvenilirliği artıran bir tasarım kararı.
+
 ---
 
 ## 🎯 Hedef Kitle

@@ -1,0 +1,104 @@
+.subtask-list-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 0 4px;
+  color: var(--ion-text-color);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.subtask-selection-count {
+  margin-left: auto;
+  color: var(--ion-color-medium);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.editable-subtask-card {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.18);
+  border-radius: 14px;
+  background: var(--ion-item-background, var(--ion-background-color));
+  box-shadow: 0 4px 14px rgba(23, 55, 95, 0.06);
+  transition: opacity 160ms ease, border-color 160ms ease;
+}
+
+.editable-subtask-card.is-unselected {
+  border-color: rgba(var(--ion-color-medium-rgb), 0.18);
+  opacity: 0.58;
+}
+
+.editable-subtask-card__top {
+  display: grid;
+  grid-template-columns: auto 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.editable-subtask-card__number {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.editable-subtask-card__title {
+  min-height: 36px;
+  font-size: 14px;
+  font-weight: 650;
+  --padding-start: 8px;
+  --padding-end: 8px;
+}
+
+.editable-subtask-card__description {
+  margin: 4px 0 0 66px;
+  width: calc(100% - 66px);
+  color: var(--ion-color-medium);
+  font-size: 13px;
+  --padding-top: 6px;
+  --padding-bottom: 6px;
+  --padding-start: 8px;
+  --padding-end: 8px;
+}
+
+.editable-subtask-card__duration {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 2px 0 0 66px;
+  color: var(--ion-color-medium);
+  font-size: 12px;
+}
+
+.editable-subtask-card__duration ion-input {
+  width: 54px;
+  min-height: 28px;
+  font-size: 12px;
+  --padding-start: 6px;
+  --padding-end: 2px;
+}
+
+@media (max-width: 380px) {
+  .editable-subtask-card {
+    padding-inline: 8px;
+  }
+
+  .editable-subtask-card__top {
+    grid-template-columns: auto 22px minmax(0, 1fr) auto;
+    gap: 5px;
+  }
+
+  .editable-subtask-card__description,
+  .editable-subtask-card__duration {
+    margin-left: 55px;
+    width: calc(100% - 55px);
+  }
+}

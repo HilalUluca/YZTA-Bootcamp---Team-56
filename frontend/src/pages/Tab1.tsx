@@ -30,21 +30,18 @@ import {
   add,
   alertCircleOutline,
   hourglassOutline,
-  flameOutline,
-  trophyOutline,
-  flashOutline,
-  statsChartOutline,
   trashOutline,
   calendarOutline,
   gitBranchOutline,
   checkboxOutline,
+  checkmarkCircleOutline,
+  timeOutline,
+  warningOutline,
 } from 'ionicons/icons';
 import api from '../services/api';
 import EisenhowerMatrix from './EisenhowerMatrix';
 import TaskDetail, { DetailTask } from './TaskDetail';
-import { GunSonuOzetiCard } from '../components/GunSonuOzetiCard';
-import { AiPhoneDataCard } from '../components/AiPhoneDataCard';
-import { AiPlanPreviewList } from '../components/AiPlanPreviewList';
+import forgeHappy from '../assets/forge-happy.png';
 import './Tab1.css';
 
 interface Task {
@@ -94,12 +91,23 @@ const PRIORITY_CHIP: Record<string, { label: string; cls: string }> = {
   low: { label: 'Düşük Öncelik', cls: '' },
 };
 
+const PRIORITY_GROUPS = [
+  { key: 'urgent_important', title: 'Önce bunları tamamla', hint: 'Acil ve önemli', tone: 'danger' },
+  { key: 'important', title: 'Planına yerleştir', hint: 'Önemli', tone: 'warning' },
+  { key: 'urgent', title: 'Hızlıca sonuçlandır', hint: 'Acil', tone: 'cool' },
+  { key: 'low', title: 'Vaktin kalırsa', hint: 'Düşük öncelik', tone: 'mint' },
+] as const;
+
+type StatusFilter = 'open' | 'done' | 'all';
+
 const Tab1: React.FC = () => {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'matrix'>('list'); // liste / Eisenhower matrisi
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('open');
+  const [priorityFilter, setPriorityFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
 
   // Görev detay modalı
@@ -127,7 +135,7 @@ const Tab1: React.FC = () => {
     try {
       const res = await api.get('/tasks/');
       setTasks(res.data.tasks || []);
-    } catch (err) {
+    } catch {
       // Sahte veri göstermiyoruz; kullanıcıya net hata veriyoruz.
       setError('Görevler yüklenemedi. Sunucu bağlantını kontrol edip tekrar dene.');
     } finally {
@@ -140,7 +148,7 @@ const Tab1: React.FC = () => {
     try {
       const res = await api.get('/stats/dashboard');
       setDashboard(res.data);
-    } catch (err) {
+    } catch {
       // Dashboard gelmezse kartları gizle; uydurma veri gösterme.
       setDashboard(null);
     }
@@ -169,7 +177,7 @@ const Tab1: React.FC = () => {
         notify('Görev tamamlandı! 🎉');
       }
       await Promise.all([loadTasks(), loadDashboard()]);
-    } catch (err) {
+    } catch {
       notify('İşlem başarısız. Lütfen tekrar dene.');
     }
   };
@@ -193,7 +201,7 @@ const Tab1: React.FC = () => {
       setEstMinutes(undefined);
       setShowModal(false);
       await Promise.all([loadTasks(), loadDashboard()]);
-    } catch (err) {
+    } catch {
       // Sahte ekleme yok; modal açık kalır ki kullanıcı tekrar deneyebilsin.
       notify('Görev eklenemedi. Lütfen tekrar dene.');
     }
@@ -205,7 +213,7 @@ const Tab1: React.FC = () => {
       await api.delete(`/tasks/${taskId}`);
       notify('Görev silindi 🗑️');
       await Promise.all([loadTasks(), loadDashboard()]);
-    } catch (err) {
+    } catch {
       notify('Görev silinemedi. Lütfen tekrar dene.');
     }
   };
@@ -236,6 +244,23 @@ const Tab1: React.FC = () => {
   });
 
   const openCount = dashboard ? dashboard.tasks.open : tasks.filter((t) => t.status !== 'done').length;
+  const completedCount = tasks.filter((t) => t.status === 'done').length;
+  const overdueCount = dashboard?.tasks.overdue ?? tasks.filter((t) => {
+    if (t.status === 'done' || !t.due_date) return false;
+    return new Date(t.due_date).getTime() < new Date().setHours(0, 0, 0, 0);
+  }).length;
+
+  const filteredTasks = tasks
+    .filter((task) => {
+      if (statusFilter === 'open' && task.status === 'done') return false;
+      if (statusFilter === 'done' && task.status !== 'done') return false;
+      return priorityFilter === 'all' || task.priority === priorityFilter;
+    })
+    .sort((a, b) => {
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+    });
 
   return (
     <IonPage className="ff-page">
@@ -250,88 +275,33 @@ const Tab1: React.FC = () => {
           <IonRefresherContent />
         </IonRefresher>
 
-        <div style={{ padding: '4px 18px 28px' }}>
-          {/* Gün Sonu Özeti Kartı / Modalı */}
-          <GunSonuOzetiCard />
-          
-          {/* AI Telefon Verileri (SİMÜLASYON) */}
-          <AiPhoneDataCard />
-          <AiPlanPreviewList />
-
-          {/* Başlık */}
-          <div className="ff-rise" style={{ margin: '6px 0 20px' }}>
-            <h1 className="ff-title">Görevler</h1>
-            <p className="ff-subtitle">
-              {openCount > 0 ? `${openCount} açık görevin var` : 'Bütün görevlerin tamam 🎉'}
-            </p>
-          </div>
-
-          {/* İstatistikler */}
-          {dashboard && (
-            <div
-              className="ff-stat-grid ff-rise"
-              style={{ '--ff-delay': '0.05s' } as React.CSSProperties}
-            >
-              <div className="ff-stat">
-                <span className="ff-stat-icon ff-icon-gold">
-                  <IonIcon icon={trophyOutline} />
-                </span>
-                <span className="ff-stat-value">Lvl {dashboard.user.level}</span>
-                <span className="ff-stat-label">{dashboard.user.total_xp} XP</span>
-              </div>
-              <div className="ff-stat">
-                <span className="ff-stat-icon ff-icon-primary">
-                  <IonIcon icon={flameOutline} />
-                </span>
-                <span className="ff-stat-value">{dashboard.user.streak_count}</span>
-                <span className="ff-stat-label">Günlük Seri</span>
-              </div>
-              <div className="ff-stat">
-                <span className="ff-stat-icon ff-icon-cool">
-                  <IonIcon icon={flashOutline} />
-                </span>
-                <span className="ff-stat-value">{dashboard.focus.minutes_today} dk</span>
-                <span className="ff-stat-label">Bugün Odaklanma</span>
-              </div>
-              <div className="ff-stat">
-                <span className="ff-stat-icon ff-icon-mint">
-                  <IonIcon icon={statsChartOutline} />
-                </span>
-                <span className="ff-stat-value">{dashboard.score.value}</span>
-                <span className="ff-stat-label">Skor / 100</span>
-              </div>
+        <div className="tasks-page-shell">
+          <section className="tasks-heading ff-rise">
+            <div>
+              <span className="tasks-eyebrow">GÜNLÜK PLANIN</span>
+              <h1 className="ff-title">Görevler</h1>
+              <p className="ff-subtitle">
+                {openCount > 0 ? `${openCount} açık görevini önceliğine göre sırala.` : 'Harika, bütün görevlerin tamam!'}
+              </p>
             </div>
-          )}
+          </section>
 
-          {/* Durum çipleri */}
-          {dashboard && (
-            <div
-              className="ff-rise"
-              style={{
-                display: 'flex',
-                gap: '8px',
-                flexWrap: 'wrap',
-                marginTop: '14px',
-                '--ff-delay': '0.1s',
-              } as React.CSSProperties}
-            >
-              <span className="ff-chip ff-chip-primary">Açık {dashboard.tasks.open}</span>
-              <span className="ff-chip ff-chip-mint">
-                Bugün {dashboard.tasks.completed_today} ✓
-              </span>
-              {dashboard.tasks.overdue > 0 && (
-                <span className="ff-chip ff-chip-danger">
-                  Gecikmiş {dashboard.tasks.overdue}
-                </span>
-              )}
+          <section className="tasks-summary ff-rise" style={{ '--ff-delay': '0.05s' } as React.CSSProperties}>
+            <div className="tasks-summary-item is-open">
+              <IonIcon icon={timeOutline} />
+              <span><strong>{openCount}</strong>Açık</span>
             </div>
-          )}
+            <div className="tasks-summary-item is-done">
+              <IonIcon icon={checkmarkCircleOutline} />
+              <span><strong>{dashboard?.tasks.completed_today ?? completedCount}</strong>Bugün bitti</span>
+            </div>
+            <div className="tasks-summary-item is-overdue">
+              <IonIcon icon={warningOutline} />
+              <span><strong>{overdueCount}</strong>Geciken</span>
+            </div>
+          </section>
 
-          {/* Görünüm değiştirme: Liste / Eisenhower matrisi */}
-          <div
-            className="ff-segment ff-rise"
-            style={{ marginTop: '20px', '--ff-delay': '0.15s' } as React.CSSProperties}
-          >
+          <div className="ff-segment tasks-view-switch ff-rise" style={{ '--ff-delay': '0.1s' } as React.CSSProperties}>
             <button
               type="button"
               className={`ff-segment-btn ${viewMode === 'list' ? 'is-active' : ''}`}
@@ -348,7 +318,7 @@ const Tab1: React.FC = () => {
             </button>
           </div>
 
-          <div style={{ marginTop: '16px' }}>
+          <div className="tasks-content">
             {viewMode === 'matrix' ? (
               <EisenhowerMatrix />
             ) : isLoading && tasks.length === 0 ? (
@@ -378,88 +348,87 @@ const Tab1: React.FC = () => {
                 </p>
               </div>
             ) : (
-              tasks.map((task, i) => {
-                const isDone = task.status === 'done';
-                const prio = PRIORITY_CHIP[task.priority] ?? PRIORITY_CHIP.low;
-                const due = task.due_date ? getDueInfo(task.due_date, isDone) : null;
-                const subCount = subtaskCounts[task.id] || 0;
+              <>
+                <div className="tasks-status-tabs" role="tablist" aria-label="Görev durumu">
+                  {([
+                    ['open', 'Açık'],
+                    ['done', 'Tamamlanan'],
+                    ['all', 'Tümü'],
+                  ] as const).map(([key, label]) => (
+                    <button key={key} type="button" className={statusFilter === key ? 'is-active' : ''} onClick={() => setStatusFilter(key)}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
 
-                return (
-                  <IonItemSliding key={task.id}>
-                    <IonItem className="ff-item" lines="none">
-                      <div
-                        className={`ff-row ff-row-full ff-rise ${isDone ? 'is-done' : ''}`}
-                        style={{ '--ff-delay': `${0.2 + i * 0.04}s` } as React.CSSProperties}
-                      >
-                        <IonCheckbox
-                          checked={isDone}
-                          onIonChange={() => handleToggleComplete(task.id, task.status)}
-                          style={{ marginTop: '2px', flexShrink: 0 }}
-                        />
+                <div className="tasks-priority-filters" aria-label="Öncelik filtresi">
+                  <button type="button" className={priorityFilter === 'all' ? 'is-active' : ''} onClick={() => setPriorityFilter('all')}>Tümü</button>
+                  {PRIORITY_GROUPS.map((group) => (
+                    <button key={group.key} type="button" className={`${priorityFilter === group.key ? 'is-active' : ''} is-${group.tone}`} onClick={() => setPriorityFilter(group.key)}>
+                      {group.hint}
+                    </button>
+                  ))}
+                </div>
 
-                        <div
-                          style={{ flex: 1, minWidth: 0 }}
-                          onClick={() => {
-                            setDetailTask(task);
-                            setShowDetail(true);
-                          }}
-                        >
-                          {/* Bu görev bir alt görevse belli olsun */}
-                          {task.parent_task_id && (
-                            <p className="ff-row-sub" style={{ margin: '0 0 3px' }}>
-                              ↳ alt görev
-                            </p>
-                          )}
+                <aside className="tasks-forge-tip ff-rise">
+                  <div>
+                    <span>FORGE'UN ÖNERİSİ</span>
+                    <strong>{overdueCount > 0 ? 'Önce geciken görevlere odaklan.' : 'En önemli görevini günün erken saatinde tamamla.'}</strong>
+                  </div>
+                  <img src={forgeHappy} alt="Mutlu Forge maskotu" />
+                </aside>
 
-                          <p className="ff-row-title">{task.title}</p>
-
-                          {task.description && (
-                            <p className="ff-row-sub">{task.description}</p>
-                          )}
-
-                          <div
-                            style={{
-                              display: 'flex',
-                              gap: '6px',
-                              flexWrap: 'wrap',
-                              marginTop: '10px',
-                            }}
-                          >
-                            <span className={`ff-chip ${prio.cls}`}>{prio.label}</span>
-
-                            {due && (
-                              <span className={`ff-chip ${due.cls}`}>
-                                <IonIcon icon={calendarOutline} />
-                                {due.label}
-                              </span>
-                            )}
-
-                            {subCount > 0 && (
-                              <span className="ff-chip ff-chip-cool">
-                                <IonIcon icon={gitBranchOutline} />
-                                {subCount} alt görev
-                              </span>
-                            )}
-
-                            {task.estimated_minutes && (
-                              <span className="ff-chip">
-                                <IonIcon icon={hourglassOutline} />
-                                {task.estimated_minutes} dk
-                              </span>
-                            )}
-                          </div>
+                {filteredTasks.length === 0 ? (
+                  <div className="tasks-filter-empty">
+                    <IonIcon icon={checkmarkCircleOutline} />
+                    <strong>Bu filtrede görev yok</strong>
+                    <span>Başka bir durum veya öncelik seçebilirsin.</span>
+                  </div>
+                ) : (
+                  PRIORITY_GROUPS.map((group) => {
+                    const groupTasks = filteredTasks.filter((task) => task.priority === group.key || (group.key === 'low' && !PRIORITY_CHIP[task.priority]));
+                    if (groupTasks.length === 0) return null;
+                    return (
+                      <section className={`tasks-priority-group is-${group.tone}`} key={group.key}>
+                        <header>
+                          <div><span className="tasks-priority-dot" /><div><strong>{group.title}</strong><small>{group.hint}</small></div></div>
+                          <b>{groupTasks.length}</b>
+                        </header>
+                        <div className="tasks-list-card">
+                          {groupTasks.map((task) => {
+                            const isDone = task.status === 'done';
+                            const prio = PRIORITY_CHIP[task.priority] ?? PRIORITY_CHIP.low;
+                            const due = task.due_date ? getDueInfo(task.due_date, isDone) : null;
+                            const subCount = subtaskCounts[task.id] || 0;
+                            return (
+                              <IonItemSliding key={task.id}>
+                                <IonItem className="ff-item" lines="none">
+                                  <div className={`task-compact-row ${isDone ? 'is-done' : ''}`}>
+                                    <IonCheckbox checked={isDone} onIonChange={() => handleToggleComplete(task.id, task.status)} />
+                                    <div className="task-compact-main" onClick={() => { setDetailTask(task); setShowDetail(true); }}>
+                                      {task.parent_task_id && <span className="task-parent-label">↳ Alt görev</span>}
+                                      <p>{task.title}</p>
+                                      <div className="task-compact-meta">
+                                        {due && <span className={due.cls}><IonIcon icon={calendarOutline} />{due.label}</span>}
+                                        {task.estimated_minutes && <span><IonIcon icon={hourglassOutline} />{task.estimated_minutes} dk</span>}
+                                        {subCount > 0 && <span><IonIcon icon={gitBranchOutline} />{subCount} alt görev</span>}
+                                      </div>
+                                    </div>
+                                    <span className={`task-priority-label ${prio.cls}`}>{prio.label}</span>
+                                  </div>
+                                </IonItem>
+                                <IonItemOptions side="end">
+                                  <IonItemOption onClick={() => handleDeleteTask(task.id)}><IonIcon slot="icon-only" icon={trashOutline} /></IonItemOption>
+                                </IonItemOptions>
+                              </IonItemSliding>
+                            );
+                          })}
                         </div>
-                      </div>
-                    </IonItem>
-
-                    <IonItemOptions side="end">
-                      <IonItemOption onClick={() => handleDeleteTask(task.id)}>
-                        <IonIcon slot="icon-only" icon={trashOutline} />
-                      </IonItemOption>
-                    </IonItemOptions>
-                  </IonItemSliding>
-                );
-              })
+                      </section>
+                    );
+                  })
+                )}
+              </>
             )}
           </div>
         </div>

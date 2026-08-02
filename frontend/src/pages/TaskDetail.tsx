@@ -17,6 +17,7 @@ import {
   IonSpinner,
   IonText,
   IonToast,
+  IonCheckbox,
 } from '@ionic/react';
 import {
   sparklesOutline,
@@ -25,8 +26,11 @@ import {
   calendarOutline,
   alertCircleOutline,
   timeOutline,
+  closeCircleOutline,
 } from 'ionicons/icons';
+import type { AxiosError } from 'axios';
 import api from '../services/api';
+import './TaskDetail.css';
 
 export interface DetailTask {
   id: string;
@@ -52,6 +56,11 @@ interface SubTask {
   description?: string;
 }
 
+interface EditableSubTask extends SubTask {
+  id: string;
+  selected: boolean;
+}
+
 const PRIORITIES = [
   { value: 'urgent_important', label: 'Acil & Önemli' },
   { value: 'important', label: 'Önemli' },
@@ -69,7 +78,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ isOpen, task, onClose, onChange
   // AI parçalama
   const [breaking, setBreaking] = useState(false);
   const [breakError, setBreakError] = useState<string | null>(null);
-  const [subtasks, setSubtasks] = useState<SubTask[] | null>(null);
+  const [subtasks, setSubtasks] = useState<EditableSubTask[] | null>(null);
   const [approach, setApproach] = useState('');
   const [savingSubs, setSavingSubs] = useState(false);
 
@@ -116,7 +125,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ isOpen, task, onClose, onChange
       });
       notify('Değişiklikler kaydedildi ✅');
       onChanged();
-    } catch (err) {
+    } catch {
       notify('Kaydedilemedi. Lütfen tekrar dene.');
     } finally {
       setSaving(false);
@@ -135,9 +144,20 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ isOpen, task, onClose, onChange
         task_description: description.trim() || undefined,
         estimated_time: task.estimated_minutes || undefined,
       });
-      setSubtasks(res.data.subtasks || []);
+      const suggestedSubtasks: SubTask[] = Array.isArray(res.data.subtasks)
+        ? res.data.subtasks
+        : [];
+
+      setSubtasks(
+        suggestedSubtasks.map((subtask, index) => ({
+          ...subtask,
+          id: `${Date.now()}-${index}`,
+          selected: true,
+        }))
+      );
       setApproach(res.data.approach_explanation || '');
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as AxiosError<{ detail?: unknown }>;
       const detail = err.response?.data?.detail;
       setBreakError(
         typeof detail === 'string' ? detail : 'Parçalama yapılamadı. AI servisi şu an yanıt veremiyor olabilir.'
@@ -147,24 +167,53 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ isOpen, task, onClose, onChange
     }
   };
 
+  const updateSubtask = (id: string, changes: Partial<EditableSubTask>) => {
+    setSubtasks((current) =>
+      current?.map((subtask) =>
+        subtask.id === id ? { ...subtask, ...changes } : subtask
+      ) ?? null
+    );
+  };
+
+  const removeSubtask = (id: string) => {
+    setSubtasks((current) => current?.filter((subtask) => subtask.id !== id) ?? null);
+  };
+
+  const selectedSubtasks = subtasks?.filter(
+    (subtask) => subtask.selected && subtask.name.trim()
+  ) ?? [];
+
+  const allSubtasksSelected = Boolean(
+    subtasks?.length && subtasks.every((subtask) => subtask.selected)
+  );
+
+  const toggleAllSubtasks = (selected: boolean) => {
+    setSubtasks((current) =>
+      current?.map((subtask) => ({ ...subtask, selected })) ?? null
+    );
+  };
+
   // Alt görevleri kaydet: POST /api/planner/bulk-create (parent_task_id ile bağlar)
   const handleSaveSubtasks = async () => {
-    if (!task || !subtasks || subtasks.length === 0) return;
+    if (!task || selectedSubtasks.length === 0) {
+      notify('Eklemek için en az bir alt görev seçmelisin.');
+      return;
+    }
     setSavingSubs(true);
     try {
       await api.post('/planner/bulk-create', {
         parent_task_id: task.id,
-        tasks: subtasks.map((s) => ({
-          title: s.name,
-          description: s.description || undefined,
-          estimated_minutes: s.estimated_time_minutes,
+        tasks: selectedSubtasks.map((subtask) => ({
+          title: subtask.name.trim(),
+          description: subtask.description?.trim() || undefined,
+          estimated_minutes: Math.max(1, subtask.estimated_time_minutes || 1),
           priority: 'low',
         })),
       });
-      notify(`${subtasks.length} alt görev listene eklendi ✅`);
+      notify(`${selectedSubtasks.length} alt görev listene eklendi ✅`);
       onChanged();
       onClose();
-    } catch (err) {
+    } catch {
       notify('Alt görevler kaydedilemedi. Lütfen tekrar dene.');
     } finally {
       setSavingSubs(false);
@@ -180,7 +229,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ isOpen, task, onClose, onChange
       notify('Görev silindi 🗑️');
       onChanged();
       onClose();
-    } catch (err) {
+    } catch {
       notify('Silinemedi. Lütfen tekrar dene.');
     } finally {
       setDeleting(false);
@@ -287,45 +336,75 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ isOpen, task, onClose, onChange
               )}
 
               {subtasks.length === 0 ? (
-                <p style={{ color: 'var(--ion-color-medium)' }}>Alt adım önerilmedi.</p>
+                <p style={{ color: 'var(--ion-color-medium)' }}>Listede alt görev kalmadı. Yeniden parçalayabilirsin.</p>
               ) : (
                 <>
+                  <div className="subtask-list-header">
+                    <IonCheckbox
+                      checked={allSubtasksSelected}
+                      onIonChange={(event) => toggleAllSubtasks(event.detail.checked)}
+                      aria-label="Tüm alt görevleri seç"
+                    />
+                    <span>Tümünü seç</span>
+                    <span className="subtask-selection-count">
+                      {selectedSubtasks.length}/{subtasks.length} seçili
+                    </span>
+                  </div>
+
                   {subtasks.map((s, i) => (
                     <div
-                      key={i}
-                      style={{
-                        display: 'flex',
-                        gap: '10px',
-                        padding: '10px 0',
-                        borderBottom: i < subtasks.length - 1 ? '1px solid rgba(var(--ion-text-color-rgb,0,0,0),0.08)' : 'none',
-                      }}
+                      key={s.id}
+                      className={`editable-subtask-card${s.selected ? '' : ' is-unselected'}`}
                     >
-                      <div
-                        style={{
-                          flexShrink: 0,
-                          width: '24px',
-                          height: '24px',
-                          borderRadius: '50%',
-                          background: 'var(--ion-color-primary)',
-                          color: 'var(--ion-color-primary-contrast)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '13px',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {i + 1}
+                      <div className="editable-subtask-card__top">
+                        <IonCheckbox
+                          checked={s.selected}
+                          onIonChange={(event) => updateSubtask(s.id, { selected: event.detail.checked })}
+                          aria-label={`${i + 1}. alt görevi seç`}
+                        />
+                        <span className="editable-subtask-card__number">{i + 1}</span>
+                        <IonInput
+                          className="editable-subtask-card__title"
+                          value={s.name}
+                          placeholder="Alt görev başlığı"
+                          onIonInput={(event) => updateSubtask(s.id, { name: event.detail.value ?? '' })}
+                          aria-label={`${i + 1}. alt görev başlığı`}
+                        />
+                        <IonButton
+                          fill="clear"
+                          color="medium"
+                          size="small"
+                          onClick={() => removeSubtask(s.id)}
+                          aria-label={`${i + 1}. alt görevi kaldır`}
+                        >
+                          <IonIcon slot="icon-only" icon={closeCircleOutline} />
+                        </IonButton>
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600 }}>{s.name}</div>
-                        {s.description && (
-                          <div style={{ fontSize: '13px', color: 'var(--ion-color-medium)', marginTop: '2px' }}>{s.description}</div>
-                        )}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--ion-color-medium)', marginTop: '4px' }}>
+
+                      <IonTextarea
+                        className="editable-subtask-card__description"
+                        value={s.description ?? ''}
+                        autoGrow
+                        rows={1}
+                        placeholder="Kısa açıklama (isteğe bağlı)"
+                        onIonInput={(event) => updateSubtask(s.id, { description: event.detail.value ?? '' })}
+                        aria-label={`${i + 1}. alt görev açıklaması`}
+                      />
+
+                      <div className="editable-subtask-card__duration">
                           <IonIcon icon={timeOutline} />
-                          ~{s.estimated_time_minutes} dk
-                        </div>
+                          <IonInput
+                            type="number"
+                            min="1"
+                            value={s.estimated_time_minutes}
+                            onIonInput={(event) =>
+                              updateSubtask(s.id, {
+                                estimated_time_minutes: Math.max(1, Number(event.detail.value) || 1),
+                              })
+                            }
+                            aria-label={`${i + 1}. alt görev süresi`}
+                          />
+                          <span>dk</span>
                       </div>
                     </div>
                   ))}
@@ -333,10 +412,12 @@ const TaskDetail: React.FC<TaskDetailProps> = ({ isOpen, task, onClose, onChange
                   <IonButton
                     expand="block"
                     onClick={handleSaveSubtasks}
-                    disabled={savingSubs}
+                    disabled={savingSubs || selectedSubtasks.length === 0}
                     style={{ marginTop: '16px', '--border-radius': '25px', fontWeight: 'bold' }}
                   >
-                    {savingSubs ? 'Kaydediliyor...' : `Alt Görevleri Kaydet (${subtasks.length})`}
+                    {savingSubs
+                      ? 'Ekleniyor...'
+                      : `Seçilenleri Görevlere Ekle (${selectedSubtasks.length})`}
                   </IonButton>
                 </>
               )}

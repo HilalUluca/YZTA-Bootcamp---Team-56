@@ -15,7 +15,7 @@ import {
   IonIcon,
   IonSpinner,
 } from '@ionic/react';
-import { sparklesOutline, alertCircleOutline, timeOutline, cafeOutline } from 'ionicons/icons';
+import { alertCircleOutline, timeOutline } from 'ionicons/icons';
 import api from '../services/api';
 import forgeAvatar from '../assets/hmsc/circular-parrot-avatar.jpg';
 import leafDecoration from '../assets/hmsc/leaf-tropical-cluster.jpg';
@@ -30,14 +30,12 @@ interface DailyPlanProps {
 }
 
 // AI'ın döndürdüğü çizelge elemanı
-interface ScheduleItem {
-  block_type?: string; // 'task' | 'break'
-  task_name?: string;
-  category?: string;
-  suggested_duration_minutes?: number;
+interface TaskScheduleItem {
+  block_type?: 'task';
+  task_name: string;
+  category: string;
+  suggested_duration_minutes: number;
   priority_score?: number;
-  suggestion?: string; // mola önerisi
-  duration_minutes?: number; // mola süresi
 }
 
 interface BreakScheduleItem {
@@ -93,38 +91,38 @@ const DailyPlan: React.FC<DailyPlanProps> = ({ isOpen, onClose, openTaskCount })
     setSchedule(null);
     setSummary('');
     setEmptyMessage('');
-    
-    let attempt = 0;
-    let success = false;
+    try {
+      let responseData: Record<string, unknown> | null = null;
+      let lastError: unknown;
 
-    while (attempt < 2 && !success) {
-      try {
-        const res = await api.post('/planner/daily-plan', {
-          energy_level: energy,
-          available_hours: hours,
-        }, { timeout: 30000 });
-        
-        const data = res.data || {};
-        const sched: ScheduleItem[] = data.recommended_schedule || [];
-        setSummary(data.summary || '');
-        if (sched.length > 0) {
-          setSchedule(sched);
-        } else {
-          // Görev yoksa backend { message, plan: [] } döndürür
-          setEmptyMessage(data.message || 'Planlanacak açık görev bulunamadı.');
-          setSchedule([]);
+      // Geçici AI servis hatalarında isteği bir kez daha dene.
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        try {
+          const res = await api.post('/planner/daily-plan', {
+            energy_level: energy,
+            available_hours: hours,
+          }, { timeout: 30000 });
+          responseData = res.data || {};
+          break;
+        } catch (err: unknown) {
+          lastError = err;
         }
-        success = true;
-      } catch (err: any) {
-        attempt++;
-        if (attempt >= 2) {
-          const detail = err.response?.data?.detail;
-          setError(
-            typeof detail === 'string'
-              ? detail
-              : 'Plan oluşturulamadı. AI servisi şu an yanıt veremiyor olabilir, lütfen tekrar dene.'
-          );
-        }
+      }
+
+      if (!responseData) throw lastError;
+
+      const sched = Array.isArray(responseData.recommended_schedule)
+        ? responseData.recommended_schedule as ScheduleItem[]
+        : [];
+      setSummary(typeof responseData.summary === 'string' ? responseData.summary : '');
+      if (sched.length > 0) {
+        setSchedule(sched);
+      } else {
+        const message = typeof responseData.message === 'string'
+          ? responseData.message
+          : 'Planlanacak açık görev bulunamadı.';
+        setEmptyMessage(message);
+        setSchedule([]);
       }
     } catch (err: unknown) {
       const detail =
@@ -139,7 +137,6 @@ const DailyPlan: React.FC<DailyPlanProps> = ({ isOpen, onClose, openTaskCount })
     } finally {
       setLoading(false);
     }
-    setLoading(false);
   };
 
   const reset = () => {
@@ -279,79 +276,6 @@ const DailyPlan: React.FC<DailyPlanProps> = ({ isOpen, onClose, openTaskCount })
                   <h1>Bugünkü akışın hazır!</h1>
                 </div>
               </div>
-            ) : (
-              <>
-                {schedule.map((item, i) => {
-                  if (item.block_type === 'break') {
-                    return (
-                      <div
-                        key={i}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          background: 'rgba(var(--ion-color-success-rgb), 0.1)',
-                          border: '1px dashed var(--ion-color-success)',
-                          borderRadius: '14px',
-                          padding: '10px 14px',
-                          marginBottom: '10px',
-                          color: 'var(--ion-color-success)'
-                        }}
-                      >
-                        <IonIcon icon={cafeOutline} style={{ fontSize: '24px' }} />
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>Mola Zamanı ({item.duration_minutes} dk)</div>
-                          <div style={{ fontSize: '13px' }}>{item.suggestion}</div>
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  const cat = categoryInfo(item.category || '');
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '12px',
-                        background: 'var(--ion-card-background, var(--ion-background-color))',
-                        border: '1px solid rgba(var(--ion-text-color-rgb, 0,0,0), 0.08)',
-                        borderRadius: '14px',
-                        padding: '14px',
-                        marginBottom: '10px',
-                      }}
-                    >
-                      <div
-                        style={{
-                          flexShrink: 0,
-                          width: '28px',
-                          height: '28px',
-                          borderRadius: '50%',
-                          background: 'var(--ion-color-primary)',
-                          color: 'var(--ion-color-primary-contrast)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 'bold',
-                          fontSize: '14px',
-                        }}
-                      >
-                        {i + 1}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <h3 style={{ margin: '0 0 6px 0', fontWeight: 'bold' }}>{item.task_name}</h3>
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                          <IonBadge color={cat.color}>{cat.label}</IonBadge>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: 'var(--ion-color-medium)' }}>
-                            <IonIcon icon={timeOutline} />
-                            ~{item.suggested_duration_minutes} dk
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
 
               {summary && <div className="daily-plan-summary"><p>{summary}</p></div>}
 

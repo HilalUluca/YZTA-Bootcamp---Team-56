@@ -200,7 +200,7 @@ Dikkat çeken noktalar: `evidence` alanı çıkarımın hangi veriye dayandığ�
 
 ## 🎯 Hedef Kitle
 
-1. **Odak Problemi Yaşayan Bireyler:** Akademik veya profesyonel düzeyde proje hazırlığında olan, erteleme döngüsünden çıkmak ve kişisel disiplin inşa etmek isteyenler.
+1. **Odak Problemi Yaşayan Bireyler:** Erteleme döngüsünden çıkmak, hayatında bir şeyleri değiştirmek, geliştirmek isteyenler ve kişisel disiplin inşa etmek isteyenler.
 2. **Çalışan Profesyoneller & Developerlar:** Zaman yönetimi, uyku düzensizliği ve odak bölünmesi yaşayan bağımsız geliştiriciler, veri bilimciler ve freelancerlar.
 3. **Kurumsal Takımlar (Faz 3 Hedefi):** Verimliliğini artırmayı, iş kapasitesini yönetmeyi ve tükenmişliği (burnout) önlemeyi amaçlayan teknoloji şirketleri ve İK departmanları.
 

@@ -448,5 +448,5 @@ Soyut Story Point sisteminden vazgeçilerek işler atomik task'lere bölünmüş
 </p> 
 
 <p align="center">
-  <b>Team 56, Nexus Minds @2026 — FocusForge.</b>
+  <b>Nexus Minds @2026 — FocusForge.</b>
 </p>

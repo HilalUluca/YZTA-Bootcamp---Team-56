@@ -439,12 +439,16 @@ Soyut Story Point sisteminden vazgeçilerek işler atomik task'lere bölünmüş
 | [🔗 JIRA Board Görünümü](Project%20Management/Jira%20Board,%20Sprint3) | [🔗 UI Ürün Görünümü](UI%20Gallery/Sprint%203) |
 </details>
 
+<p align="center">
+<img src="./Project%20Management/Daily%20Scrum/banner.jpeg" alt="FocusForge Corporate Header" width="100%" />
+</p> 
+
 </details>
 
 ---
 
 <p align="center">
-<img src="./Project%20Management/Daily%20Scrum/banner.jpeg" alt="FocusForge Corporate Header" width="100%" />
+<img src="./Project%20Management/Daily%20Scrum/banneren.jpg" alt="FocusForge Corporate Header" width="100%" />
 </p> 
 
 <p align="center">

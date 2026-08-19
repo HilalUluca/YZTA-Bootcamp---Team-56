@@ -7,13 +7,13 @@
 ---
 
 <p align="center">
-  <b>Language Selection / Dil Seçimi</b>
+  <b>Language Selection</b>
 </p>
 
 <details>
 <summary><b>🇬🇧 Click to read in English</b></summary>
 
-## 👥 Team Members (Team 56)
+## 👥 Team Members (Nexus Minds)
 
 <table>
   <tr>
@@ -24,27 +24,27 @@
   <tr>
     <td><b>Hilal Uluca</b></td>
     <td>Scrum Master</td>
-    <td>AI</td>
+    <td>AI Developer</td>
   </tr>
   <tr>
     <td><b>Furkan Türker</b></td>
     <td>Product Owner</td>
-    <td>Backend</td>
+    <td>Backend Developer</td>
   </tr>
   <tr>
     <td><b>Doğukan Kaya</b></td>
     <td>Developer</td>
-    <td>AI</td>
+    <td>AI Developer</td>
   </tr>
   <tr>
     <td><b>Asya Aynur Gers</b></td>
     <td>Developer</td>
-    <td>Frontend</td>
+    <td>Frontend Developer</td>
   </tr>
   <tr>
     <td><b>Mete Ülken</b></td>
     <td>Developer</td>
-    <td>Backend</td>
+    <td>Backend Developer</td>
   </tr>
 </table>
 
@@ -237,7 +237,7 @@ Fixed communication gaps with structured bi-weekly live Google Meet sessions.
 <details>
 <summary><b>🇹🇷 Türkçe okumak için tıklayın</b></summary>
 
-## 👥 Takım Üyeleri (Takım 56)
+## 👥 Takım Üyeleri (Nexus Minds)
 
 <table>
   <tr>
@@ -248,27 +248,27 @@ Fixed communication gaps with structured bi-weekly live Google Meet sessions.
   <tr>
     <td><b>Hilal Uluca</b></td>
     <td>Scrum Master</td>
-    <td>AI</td>
+    <td>AI Developer</td>
   </tr>
   <tr>
     <td><b>Furkan Türker</b></td>
     <td>Product Owner</td>
-    <td>Backend</td>
+    <td>Backend Developer</td>
   </tr>
   <tr>
     <td><b>Doğukan Kaya</b></td>
     <td>Developer</td>
-    <td>AI</td>
+    <td>AI Developer</td>
   </tr>
   <tr>
     <td><b>Asya Aynur Gers</b></td>
     <td>Developer</td>
-    <td>Frontend</td>
+    <td>Frontend Developer</td>
   </tr>
   <tr>
     <td><b>Mete Ülken</b></td>
     <td>Developer</td>
-    <td>Backend</td>
+    <td>Backend Developer</td>
   </tr>
 </table>
 
@@ -444,9 +444,9 @@ Soyut Story Point sisteminden vazgeçilerek işler atomik task'lere bölünmüş
 ---
 
 <p align="center">
-  <img src="Project%20Management/Daily%20Scrum/GitHub_banner_geometric_shapes_t..._202607300354.jpeg" alt="FocusForge Corporate Header" width="100%" />
+![FocusForge Corporate Header](./Project%20Management/Daily%20Scrum/banner.jpeg)
 </p> 
 
 <p align="center">
-  <b>Team 56 @2026 — FocusForge.</b>
+  <b>Team 56, Nexus Minds @2026 — FocusForge.</b>
 </p>

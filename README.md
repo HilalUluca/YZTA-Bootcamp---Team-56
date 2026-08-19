@@ -169,6 +169,69 @@ The system analyzes discrepancies between a user's biological capacity and targe
 
 👉 **[FocusForge Miro Sprint Board & Burndown Chart](https://miro.com/welcomeonboard/U3BtZmFtcDgzYm1GdmlXUlUrZDNDU08vSFhwYmpZd01VcnlXeCtrRmhkQVZQSG5xbkxKeHZJaEkrd2d6WHNKVms5b01PVzVlR1JFRlN0a3VHYnNFOEtyd0wwMlhKTU0rSjhuUjRlUjhSVUlVQW9PckRwemF4M0dtK1hhZFFQaWlNakdSWkpBejJWRjJhFnhhb1UwcS9BPT0hdjE=?share_link_id=809806536559)**
 
+---
+
+## 📅 Sprint Processes & Management
+
+<details>
+<summary><b> Sprint 1 Report </b></summary>
+<br>
+
+### 📑 Backlog & Story Selections
+Backlogs are structured around user stories to build the MVP core. Story point estimations were balanced against team schedules.
+
+### 💬 Daily Scrum
+Conducted via hybrid Slack/WhatsApp and Meet sessions due to distributed schedules. 
+* [📂 View Sprint 1 Daily Scrum Folder](./Project%20Management/Daily%20Scrum)
+
+### 📊 Sprint Board Update & Product Status
+| 🔄 JIRA Sprint Board | 📱 Product Screenshot |
+| :--- | :--- |
+| [🔗 JIRA Board View](./Project%20Management/Daily%20Scrum/Jira%20Board%201.png) | [🔗 FastAPI Swagger UI](./UI%20Gallery/Sprint%201/FASTAPI%20Swagger%20UI%201.png) |
+
+### 🔎 Sprint Review & Retrospective
+* **Outcome:** Backend API skeleton (Auth, Task CRUD, AI Chat) successfully built. Cross-functional role adjustments executed.
+</details>
+
+<details>
+<summary><b> Sprint 2 Report </b></summary>
+<br>
+
+### 📑 Backlog & Story Selections
+Addressed Sprint 1 bottlenecks, factoring in AI tool multipliers.
+
+### 💬 Daily Scrum
+Transitioned to mandatory bi-weekly live Google Meet sessions alongside asynchronous communication.
+* [📂 View Sprint 2 Daily Scrum Folder](./Project%20Management/Daily%20Scrum,%20Sprint%202)
+
+### 📊 Sprint Board Update & Product Status
+| 🔄 JIRA Sprint Board | 📱 Product Screenshot |
+| :--- | :--- |
+| [🔗 JIRA Board View](./Project%20Management/Jira%20Board,%20Sprint2) | [🔗 UI Screenshot](./UI%20Gallery/Sprint%202) |
+</details>
+
+<details>
+<summary><b> Sprint 3 Report </b></summary>
+<br>
+
+### 📑 Backlog & Task-Based Execution
+Shifted entirely from abstract Story Points to atomic, task-based execution in Jira.
+
+### 💬 Daily Scrum & Communication
+Fixed communication gaps with structured bi-weekly live Google Meet sessions.
+* [📂 View Sprint 3 Daily Scrum Folder](./Project%20Management/Daily%20Scrum,%20Sprint3)
+
+### 📊 Sprint Board Update & Product Status
+| 🔄 JIRA Sprint Board | 📱 Product Screenshot |
+| :--- | :--- |
+| [🔗 JIRA Board View](Project%20Management/Jira%20Board,%20Sprint3) | [🔗 UI Screenshot](UI%20Gallery/Sprint%203) |
+
+### 🔎 Sprint Review & Completed Work
+1. **Frontend Resource Balancing:** Dedicated frontend support to sync UI with backend APIs.
+2. **AI Commitment Tracking:** Director agent tracking user promises across sessions.
+3. **Scope Pruning:** Deliberately scoped out AI voice features to protect delivery stability.
+</details>
+
 </details>
 
 <details>
@@ -329,6 +392,52 @@ Sistem; kullanıcının biyolojik kapasitesi ile hedeflenen iş yükü arasında
 ## 🔗 Product Backlog & Yönetim
 
 👉 **[FocusForge Miro Sprint Board & Burndown Chart](https://miro.com/welcomeonboard/U3BtZmFtcDgzYm1GdmlXUlUrZDNDU08vSFhwYmpZd01VcnlXeCtrRmhkQVZQSG5xbkxKeHZJaEkrd2d6WHNKVms5b01PVzVlR1JFRlN0a3VHYnNFOEtyd0wwMlhKTU0rSjhuUjRlUjhSVUlVQW9PckRwemF4M0dtK1hhZFFQaWlNakdSWkpBejJWRjJhFnhhb1UwcS9BPT0hdjE=?share_link_id=809806536559)**
+
+---
+
+## 📅 Sprint Süreçleri ve Yönetimi
+
+<details>
+<summary><b> Sprint 1 Raporu </b></summary>
+<br>
+
+### 📑 Backlog Düzeni ve Story Seçimleri 
+Backlog'umuz projenin öncelikli çalışan iskeletini (MVP) ayağa kaldıracak kullanıcı hikayelerine göre dizilmiştir. 
+* [📂 Sprint 1 Daily Scrum Klasörünü İncele](./Project%20Management/Daily%20Scrum)
+
+### 📊 Sprint Board Update & Ürün Durumu
+| 🔄 JIRA Sprint Board | 📱 Product Screenshot |
+| :--- | :--- |
+| [🔗 JIRA Board Görünümü](./Project%20Management/Daily%20Scrum/Jira%20Board%201.png) | [🔗 FastAPI Swagger UI](./UI%20Gallery/Sprint%201/FASTAPI%20Swagger%20UI%201.png) |
+</details>
+
+<details>
+<summary><b> Sprint 2 Raporu </b></summary>
+<br>
+  
+### 📑 Backlog Düzeni ve Story Seçimleri 
+Sprint 1'de yaşanan darboğazlar çözülerek Sprint 2'de asenkron modelin yanında canlı Meet toplantılarına geçilmiştir.
+* [📂 Sprint 2 Daily Scrum Klasörünü İncele](./Project%20Management/Daily%20Scrum,%20Sprint%202)
+
+### 📊 Sprint Board Update & Ürün Durumu
+| 🔄 JIRA Sprint Board | 📱 Product Screenshot |
+| :--- | :--- |
+| [🔗 JIRA Board Görünümü](./Project%20Management/Jira%20Board,%20Sprint2) | [🔗 UI Ürün Görünümü](./UI%20Gallery/Sprint%202) |
+</details>
+
+<details>
+<summary><b> Sprint 3 Raporu </b></summary>
+<br>
+
+### 📑 Backlog Düzeni ve Görev Bazlı Yönetim (Task-Based Execution)
+Soyut Story Point sisteminden vazgeçilerek işler atomik task'lere bölünmüştür.
+* [📂 Sprint 3 Daily Scrum Kayıtlarını İncele](./Project%20Management/Daily%20Scrum,%20Sprint3)
+
+### 📊 Sprint Board Update & Ürün Durumu
+| 🔄 JIRA Sprint Board | 📱 Product Screenshot |
+| :--- | :--- |
+| [🔗 JIRA Board Görünümü](Project%20Management/Jira%20Board,%20Sprint3) | [🔗 UI Ürün Görünümü](UI%20Gallery/Sprint%203) |
+</details>
 
 </details>
 

@@ -444,7 +444,7 @@ Soyut Story Point sisteminden vazgeçilerek işler atomik task'lere bölünmüş
 ---
 
 <p align="center">
-![FocusForge Corporate Header](./Project%20Management/Daily%20Scrum/banner.jpeg)
+<img src="./Project%20Management/Daily%20Scrum/banner.jpeg" alt="FocusForge Corporate Header" width="100%" />
 </p> 
 
 <p align="center">
